@@ -1,4 +1,4 @@
-import GladcodeV2API from "../model/request.js";
+import GladcodeV2API from "./request-old.js";
 import GoogleLogin from "./google-login.js";
 import TemplateVar from "./template-var.js";
 

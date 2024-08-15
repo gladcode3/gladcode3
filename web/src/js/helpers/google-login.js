@@ -15,7 +15,7 @@ import TemplateVar from './template-var.js';
 import DynamicScript from './dynamic-script.js';
 import Pledge from './pledge.js';
 import LocalData from './local-data.js';
-import GladcodeV2API from '../model/request.js';
+import GladcodeV2API from './request-old.js';
 
 
 export default class GoogleLogin {

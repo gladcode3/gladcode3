@@ -1,42 +1,63 @@
-import CustomError from './error.js';
+// Request class to make API requests
+// Usage:
+// Unauthenticated request:
+// const request = new Request({ url: 'http://localhost:3000' });
+// request.setHeader('Authorization', 'Bearer ' + token);
+// request.get('endpoint', { key: value });
+// request.post('endpoint', { key: value });
 
-async function request(route, { query, body, method='GET' }={}) {
-    
-    // request to production server
-    const baseURL = 'https://gladcode.dev';
 
-    const args = {
-        method,
-        headers: {},
-    };
-
-    // set query string
-    if (query) {
-        route += '?' + new URLSearchParams(query).toString();
-    }
-    // set request body
-    if (body && method == 'POST') {
-        args.body = new FormData();
-        Object.entries(body).forEach(([k,v]) => args.body.append(k,v));
+export default class Request {
+    constructor({ url, headers }) {
+        this.url = url;
+        this.headers = new Headers(headers || {});
     }
 
-    let text, json;
-    try {
-        text = await fetch(`${ baseURL }/${ route }`, args).then(data => data.text());
-        json = JSON.parse(text);
-        // console.log(json)
-    }
-    catch (error) {
-        console.error(error, text);
-        throw new CustomError('FETCH_ERROR', 'Erro na requisição ao servidor.', text);
+    setHeader(key, value) {
+        this.headers.set(key, value);
     }
 
-    if (json.error) {
-        throw new CustomError('SERVER_ERROR', '⚠️ ' + json.error.message, json);
+    async get(endpoint, args) {
+        return this.request('GET', endpoint, args);
     }
 
-    return json;
+    async post(endpoint, args) {
+        return this.request('POST', endpoint, args);
+    }
+
+    async put(endpoint, args) {
+        return this.request('PUT', endpoint, args);
+    }
+
+    async delete(endpoint, args) {
+        return this.request('DELETE', endpoint, args);
+    }
+
+    async request(method, endpoint, data={}) {
+        const options = {
+            method,
+            headers: this.headers,
+        };
+
+        if (method === 'POST' || method === 'PUT') {
+            options.body = JSON.stringify(data);
+            this.headers.set('Content-Type', 'application/json');
+        }
+        if (method === 'GET') {
+            const queryString = new URLSearchParams(data).toString();
+            endpoint += '?' + queryString;
+        }
+
+        const request = await fetch(`${this.url}/${endpoint}`, options);
+
+        const text = await request.text();
+        try {
+            return JSON.parse(text);
+        }
+        catch (e) {
+            console.error(e);
+            return text;
+        }
+    }
 
 }
-
-export default request;
