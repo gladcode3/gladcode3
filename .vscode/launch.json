@@ -1,0 +1,61 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug API",
+            "type": "node",
+            "request": "attach",
+            "port": 9229,
+            "address": "localhost",
+            "localRoot": "${workspaceFolder}/api",
+            "remoteRoot": "/app"
+        },
+        {
+            "name": "Debug Web",
+            "type": "node",
+            "request": "attach",
+            "port": 9230,
+            "address": "localhost",
+            "localRoot": "${workspaceFolder}/web",
+            "remoteRoot": "/app"
+        },
+        {
+            "name": "Launch Edge",
+            "type": "msedge",
+            "request": "launch",
+            "runtimeArgs": [
+                // "--headless",
+                "--remote-debugging-port=9233"
+            ],
+            "url": "https://localtest.me",
+        },
+        {
+            "name": "Debug Edge",
+            "type": "msedge",
+            "request": "attach",
+            "port": 9233,
+            "webRoot": "${workspaceFolder}/web",
+        },
+        {
+            "name": "Devtools Edge",
+            "type": "vscode-edge-devtools.debug",
+            "request": "attach",
+            "port": 9233,
+            "webRoot": "${workspaceFolder}/web",
+            "url": "https://localtest.me"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Develop in Edge",
+            "configurations": [
+                "Launch Edge",
+                "Devtools Edge",
+                "Debug Edge"
+            ]
+        }
+    ]
+}

@@ -1,0 +1,355 @@
+.glad-card-container {
+    margin: 10px 0px 20px;
+	padding: 10px;
+    font-family: acme;
+    display: flex;
+    justify-content: space-around;
+    align-items: stretch;
+    box-sizing: border-box;
+	border-radius: 10px;
+    border: 3px dashed transparent;
+    overflow-y: auto;
+    flex-wrap: wrap;
+}
+
+.glad-card-container.dz-drag-hover {
+	border-color: #00638d;
+    background-color: #bddeed;
+}
+
+.glad-card-container.dz-drag-hover .glad-preview,
+.glad-card-container.dz-drag-hover .glad-add {
+	opacity: 0.5;
+}
+
+.glad-preview,
+.glad-add {
+	display: flex;
+    flex-direction: column;
+    background-color: #f8f8f8;
+    cursor: pointer;
+    box-sizing: border-box;
+    box-shadow: 0px 0px 5px black;
+    border-radius: 3px;
+    transition: 0.3s all;
+    margin-bottom: 10px;
+    width: 165px;
+    min-width: 170px;
+    transition: all 0.3s;
+}
+
+.glad-preview:hover {
+    filter: brightness(92%);
+}
+
+.glad-preview.selected {
+    box-shadow: 0px 0px 5px 2px #4286f4;
+    filter: brightness(85%);
+}
+
+@media only screen and (min-width: 600px) {
+    .glad-preview,
+    .glad-add {
+        width: 31%;
+    }
+}
+
+.glad-preview #template {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.glad-add {
+	box-sizing: border-box;
+	cursor: pointer;
+	order: 1;
+}
+
+.glad-add .image {
+	background-size: 50px;
+    background-repeat: no-repeat;
+    background-position: center;
+	background-image: url('../icon/round_add.png');
+	height: 100px;
+}
+
+.glad-add.inactive{
+	cursor: default;
+}
+
+.glad-add.inactive .image {
+	background-image: url('../icon/lock.png');
+	background-color: #c38686
+}
+
+.glad-preview.error {
+    background-color: #e2baba;
+	text-shadow: 1px 1px 2px #f8dddd;
+	flex-direction: column;
+	cursor: pointer;
+	padding: 10px 5px;
+}
+
+
+.glad-preview.error a {
+	color: #00638d;
+}
+
+.glad-preview .row{
+	width: 100%;
+	display: flex;
+	justify-content: flex-start;
+	color: #646464;
+}
+
+.glad-preview .row.code {
+	margin-bottom: 6px;
+}
+
+.glad-preview .message,
+.glad-preview .link {
+	flex-direction: column;
+}
+
+.glad-card-container .image{
+	display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #6c97a9;
+    height: 90px;
+    padding-bottom: 20px;
+    border-radius: 3px 3px 0px 0px;
+}
+
+.glad-card-container .image canvas{
+	display: block;
+    height: 100%;
+}
+
+.glad-card-container .info{
+	color: #646464;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-radius: 0px 0px 3px 3px;
+    flex-grow: 1;
+    min-height: 100px;
+}
+
+.glad-add .info {
+	padding: 10px;
+	justify-content: center;
+}
+
+.glad-card-container .file {
+	color: #7d7d7d;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0px;
+    align-items: flex-end;
+}
+
+.glad-card-container .file div {
+    display: flex;
+    align-items: center;
+	margin-bottom: 3px;
+}
+
+.glad-card-container .file img {
+	margin: 0px 5px;
+	filter: contrast(0%) grayscale(100%);
+}
+
+.glad-card-container .name {
+    text-overflow: ellipsis;
+    overflow-x: hidden;
+    white-space: nowrap;
+}
+
+.glad-card-container .glad {
+	font-size: 1.5em;
+    display: flex;
+    /* margin: 15px 0px 5px; */
+    justify-content: center;
+}
+
+.glad-card-container .master {
+    color: #6c97a9;
+    display: flex;
+    justify-content: center;
+    font-size: 1em;
+}
+
+.glad-card-container .glad span{
+	color: #000;
+    text-align: center;
+    /* height: 0; */
+}
+
+.glad-card-container .attr {
+	justify-content: space-around;
+	font-size: 1.2em;
+	margin-bottom: 0px;
+	background-color: #c7d6dc;
+	flex-direction: row;
+}
+
+.glad-card-container .attr img {
+    box-shadow: 1px 1px 3px black;
+	border: 1px solid #556c77;
+    border-radius: 25px;
+    padding: 2px;
+	margin-top: -15px;
+	z-index: 1;
+}
+
+.glad-card-container .attr .str img{
+    background-color: #ff5050;
+}
+
+.glad-card-container .attr .agi img{
+    background-color: #e3e300;
+}
+
+.glad-card-container .attr .int img{
+    background-color: #7c90ff;
+}
+
+.glad-card-container .row img {
+    width: 20px;
+}
+
+.glad-card-container .attr div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.glad-card-container .attr span{
+	color: #646464;
+}
+
+.glad-preview  .delete-container {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.glad-preview .delete {
+    border-radius: 30px;
+    transition: background-color 0.5s;
+    padding: 5px;
+    margin: 5px 5px -40px 0px;
+    box-sizing: border-box;
+    display: flex;
+    cursor: pointer;
+    z-index: 1;
+}
+
+.glad-preview .delete:hover {
+    background-color: #527382;
+}
+
+.glad-preview .delete img {
+    width: 25px;
+    height: 25px;
+}
+
+.glad-preview .button {
+	border: none;
+    background-color: transparent;
+    font-size: 1.3em;
+    font-family: consolas;
+    font-weight: bold;
+    border-radius: 3px;
+    color: #00638d;
+    margin-left: 10px;
+    padding: 3px 10px;
+    outline: none;
+    transition: all 0.3s;
+    cursor: pointer;
+    width: auto;
+    height: auto;
+}
+
+.glad-preview .button:hover {
+	background-color: #6c97a9;
+    color: white;
+}
+
+.glad-preview .button:hover:disabled,
+.glad-preview .button:disabled {
+    background-color: transparent;
+    color: #0000002b;
+}
+
+.glad-preview.old,
+.glad-preview.dead {
+    filter: grayscale(100%);
+    cursor: default;
+}
+
+.glad-preview.old:hover{
+    filter: grayscale(100%);
+}
+
+.glad-box {
+    width: 100%;
+    max-width: 600px;
+    background-color: white;
+    border-radius: 3px;
+    box-shadow: 1px 1px 5px black;
+    max-height: 100vh;
+    color: #646464;
+    font-family: 'Acme', sans-serif;
+}
+
+.glad-box .glad-preview {
+    max-height: 50vh;
+}
+
+.glad-box #button-container {
+    display: flex;
+}
+
+.glad-box #button-container .button {
+    background-color: #4286f4;
+    color: white;
+    outline: none;
+    border: 0;
+    font-family: 'Source Code Pro', monospace;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 1;
+    padding: 0;
+    width: 100%;
+    border-radius: 0px;
+    height: 50px;
+    font-size: 1.3em;
+    transition: all 0.3s;
+}
+
+.glad-box #button-container .button:hover {
+    background-color: #3165b9;
+}
+
+.glad-box #button-container .button:disabled {
+    background-color: #8f98a3;
+    cursor: not-allowed;
+}
+
+.glad-box #title{
+    margin: 15px 20px;
+    font-size: 1.6em;
+}
+
+.glad-box .highlight {
+    color: #00638d;
+    font-weight: bold;
+}
+
+.glad-box #show-code {
+    margin-left: 15px;
+    margin-bottom: 10px;
+}

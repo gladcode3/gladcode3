@@ -1,0 +1,125 @@
+body {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    justify-content: space-between;
+    background-color: #f1f1f1;
+}
+#frame {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 60px;
+    margin-bottom: 90px;
+}
+#content-box {
+    width: 100%;
+    max-width: 600px;
+    margin: 0px 20px;
+    text-align: justify;
+    font-family: 'Roboto', sans-serif;
+    color: #646464;
+}
+h1, h2, h3 {
+    color: #00638d;
+}
+h2 {
+    margin-top: 30px;
+}
+a {
+    color: #0685bb;
+}
+
+#post {
+    display: flex;
+    flex-direction: column;
+    padding: 20px 10px;
+    border-radius: 5px;
+    border: 1px solid #dedede;
+	background-color: #ffffff;
+	box-sizing: border-box;
+	font-family: 'Roboto', sans-serif;
+	margin: 0;
+    box-shadow: 1px 1px 5px 0px #00000038;
+    width: 100%;
+    max-width: 600px;
+}
+
+#post .title {
+	font-size: 1.7em;
+	font-weight: bold;
+	margin-bottom: 15px;
+	color: #00638d;
+}
+
+#post .time {
+	color: #aaaaaa;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+	border-bottom: 1px solid;
+	font-size: 0.9em;
+}
+
+#post .body {
+	text-align: justify;
+}
+
+#post .body img {
+    max-width: 100%;
+	border-radius: 2px;
+	margin: auto;
+    display: block;
+}
+
+@media only screen and (min-width: 600px) {
+    #post{
+        margin: 20px 10px;
+        padding: 20px 30px;
+        max-width: 900px;
+    }
+}
+
+#button-container {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    max-width: 600px;
+    font-size: 0.7rem;
+    margin-top: 20px;
+}
+
+#button-container a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    font-size: 1.3em;
+    border-radius: 3px;
+    transition: 0.3s all;    
+}
+
+#button-container span {
+    margin: 0px 20px;
+}
+
+#button-container i {
+    font-size: 2em;
+    margin: 10px 20px;
+}
+
+#button-container a:hover {
+    background-color: #00638d;
+    color: white;
+}
+
+#button-container a.disabled {
+    color: #bfbfbf;
+    cursor: not-allowed;
+    background-color: transparent;
+}
+
+@media only screen and (min-width: 600px) {
+    #button-container {
+        font-size: 1rem;
+    }
+}

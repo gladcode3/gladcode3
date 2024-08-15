@@ -1,0 +1,328 @@
+body{
+	color: #616161;
+}
+
+html {
+	scroll-behavior: smooth;
+}
+
+#frame {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	box-sizing: border-box;
+	margin-top: 50px;
+}
+
+#content-box {
+    display: flex;
+	flex-direction: column;
+    align-items: flex-start;
+    background-color: white;
+    padding: 20px 15px;
+	max-width: 900px;
+	box-sizing: border-box;
+	font-family: 'Roboto', sans-serif;
+	margin-top: 5px;
+	min-height: 100vh;
+}
+
+pre {
+	width: 100%;
+	margin-bottom: 15px;
+    margin-top: 0;
+}
+
+#frame pre code {
+	white-space: pre-wrap;
+}
+
+@media only screen and (min-width: 800px) {
+	#content-box {
+		padding: 80px 30px 200px;
+	}
+	pre {
+		max-width: calc(100vw - 400px);
+	}
+}
+
+a {
+	color: #00638d;
+	text-decoration: none;
+}
+
+h1 {
+	margin: 0px 0px 30px 0px;
+	color: #00638d;
+	text-align: center;
+	width: 100%;
+	font-size: 2.5em;
+}
+
+h2 {
+	margin: 0px 0px 30px 0px;
+	color: #00638d;
+}
+
+p,ul {
+	margin: 0px 0px 20px 0px;
+	text-align: justify;
+	width: 100%;
+}
+
+ul {
+	padding-left: 15px;
+	box-sizing: border-box;
+}
+
+li {
+	margin-bottom: 10px;
+}
+
+.video {
+	width: 100%;
+    height: 300px;
+	text-align: center;
+	margin-bottom: 20px;
+}
+
+.video iframe {
+	width: 100%;
+	height: 100%;
+    max-width: 600px;
+}
+
+.nav {
+    border-left: 5px solid #00638d;
+    padding-left: 20px;
+    margin: 20px 0px 40px;
+}
+
+.nav a {
+    display: block;
+    text-decoration: none;
+    color: #00638d;
+    margin-bottom: 12px;
+    font-size: 1.2em;
+}
+
+.nav a:last-child {
+	margin-bottom: 0px;
+}
+
+.table-wrapper {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+}
+
+#content-box img {
+	width: 100%;
+	margin-bottom: 40px;
+}
+
+#img-coords {
+	max-width: 250px;
+}
+
+#point-cost tbody {
+	display: flex;
+}
+
+#point-cost tr {
+    display: flex;
+    flex-direction: column;
+}
+
+#point-cost td {
+	width: 32px;
+	text-align: right;
+	padding: 0px;
+}
+
+#xp-table {
+	margin-left: 20px;
+}
+
+#xp-table td {
+	width: 32px;
+	text-align: center;
+}
+
+#xp-table tr {
+	line-height: 2em;
+	display: table-row;
+}
+
+#point-cost th{
+	width: 60px;
+	text-align: left;
+	padding-left: 15px;
+}
+
+#xp-table th {
+	width: 115px;
+	text-align: center;
+}
+
+.row {
+	display: flex;
+	width: 100%;
+	flex-wrap: wrap;
+}
+
+.col-2 {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	flex-direction: column;
+}
+
+@media only screen and (min-width: 900px) {
+ul {
+	padding-left: 30px;
+}
+
+.col-2 {
+	width: 50%;
+}
+}
+
+.col-2 .img-container {
+	margin: 0 20px;
+}
+
+#habilidades {
+	width: 100vw;
+    margin-left: -15px;
+}
+
+#habilidades tr {
+	flex-direction: row;
+	flex-wrap: wrap;
+}
+
+#habilidades td,
+#habilidades th {
+	padding: 0px 10px;
+	width: 50%;
+	box-sizing: border-box;
+	text-align: left;
+}
+
+#habilidades th:nth-child(3), #habilidades td:nth-child(3) {
+	flex-basis: 0;
+	flex-grow: 1;
+}
+
+#habilidades td:last-child {
+	max-width: 650px;
+	line-height: normal;
+	text-align: justify;
+	padding: 5px 10px;
+}
+
+#status td:last-child {
+	line-height: normal;
+	text-align: justify;
+	padding: 5px 10px;
+}
+
+#status td:first-child {
+	font-size: 1.2em;
+}
+
+@media only screen and (min-width: 600px) {
+	#point-cost tbody {
+		flex-direction: column;
+	}
+	#point-cost tr {
+		display: table-row;
+	}
+
+	#habilidades {
+		width: 100%;
+		margin-left: 0px;
+	}
+
+	#habilidades td,
+	#habilidades th {
+		text-align: center;
+		width: auto;
+	}
+
+	#habilidades th:nth-child(2), #habilidades td:nth-child(2) {
+		width: 100px;
+	}
+
+	#habilidades td:last-child {
+		text-align: justify;
+	}
+
+	#habilidades tr {
+		display: table-row;
+	}
+
+}
+
+#right-side {
+	width: 100vw;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+@media only screen and (min-width: 600px) {
+	#right-side {
+		margin-left: 340px;
+	}
+}
+
+#sample-1.block-container {
+	height: 100px;
+}
+
+#sample-2.block-container {
+	height: 200px;
+}
+
+.block-container {
+	width: 100%;
+	margin-bottom: 15px;
+}
+
+.block-container .block {
+	width: 100%;
+	height: 100%;
+}
+
+.silver {
+	margin: 0 5px;
+	color: silver;
+	text-shadow: 1px 1px 2px black;
+}
+
+#tsilver, #tapot {
+	margin: 0 20px;
+	text-align: center;
+}
+
+#tsilver tr,
+#tapot tr {
+	display: table-row;
+}
+
+#tsilver th,
+#tapot th {
+	padding: 0 10px;
+}
+
+#tpotions{
+	width: 100%;
+}
+
+#tpotions td:nth-child(4) {
+	max-width: 300px;
+	line-height: 1.5em;
+}

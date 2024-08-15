@@ -1,0 +1,202 @@
+@import "colors.less";
+
+#glads-container {
+    h3 {
+        margin: 20px 30px 20px;
+        font-size: 2em;
+        font-weight: normal;
+    }
+
+    #glad-cards {
+        margin: 10px 0px 20px;
+        padding: 10px;
+        border: 3px dashed transparent;
+        border-radius: 10px;
+        box-sizing: border-box;
+        font-family: acme;
+        overflow-y: auto;
+        display: flex;
+        justify-content: space-around;
+        align-items: stretch;
+        flex-wrap: wrap;
+
+        & > .glad {
+            width: 180px;
+            min-width: 170px;
+            height: 250px;
+            margin: 5px;
+            margin-bottom: 10px;
+            border-radius: 3px;
+            box-sizing: border-box;
+            background-color: var(--gray-f8);
+            box-shadow: 0px 0px 5px black;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            transition: all 0.3s;
+
+            &:not(.blocked):hover { filter: brightness(92%); }
+
+            .template {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+
+                .delete-button-container {
+                    display: flex;
+                    justify-content: flex-end;
+
+                    .delete {
+                        all: unset;
+                        margin: 5px 5px -40px 0px;
+                        padding: 5px;
+                        border-radius: 30px;
+                        box-sizing: border-box;
+                        z-index: 1;
+                        display: flex;
+                        cursor: pointer;
+                        transition: background-color 0.5s;
+
+                        &:hover { background-color: var(--delete-hover); }
+
+                        i {
+                            width: 25px;
+                            height: 25px;
+                            color: white;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                        }
+                    }
+                }
+
+                .glad-image {
+                    height: 90px;
+                    padding-bottom: 20px;
+                    border-radius: 3px 3px 0px 0px;
+                    background-color: var(--glad-background);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+
+                    canvas {
+                        height: 100%;
+                        display: block;
+                    }
+                }
+
+                .info {
+                    min-height: 100px;
+                    border-radius: 0px 0px 3px 3px;
+                    color: var(--gray-64);
+                    flex-grow: 1;
+
+                    .row {
+                        width: 100%;
+                        color: var(--gray-64);
+                        display: flex;
+                        justify-content: flex-start;
+
+                        &.attr {
+                            margin-bottom: 0px;
+                            background-color: var(--attr-bar);
+                            font-size: 1.2em;
+                            flex-direction: row;
+                            justify-content: space-around;
+
+                            div {
+                                display: flex;
+                                flex-direction: column;
+                                justify-content: center;
+                                align-items: center;
+
+                                &.str > i { background-color: var(--str-color); }
+                                &.agi > i { background-color: var(--agi-color); }
+                                &.int > i { background-color: var(--int-color); }
+
+                                i {
+                                    width: 20px;
+                                    height: 20px;
+                                    margin-top: -15px;
+                                    padding: 2px;
+                                    border: 1px solid #556c77;
+                                    border-radius: 25px;
+                                    text-align: center;
+                                    color: black;
+                                    box-shadow: 1px 1px 3px black;
+                                    display: flex;
+                                    justify-content: center;
+                                    align-items: center;
+                                    z-index: 1;
+                                }
+
+                                span { color: var(--gray-64); }
+                                img { width: 20px; }
+                            }
+                        }
+
+                        &.glad {
+                            margin: 15px 0px 5px;
+                            font-size: 1.5em;
+                            display: flex;
+                            justify-content: center;
+
+                            & > span {
+                                color: black;
+                                text-align: center;
+                            }
+                        }
+
+                        &.code {
+                            margin-bottom: 6px;
+
+                            button {
+                                width: auto;
+                                height: auto;
+                                margin-left: 10px;
+                                padding: 3px 10px;
+                                border: none;
+                                border-radius: 3px;
+                                background-color: transparent;
+                                color: var(--gc-blue);
+                                font-family: consolas;
+                                font-size: 1.3em;
+                                font-weight: bold;
+                                outline: none;
+                                cursor: pointer;
+                                transition: all 0.3s;
+
+                                &:hover {
+                                    background-color: var(--glad-background);
+                                    color: white;
+                                }
+
+                                &:hover:disabled,
+                                &:disabled {
+                                    background-color: transparent;
+                                    color: var(--black-17-percent);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            &.blocked > .template {
+                .glad-image {
+                    background-color: var(--glad-blocked-background);
+                    background-image: url('~/public/img/locked.png');
+                    background-repeat: no-repeat;
+                    background-position: center;
+                }
+
+                span.info {
+                    padding: 10px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,202 @@
+{
+    "news": {
+        "pt": "NOTÍCIAS",
+        "en": "NEWS"
+    },
+    "header_enter": {
+        "pt": "ENTRAR",
+        "en": "LOGIN"
+    },
+    "profile": {
+        "pt": "PERFIL",
+        "en": "PROFILE"
+    },
+    "glads": {
+        "pt": "GLADIADORES",
+        "en": "GLADIATORS"
+    },
+    "battles": {
+        "pt": "BATALHA",
+        "en": "BATTLES"
+    },
+    "reports": {
+        "pt": "HISTÓRICO",
+        "en": "REPORTS"
+    },
+    "messages": {
+        "pt": "MENSAGENS",
+        "en": "MESSAGES"
+    },
+    "friends": {
+        "pt": "AMIGOS",
+        "en": "FRIENDS"
+    },
+    "learn": {
+        "pt": "APRENDER",
+        "en": "LEARN"
+    },
+    "community": {
+        "pt": "COMUNIDADE",
+        "en": "COMMUNITY"
+    },
+    "about": {
+        "pt": "SOBRE",
+        "en": "ABOUT"
+    },
+    "projects": {
+        "pt": "PROJETOS",
+        "en": "PROJECTS"
+    },
+    "header_community_facebook": {
+        "pt": "PÁGINA FACEBOOK",
+        "en": "FACEBOOK PAGE"
+    },
+    "header_community_reddit": {
+        "pt": "FORUM REDDIT",
+        "en": "REDDIT FORUM"
+    },
+    "header_community_whatsapp": {
+        "pt": "GRUPO WHATSAPP",
+        "en": "WHATSAPP GROUP"
+    },
+    "header_about_project": {
+        "pt": "O PROJETO",
+        "en": "THE PROJECT"
+    },
+    "header_about_support": {
+        "pt": "APOIE A GLADCODE",
+        "en": "SUPPORT GLADCODE"
+    },
+    "header_about_credits": {
+        "pt": "CRÉDITOS",
+        "en": "CREDITS"
+    },
+    "header_projects_compiler": {
+        "pt": "COMPILADOR C",
+        "en": "C COMPILER"
+    },
+    "header_about_stats": {
+        "pt": "ESTATÍSTICAS",
+        "en": "STATISTICS"
+    },
+    "header_tooltip_login": {
+        "pt": "Realizar login com sua conta do Google",
+        "en": "Login with your Google account"
+    },
+    "header_tooltip_profile": {
+        "pt": "Gerencie seu perfil",
+        "en": "Manage your profile"
+    },
+    "header_tooltip_learn": {
+        "pt": "Saiba como funciona a gladCode",
+        "en": "Know more about gladCode"
+    },
+    "header_tooltip_editor": {
+        "pt": "Crie e programe seus gladiadores",
+        "en": "Create and program your gladiators"
+    },
+    "header_tooltip_about": {
+        "pt": "Saiba sobre a trajetória da gladCode",
+        "en": "Know more about gladCode's road so far"
+    },
+    "header_tooltip_support": {
+        "pt": "Maneiras de você apoiar o projeto",
+        "en": "Ways of supporting the project"
+    },
+    "header_tooltip_credits": {
+        "pt": "Créditos aos criadores das artes usadas na gladCode",
+        "en": "Credits to art assets used"
+    },
+    "header_tooltip_stats": {
+        "pt": "Informações sobre as batalhas realizadas",
+        "en": "Info about battles' statistics"
+    },
+    "header_tooltip_compiler": {
+        "pt": "Compile e execute seus códigos pelo navegador",
+        "en": "Compile and run code on browser"
+    },
+    "header_tooltip_github_gladcode": {
+        "pt": "Projeto da primeira versão da gladCode",
+        "en": "gladCode's first version project"
+    },
+    "header_tooltip_automin": {
+        "pt": "Compacta scripts e atualiza páginas do servidor",
+        "en": "Compress scripts and update files on server"
+    },
+    "footer_sendmail": {
+        "pt": "Enviar Email",
+        "en": "Send an Email"
+    },
+    "footer_facebook": {
+        "pt": "Página do Facebook",
+        "en": "Facebook page"
+    },
+    "footer_whatsapp": {
+        "pt": "Grupo do WhatsApp",
+        "en": "WhatsApp group"
+    },
+    "footer_reddit": {
+        "pt": "Comunidade do Reddit",
+        "en": "Reddit community"
+    },
+    "profile_news_title": {
+        "pt": "Notícias da gladCode",
+        "en": "GladCode News"
+    },
+    "profile_profile_nick": {
+        "pt": "Apelido",
+        "en": "Nickname"
+    },
+    "profile_profile_nick_desc": {
+        "pt": "Escolha o nome pelo qual outros mestres de gladiadores o conhecerão",
+        "en": "Choose the name you will be recognized for"
+    },
+    "profile_profile_nick_placeholder": {
+        "pt": "apelido",
+        "en": "nickname"
+    },
+    "profile_profile_picture": {
+        "pt": "Foto de perfil",
+        "en": "Profile picture"
+    },
+    "profile_profile_picture_desc": {
+        "pt": "Escolha uma foto apropriada para um grande mestre de gladiadores",
+        "en": "Choose a picture worthy of a great master"
+    },
+    "profile_profile_prog_lang": {
+        "pt": "Linguagem de programação preferencial",
+        "en": "Prefered programming language"
+    },
+    "profile_profile_email": {
+        "pt": "Preferências de email",
+        "en": "Email preferences"
+    },
+    "profile_profile_email_desc": {
+        "pt": "Desejo receber um email quando:",
+        "en": "I wish to receive an email when:"
+    },
+    "profile_profile_email_friend": {
+        "pt": "Outro usuário me enviar uma solicitação de amizade",
+        "en": "Another user send me a friend request"
+    },
+    "profile_profile_email_message": {
+        "pt": "Outro usuário me enviar uma mensagem",
+        "en": "Another user send me a private message"
+    },
+    "profile_profile_email_update": {
+        "pt": "A gladCode receber uma atualização",
+        "en": "GladCode is updated"
+    },
+    "profile_profile_email_duel": {
+        "pt": "Um amigo enviar um desafio para um duelo",
+        "en": "A friend challenge me to a duel"
+    },
+    "profile_profile_email_tourn": {
+        "pt": "Começar um nova rodada de um torneio que participo",
+        "en": "A new round is started from a tournament I participate"
+    },
+    "profile_profile_save": {
+        "pt": "GRAVAR",
+        "en": "SAVE"
+    }
+}

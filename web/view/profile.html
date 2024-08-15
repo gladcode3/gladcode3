@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <title>gladCode - Perfil</title>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content='Programe o comportamento de seu gladiador e leve ele para batalhas no estilo "Battle Royale" ou Duelos com seus amigos. Escolha um visual para ele e venha programar!'>
+    <link rel="shortcut icon" href="/img/gc-icon.png">
+    
+    <link rel="stylesheet" href="/css/profile.min.css">
+    <script type="module" src="/js/profile.min.js" defer></script>
+</head>
+
+<body>
+    <header>
+        <!-- Desktop -->
+
+        <div id="logotype">
+            <a href="/" class="logotype__home-link">
+                <div class="home-link__gc-icon">
+                    <img src="/img/gc-icon.png" alt="ícone da gladcode">
+                </div>
+
+                <h1><span lang="en">Gladcode</span></h1>
+            </a>
+        </div>
+
+        <nav id="header-navigator">
+            <ul class="header-navigator__page-links">
+                <li class="page-links__link logout">
+                    <a href="#" title="Encerrar sessão na gladCode">Logout</a>
+                </li>
+
+                <li class="page-links__link">
+                    <a href="manual" title="Entenda como funciona a gladCode">Aprender</a>
+                </li>
+
+                <li class="page-links__link">
+                    <a href="editor" title="Crie e programe seus gladiadores">Editor</a>
+                </li>
+
+                <li class="page-links__link page-links__link--drop">
+                    <a href="#">Sobre</a>
+
+                    <ul class="link--drop__sub-links">
+                        <li class="page-links__link">
+                            <a href="about" title="Saiba sobre a trajetória da gladCode">O Projeto</a>
+                        </li>
+
+                        <li class="page-links__link">
+                            <a href="about#support" title="Maneiras de você apoiar o projeto">Apoie a GladCode</a>
+                        </li>
+
+                        <li class="page-links__link">
+                            <a href="creditos" title="Créditos aos criadores das artes e sons utilizadas na gladCode">Créditos</a>
+                        </li>
+
+                        <li class="page-links__link">
+                            <a href="stats" title="Estatísticas sobre as batalhas realizadas">Estatísticas</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+
+            <a href="#" class="header-navigator__user-settings">
+                <img src="/img/profile-photo-support.jpg" alt="configurações do usuário">
+            </a>
+        </nav>
+
+        <!-- Mobile -->
+
+        <div id="hamburguer-menu">
+            <i class="fa-solid fa-bars fa-2xl"></i>
+        </div>
+    </header> <!-- Adicionar regras CSS para abrir e fechar os painéis que possuem ".drop-menu" -->
+    
+    <div id='page-container'>
+        <aside>
+            <section id="user">
+                <div class="user__main-infos">
+                    <div class="main-infos__picture">
+                        <img src="/img/profile-photo-support.jpg" alt="foto de perfil do usuário">
+                    </div>
+
+                    <span class="main-infos__nickname">Hex</span>
+
+                    <div class="main-infos__xp-lvl">
+                        <div class='xp-lvl__lvl'>
+                            <img src='/img/star-icon.svg' alt="">
+                            <span class="lvl__lvl">0</span>
+                        </div>
+
+                        <progress class="xp-lvl__xp" value="50" max="100"></progress>
+                    </div>
+                </div>
+
+                <div class="user__money-infos" title="Pratas">
+                    <i class="fa-solid fa-coins"></i>
+                    <span class='money-infos__coins'>0</span>
+                </div>
+            </section>
+
+            <nav id='panel-selector'>
+                <ul class="panel-selector__panels">
+                    <li id="news" class='panels__panel news' tabindex="0">
+                        <span class='panel__notify panel__notify--empty'></span>
+    
+                        <div class='panel__frame'>
+                            <i class="fa-solid fa-bell"></i>
+                        </div>
+    
+                        <span>Notícias</span>
+                    </li>
+    
+                    <li id="glads" class='panels__panel glads' tabindex="0">
+                        <span class='panel__notify panel__notify--empty'></span>
+    
+                        <div class='panel__frame'>
+                            <i class="fa-solid fa-street-view"></i>
+                        </div>
+    
+                        <span>Gladiadores</span>
+                    </li>
+    
+                    <li id="battle" class='panels__panel battle' tabindex="0">
+                        <span class='panel__notify panel__notify--empty'></span>
+    
+                        <div class='panel__frame'>
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+    
+                        <span>Batalha</span>
+                    </li>
+
+                    <li id="potions" class='panels__panel potions' tabindex="0">
+                        <span class='panel__notify panel__notify--empty'></span>
+    
+                        <div class='panel__frame'>
+                            <i class="fa-solid fa-flask"></i>
+                        </div>
+    
+                        <span>Poções</span>
+                    </li>
+    
+                    <li id="rank" class='panels__panel rank' tabindex="0">
+                        <div class='panel__frame'>
+                            <i class="fa-solid fa-ranking-star"></i>
+                        </div>
+    
+                        <span>Ranking</span>
+                    </li>
+    
+                    <li id="messages" class='panels__panel messages' tabindex="0">
+                        <span class='panel__notify panel__notify--empty'></span>
+    
+                        <div class='panel__frame'>
+                            <i class="fa-solid fa-message"></i>
+                        </div>
+    
+                        <span>Mensagens</span>
+                    </li>
+                </ul>
+            </nav>
+
+            <footer>
+                <ul id="contacts">
+                    <li title="Enviar Email">
+                        <a href="mailto:pswerlang@gmail.com" target="_blank">
+                            <i class="fa-solid fa-envelope"></i>
+                        </a>
+                    </li>
+
+                    <li title="Página do Facebook">
+                        <a href="https://facebook.com/gladcode" target="_blank">
+                            <i class="fa-brands fa-facebook"></i>
+                        </a>
+                    </li>
+
+                    <li title="Comunidade do Reddit">
+                        <a href="https://www.reddit.com/r/gladcode" target="_blank">
+                            <i class="fa-brands fa-reddit-alien"></i>
+                        </a>
+                    </li>
+
+                    <li title="Projetos do Github">
+                        <a href="https://github.com/werlang" target="_blank">
+                            <i class="fa-brands fa-github"></i>
+                        </a>
+                    </li>
+
+                    <li title="Grupo do WhatsApp">
+                        <a href="https://forms.gle/BDbSmcLpPgwLe4Uc7" target="_blank">
+                            <i class="fa-brands fa-whatsapp"></i>
+                        </a>
+                    </li>
+                </ul>
+
+                <span class="copy">Copyright © 2018 Pablo Werlang</span>
+            </footer>
+        </aside>
+        
+        <main>
+            <section id="selected-panel"></section>
+        </main>
+
+        <article id='chat-bar'></article>
+    </div>
+
+    <input id="template-vars" type="hidden" value="{{template-vars}}">
+</body>
+</html>

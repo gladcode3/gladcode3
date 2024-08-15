@@ -1,0 +1,71 @@
+@import "colors.less";
+
+#battle-container {
+    width: 100%;
+
+    h3 {
+        margin: 20px 30px 20px;
+        font-size: 2em;
+        font-weight: normal;
+    }
+
+    #select-battle-mode {
+        width: 100%;
+        margin-top: 50px;
+        margin-bottom: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        #modes-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            
+            button {
+                width: 160px;
+                max-width: 100%;
+                height: 150px;
+                margin: 20px 10px 0px;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 3px;
+                box-sizing: border-box;
+                background-color: var(--gc-blue);
+                color: white;
+                font-family: 'Source Code Pro', monospace;
+                font-size: 1.2em;
+                outline: none;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: space-evenly;
+                cursor: pointer;
+                transition: all 0.3s;
+
+                &.selected { background-color: var(--gc-light-blue); }
+
+                &#duel-mode {
+                    .notification {
+                        width: 20px;
+                        height: 20px;
+                        border-radius: 5px;
+                        background-color: red;
+                        color: white;
+                        font-family: 'Roboto', sans-serif;
+                        font-size: 0.7em;
+                        z-index: 1;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        transition: all 0.3s;
+
+                        &.empty { display: none; }
+                    }
+                }
+            }
+        }
+    }
+}

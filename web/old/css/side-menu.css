@@ -1,0 +1,161 @@
+#side-menu {
+    display: none;
+    width: 340px;
+    background-color: #00638d;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 50px 0px 25px 0px;
+    box-sizing: border-box;
+}
+
+#side-menu ul {
+    list-style: none;
+    padding-left: 0px;
+    cursor: pointer;
+}
+
+#side-menu > ul > li {
+    padding-left: 40px;
+}
+
+#side-menu #search {
+    display: flex;
+    align-items: center;
+    background-color: #00000026;
+    margin-bottom: 10px;
+}
+
+#side-menu #search input {
+    background-color: transparent;
+    border: none;
+    outline: none;
+    flex-grow: 1;
+    height: 50px;
+    font-size: 16px;
+    font-family: roboto;
+    color: white;
+}
+
+#side-menu #search i {
+    font-size: 20px;
+    margin: 0px 10px;
+    color: white;
+}
+
+#side-menu a {
+    color: white;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+#side-menu ul {
+    margin: 0;
+}
+
+#side-menu li {
+    transition: 0.3s all;
+    display: none;
+    align-items: center;
+    padding-left: 30px;
+    margin-bottom: 5px;
+    padding-left: 30px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+}
+
+#side-menu ul ul li {
+    padding-left: 50px;
+}
+
+#side-menu ul ul a {
+    color: #ffffffcc;
+}
+
+#side-menu ul ul ul li {
+    padding-left: 55px;
+}
+
+#side-menu ul ul ul a {
+    color: #ffffff94;
+}
+
+#side-menu li.visible {
+    display: flex;
+}
+
+#side-menu li:hover {
+    background-color: #00000010;
+}
+
+#side-menu li i {
+    font-size: 1em;
+    transition: 0.3s all;
+    margin-left: -25px;
+    margin-right: 10px;
+    color: #b9b9b9;
+}
+
+#side-menu li i.open {
+    transform: rotate(90deg);
+}
+
+#side-menu li.here {
+    background-color: #00000026;
+}
+
+#side-menu .here a {
+    color: white;
+}
+
+#side-menu.mobile {
+    display: block;
+    width: 100%;
+    position: fixed;
+    z-index: 3;
+    padding: 0;
+}
+
+#side-menu.mobile #search {
+    margin: 0;
+}
+
+@media only screen and (min-width: 800px) {
+    #side-menu {
+        display: block;
+    }
+}
+
+#search-box {
+    position: absolute;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    height: 60px;
+    background-color: #e8e8e8;
+    box-shadow: 0px 0px 5px black;
+}
+
+#search-box input {
+    flex-basis: 0;
+    flex-grow: 1;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    height: 100%;
+    font-size: 1.3em;
+    font-family: roboto;
+    padding-left: 20px;
+}
+
+#search-box i {
+    font-size: 35px;
+    color: #00638d;
+    flex-basis: 35px;
+    margin-right: 10px;
+}

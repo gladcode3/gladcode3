@@ -1,0 +1,65 @@
+<div id='rank-container'>
+    <h3>Ranking</h3>
+
+    <section id="rank-search-area">
+        <div id="search-ranking">
+            <i class="fas fa-search" aria-hidden="true"></i>
+        </div>
+
+        <input class="input" type="search" placeholder="Pesquise por gladiador ou mestre">
+    </section>
+
+    <div id='rank-tabs'>
+        <div class='tab selected' id='general'>Geral</div>
+
+        <div class='tab' id='add-tab'>
+            <i class='fas fa-plus'></i>
+        </div>
+    </div>
+
+    <table id="ranking">
+        <thead>
+            <tr>
+                <th class="user-rank"></th>
+                <th>Gladiador</th>
+                <th>Mestre</th>
+                <th class="renown">Renome</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr class="my-glad">
+                <td class="user-rank">1º</td>
+                <td>Glad1</td>
+                <td>Master1</td>
+                <td class="renown">3000</td>
+            </tr>
+
+            <tr>
+                <td class="user-rank">2º</td>
+                <td>Glad2</td>
+                <td>Master2</td>
+                <td class="renown">2000</td>
+            </tr>
+
+            <tr>
+                <td class="user-rank">3º</td>
+                <td>Glad3</td>
+                <td>Master3</td>
+                <td class="renown">1000</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div id="page-nav">
+        <button class='back-button'>
+            <i class="fa-solid fa-left-long"></i>
+        </button>
+
+        <span>1</span> - <span>10</span> de <span>999</span>
+
+        <button class='next-button'>
+            <i class="fa-solid fa-right-long"></i>
+        </button>
+    </div>
+</div>

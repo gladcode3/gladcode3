@@ -1,0 +1,63 @@
+services:
+    web:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        volumes:
+            - ./web:/app
+            - ./package.json:/app/package.json
+            - node_modules:/app/node_modules
+        restart: ${RESTART_POLICY}
+        ports:
+            - 127.0.0.1:9230:9229
+        env_file:
+            - .env
+        command: npm run ${NODE_ENV}:webpack
+        # command: tail -f /dev/null #idle container
+    api:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        restart: ${RESTART_POLICY}
+        ports:
+            - 127.0.0.1:9229:9229
+        env_file:
+            - .env
+        volumes:
+            - ./api:/app
+            - ./package.json:/app/package.json
+            - node_modules:/app/node_modules
+        command: npm run ${NODE_ENV}
+        # command: tail -f /dev/null #idle container
+        depends_on:
+            - mysql
+    mysql:
+        image: mysql:8.0
+        restart: ${RESTART_POLICY}
+        environment:
+            - MYSQL_DATABASE=${MYSQL_DATABASE}
+            - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+        volumes:
+            - mysql:/var/lib/mysql
+            # - .:/app
+        ports:
+            - 127.0.0.1:${MYSQL_PORT}:3306
+    nginx:
+        image: valian/docker-nginx-auto-ssl
+        restart: ${RESTART_POLICY}
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - ./nginx:/etc/nginx/conf.d
+        environment:
+            - SITES=${URL}=web:3000;${API}=api:3000
+            - ALLOWED_DOMAINS=${PRODUCTION_DOMAIN}
+            - FORCE_HTTPS=true
+        depends_on:
+            - web
+            - api
+            
+volumes:
+    node_modules:
+    mysql:

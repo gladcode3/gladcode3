@@ -1,0 +1,51 @@
+.radio {
+    display: flex;
+    flex-direction: column;
+}
+
+.radio .option {
+    display: flex;
+    align-items: center; 
+}
+
+input.radio {
+    display: none;
+}
+
+.radio .border {
+    width: 1.1em;
+    height: 1.1em;
+    border-radius: 2em;
+    box-sizing: border-box;
+    margin-right: 5px;
+    border: 2px solid #616161;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    order: -1;
+}
+
+.radio .inner {
+    background-color: transparent;
+    width: 0.6em;
+    height: 0.6em;
+    border-radius: 1em;
+    transition: all 0.3s;
+    box-sizing: border-box;
+}
+
+.radio input:checked + .border .inner {
+    background-color: #00658f;
+}
+
+.radio input:checked + .border {
+    border-color: #00658f;
+}
+
+.radio .option:hover .inner {
+    background-color: #00648f5b;
+}
+
+.radio .option:hover input:checked + .border .inner {
+    background-color: #004a69;
+}

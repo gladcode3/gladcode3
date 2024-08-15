@@ -1,0 +1,302 @@
+body{
+    margin: 0;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 16px;
+}
+
+h1 {
+    color: #00638d;
+    margin-bottom: 50px;
+    width: 100%;
+    text-align: center;
+}
+
+h2 {
+    color: #00638d;
+}
+
+#header-container {
+    background-color: #00638d;
+    width: 100%;
+    position: absolute;
+}
+
+#header {
+    height: 50px;
+}
+
+#header #logo img {
+    max-height: 40px;
+}
+
+#frame {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    box-sizing: border-box;
+    margin-top: 50px;
+}
+
+#content-box {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    background-color: white;
+    border-radius: 0px;
+    padding: 20px 15px;
+    width: 100%;
+    max-width: 600px;
+    box-sizing: border-box;
+    font-family: 'Roboto', sans-serif;
+    color: #616161;
+}
+
+@media only screen and (min-width: 800px) {
+    #frame {
+        padding-top: 65px;
+    }
+
+    #content-box {
+        padding: 20px 0px 60px 0px;
+    }
+}
+
+.table {
+    width: 100%;
+    cursor: default;
+    box-shadow: 0px 0px 3px #0000003d;
+}
+
+.table tr {
+    display: table-row;
+    line-height: 2.5em;
+}
+
+.table thead th:first-child {
+    border-top-left-radius: 3px;
+}
+
+.table thead th:last-child {
+    border-top-right-radius: 3px;
+}
+
+.table th {
+    background-color: #6c97a9;
+    padding-left: 15px;
+    text-align: left;
+    color: #f2f8f8;
+}
+
+.table td {
+    padding-left: 15px;
+}
+
+.input {
+    border: 0;
+    outline: none;
+    border-bottom: 2px solid #c0c0c0;
+    transition: 0.5s;
+    color: #616161;
+    font-size: 1em;
+    background-color: transparent;
+    transition: border 0.5s;
+    color: #00638d;
+    width: 100px;
+    text-align: center;
+    margin: 0px 10px;
+}
+.input:focus {
+    border-bottom: 2px solid #00638d;
+}
+
+#search-container {
+    margin-bottom: 35px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-self: center;
+    font-size: 1.1em;
+}
+
+#search-container #mmr-container {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+#search-container #mmr-container span {
+    margin-bottom: 10px;
+}
+
+#search-container .ui-slider {
+    height: 15px;
+    box-shadow: 0px 0px 2px #00000069 inset;
+    box-sizing: border-box;
+    background-color: #eeeeee;
+}
+
+#search-container .ui-slider-range {
+    background-color: #6c97a9;
+    box-shadow: 0px 0px 3px #0000005e inset
+}
+
+#search-container .ui-slider-handle {
+    outline: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #575757;
+    width: 50px;
+    font-family: 'Source Code Pro', monospace;
+    border-radius: 3px;
+    line-height: 1em;
+    color: #ccecff;
+    margin-top: 24px;
+    margin-left: -25px;
+    z-index: 0;
+}
+
+#search-container .ui-slider-handle:before {
+    content: "";
+    position: absolute;
+    margin-top: -15px;
+    border: solid transparent;
+    border-bottom-color: #575757;
+    border-width: 5px 5px;
+}
+
+#single-stats {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+}
+
+#single-stats .card {
+    width: 165px;
+    text-align: center;
+    background-color: #6c97a9;
+    border-radius: 3px;
+    box-shadow: 0px 0px 3px black;
+    color: white;
+    cursor: default;
+}
+
+#single-stats .title {
+    height: 60px;
+    display: flex;
+    align-items: center;
+}
+
+#single-stats .value {
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f8f8;
+    color: #414141;
+    font-weight: bold;
+    border-radius: 0px 0px 4px 4px;
+    font-size: 1.4em;
+}
+
+#single-stats #low-battles {
+    color: #dc6b6b;
+    background-color: #644646;
+    border-radius: 100%;
+    position: absolute;
+    box-shadow: 0px 0px 3px black;
+    cursor: pointer;
+    transition: 0.3s all;
+    margin-left: 149px;
+    margin-top: -4px;
+    display: flex;
+}
+
+#single-stats #low-battles:hover {
+    color: #e45757;
+    background-color: #553d3d;
+}
+
+#single-stats #low-battles.hidden {
+    display: none;
+}
+
+.table .info {
+    font-size: 0.8em;
+    margin-left: 2px;
+    cursor: pointer;
+    opacity: 0.5;
+}
+
+#abc {
+    margin-top: 16px;
+    margin-left: -18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #000000a8;
+    width: 50px;
+    font-family: 'Source Code Pro', monospace;
+    border-radius: 3px;
+    padding: 3px 2px;
+    line-height: 1em;
+    color: #ccecff;
+}
+
+#right-side {
+    width: 100vw;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+@media only screen and (min-width: 600px) {
+    #right-side {
+        margin-left: 340px;
+    }
+}
+
+#t-pot th,
+#t-pot td {
+    text-align: center;
+    padding: 0;
+    min-width: 80px;
+}
+
+#t-pot th:first-child,
+#t-pot td:first-child{
+    text-align: left;
+    padding-left: 15px;
+}
+
+#t-pot td:last-child{
+    padding-right: 15px;
+}
+
+#t-pot div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #cacaca;
+}
+
+#t-pot td span:hover {
+    color: black;
+}
+
+#t-pot .up {
+    margin-top: -15px;
+    margin-left: -10px;
+    font-size: 0.8em;
+    color: #616161;
+}
+
+#t-pot .down {
+    margin-top: 15px;
+    margin-right: -10px;
+    font-size: 0.8em;
+    color: #616161;
+}

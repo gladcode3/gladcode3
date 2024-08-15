@@ -1,0 +1,50 @@
+.table {
+	margin-bottom: 10px;
+    box-shadow: 0px 0px 1px rgba(0,0,0,0.2);
+	border-collapse: collapse;
+	border-radius: 3px;
+	cursor: default;
+}
+
+.table .row {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	flex-grow: 0;       
+	flex-wrap: wrap;
+	width: 100%;
+	padding-left: 15px;
+	padding-right: 15px;
+	background-color: #fafafa;
+	border-bottom: 1px solid #dedede;
+	box-sizing: border-box;
+}
+
+.table .row:hover {
+	background-color: rgba(0,0,0,0.05);
+}
+
+.table .cell {
+  flex-grow: 1;
+  flex-basis: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding-right: 5px;
+}
+
+@media only screen and (min-width: 600px) {
+	.table .cell {
+		padding-right: 20px;
+	}
+}
+
+.table .row.head {
+  font-weight: bold;
+}
+
+.table .row.dummy .dummy-text {
+    background-color: #00000012;
+    color: transparent;
+    border-radius: 5px;
+}

@@ -1,0 +1,15 @@
+# general
+.env
+.DS_Store
+node_modules
+*/package*.json
+nginx/*
+
+# api
+*.sql
+config.js
+
+# web
+web/public/css
+web/public/js
+web/public/img/generated

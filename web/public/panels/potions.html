@@ -1,0 +1,107 @@
+<div id='potions-container'>
+    <section id='apothecary'>
+        <h3>
+            Apotecário
+            
+            <span class='highlight'> nível <span class='lvl'>0</span></span>
+        </h3>
+
+        <p>Aqui você pode encomendar poções para lhe auxiliar durante as batalhas ranqueadas.</p>
+
+        <p>
+            As mercadorias encomendadas podem ser usadas por todos seus gladiadores durante
+
+            <span class='highlight'>
+                <span id='duration'>0</span> horas
+            </span>, uma vez por batalha.
+        </p>
+
+        <p>
+            Cada um de seus compartimentos dá direito a levar para batalha um item encomendado.
+
+            Aumente seus níveis de mestre para desbloquear mais espaços.
+        </p>
+
+        <div id='apot-infos-container'>
+            <section id="apothecary-infos">
+                <div class='info'>
+                    Nível do apotecário:
+                    
+                    <span id="lvl" class='highlight'>0</span>
+                </div>
+
+                <div class='info'>
+                    Duração da encomenda:
+                    
+                    <span class='highlight'>
+                        <span class='duration'>0</span> horas
+                    </span>
+                </div>
+
+                <div class='info'>
+                    Custo para aprimorar:
+                    
+                    <div id="apot-up-cost-container">
+                        <span id="cost" class='highlight'>0</span>
+                        <i class='fas fa-coins silver'></i>
+                    </div>
+                </div>
+            </section>
+
+            <div id='apot-buttons-container'>
+                <button id='upgrade-apot'>APRIMORAR</button>
+                <button id='view-potions'>VER POÇÕES</button>
+            </div>
+        </div>
+    </section>
+
+    <section id='my-potions'>
+        <div class="slot full">
+            <div class="content">
+                <img src="" alt="">
+
+                <div class="remove">
+                    <i class="fa-solid fa-trash-can"></i>
+                </div>
+            </div>
+
+            <div class="text">
+                <span class="potion">...</span>
+            </div>
+
+            <div class="time-stamp">
+                <span class="time">23h 59m 59s <i class="fas fa-clock"></i></span>
+            </div>
+        </div>
+
+        <div class="slot empty">
+            <div class="content">
+                <div class="empty"></div>
+            </div>
+
+            <div class="text">
+                <span class="potion">Nenhum item nesse espaço</span>
+            </div>
+        </div>
+
+        <div class="slot blocked">
+            <div class="content">
+                <div class="empty"></div>
+            </div>
+
+            <div class="text">
+                <span>Atinja o nível 25 para desbloquear este item</span>
+            </div>
+        </div>
+
+        <div class="slot blocked">
+            <div class="content">
+                <div class="empty"></div>
+            </div>
+
+            <div class="text">
+                <span>Atinja o nível 35 para desbloquear este item</span>
+            </div>
+        </div>
+    </section>
+</div>
