@@ -1,7 +1,7 @@
 {
-  "name": "gladcode3-back",
-  "version": "1.0.0",
-  "description": "API do projeto GladCode3",
+  "name": "gladcode3",
+  "version": "0.0.1",
+  "description": "Projeto GladCode3",
   "scripts": {
     "production": "node app.js",
     "development": "nodemon --inspect=0.0.0.0 app.js",
@@ -12,7 +12,7 @@
     "ignore": []
   },
   "type": "module",
-  "author": "Pablo Werlang, Luan Fernandes",
+  "author": "Pablo Werlang, Gustavo Rutkowski, Luan Fernandes",
   "license": "GPL-3.0-only",
   "dependencies": {
     "cors": "^2.8.5",
