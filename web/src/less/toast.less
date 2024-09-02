@@ -1,7 +1,4 @@
 #toast-container {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
     position: fixed;
     bottom: 0;
     right: 0;
@@ -9,6 +6,8 @@
     pointer-events: none;
     padding: 0 5px 15px 5px;
     z-index: 4;
+
+    .flexbox(@direction: column, @align: flex-end);
 
     &.center { align-items: center; }
 
@@ -39,6 +38,6 @@
             pointer-events: auto;
         }
 
-        .bold { color: var(--text-highlight); }
+        .bold { color: #fff; }
     }
 }

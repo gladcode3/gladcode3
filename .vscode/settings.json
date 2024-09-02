@@ -1,0 +1,11 @@
+{
+    "less.compile": {
+        "compress": true,
+        "sourceMap": true,
+        "relativeUrls": true,
+        "out": "${workspaceFolder}/web/public/css/profile.min.css",
+        "main": [
+            "${workspaceFolder}/web/src/less/profile.less",
+        ]
+    }
+}
