@@ -2,11 +2,12 @@
 @primary-color: #28638a;
 @lines-color  : #204c69;
 @chat-color   : #e9e9e9;
+@items-color  : #f6f6f6;
     // Opacities
     @black-opacity-1: rgba(#000, .1);
     @black-opacity-2: rgba(#000, .2);
     @black-opacity-3: rgba(#000, .3);
-
+    @black-opacity-5: rgba(#000, .5);
 
     // Panels Frames
     @panel-news    : #cececd;
@@ -27,7 +28,9 @@
 @height-without-header: calc(100vh - 7rem);
 
 // Borders
-@default-border: 2px solid @lines-color;
+@border-style  : solid @lines-color;
+@default-border: 2px @border-style;
+@large-border  : 3px @border-style;
 @xp-bar-border : 2px solid @xp-bar-border-color;
 @xp-border     : 2px solid @xp-border-color;
     // Borders Radius
@@ -55,3 +58,7 @@
 
     // Weights
     @normal-weight: 600;
+
+// Box Shadows
+@news-box-shadow: 0 3px 6px @black-opacity-5;
+@btn-box-shadow: 0 2px 5px @black-opacity-5;

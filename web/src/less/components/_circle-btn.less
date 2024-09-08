@@ -1,0 +1,13 @@
+.circle-btn(@size, @bg-color: @primary-color, @bg-hover: @lines-color) {
+    border: none;
+    border-radius: 50%;
+    box-shadow: @btn-box-shadow;
+    transition: all .3s;
+    cursor: pointer;
+
+    .auto-contrast(@bg-color);
+    .square(@size);
+    .flexbox(row, center, center);
+
+    &:hover { .auto-contrast(@bg-hover); }
+};
