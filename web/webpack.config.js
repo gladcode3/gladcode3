@@ -70,10 +70,13 @@ export default {
             script: import.meta.dirname + '/app.js',
             nodeArgs: ['--inspect=0.0.0.0:9229'],
             ext: 'html, js, json',
+            legacyWatch: process.env.LEGACY_WATCH === 'true',
+            verbose: true,
         }),
     ],
     watch: process.env.NODE_ENV !== 'production',
     watchOptions: {
+        poll: process.env.LEGACY_WATCH === 'true' ? 1000 : false,
         ignored: ['**/node_modules'],
     },
     devtool: process.env.NODE_ENV === 'production' ? false : 'source-map',
