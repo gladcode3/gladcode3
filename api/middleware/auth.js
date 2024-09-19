@@ -1,6 +1,5 @@
 import { OAuth2Client } from 'google-auth-library';
 import CustomError from '../core/error.js';
-import config from '../config.js';
 import User from '../model/users.js';
 import Db from '../core/mysql.js';
 import jwt from 'jsonwebtoken';

@@ -50,7 +50,7 @@ router.put('/', Auth.check, async (req, res, next) => {
 router.delete('/', Auth.check, async (req, res, next) => {
     try {
         const jwt = req.user;
-        await User.deleteUser(jwt.id)
+        await new User({ id: jwt.id }).delete();
         res.send(`User ${jwt.id} has been deleted`)
 
     } catch (error) {
