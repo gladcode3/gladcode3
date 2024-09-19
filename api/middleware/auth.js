@@ -33,7 +33,7 @@ export default class Auth {
                 await Auth.lookForUser(email, firstName, lastName, googleid);
     
                 const userPayload = await Auth.createPayload(email);
-                const token = jwt.sign(userPayload, config.signToken);
+                const token = jwt.sign(userPayload, process.env.SIGN_TOKEN);
                 res.json({ token });
 
             } else {
@@ -49,7 +49,7 @@ export default class Auth {
             const token = Auth.retrieveToken(req.headers['authorization']);
             if (!token) throw new CustomError(401, 'Token is null');
 
-            jwt.verify(token, config.signToken, (err, user) => {
+            jwt.verify(token, process.env.SIGN_TOKEN, (err, user) => {
                 if (err) throw new CustomError(403, 'Token is invalid');
                 req.user = user;
                 next();
