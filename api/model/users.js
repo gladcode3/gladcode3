@@ -30,14 +30,15 @@ export default class User {
                 active: `${Db.toDateTime(Date.now())}`
             });
 
-            return;
+            this.id = sql[0].insertId;
+            return this.get();
 
         } catch (error) {
             console.log(error);
         }
     }
 
-    async getUserData(){
+    async get(){
             const users = await Db.find('users', {
                 filter: { id: Db.like(this.id) },
                 view: [ 'email', 'nickname', 'firstName', 'lastName', 'profilePicture' ]
@@ -45,18 +46,16 @@ export default class User {
 
             if(users.length === 0) throw new CustomError(404, `User does not exist`);
 
-            const user = new User({
-                id: this.id,
-                email: users[0].email,
-                nickname: users[0].nickname,
-                firstName: users[0].firstName,
-                lastName: users[0].lastName,
-                profilePicture: users[0].profilePicture,
-            });
-            return user;
+            this.email = users[0].email;
+            this.nickname = users[0].nickname;
+            this.firstName = users[0].firstName;
+            this.lastName = users[0].lastName;
+            this.profilePicture = users[0].profilePicture;
+
+            return this;
     }
 
-    async updateUser() {
+    async update() {
         try {
             if (this.nickname !== undefined && this.nickname !== null) {
                 console.log(`Updating nickname: ${this.nickname}`);
@@ -77,9 +76,10 @@ export default class User {
                 console.log(`Updating email: ${this.email}`);
                 Db.update('users', { email: this.email }, this.id);
             }
+            return this.get();
         
         } catch (error) {
-            console.error(`Error in updateUser: ${error.message}`);
+            console.error(`Error in update: ${error.message}`);
             throw new CustomError(500, "Internal server error");
         }
     }
