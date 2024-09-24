@@ -4,15 +4,17 @@ import CustomError from '../core/error.js';
 import Auth from '../middleware/auth.js'
 const router = express.Router();
 
-
+// Registra usuários
 router.get('/', Auth.check, async (req, res, next) => {
     try {
         const jwt = req.user;
-        const user = await User.getUserData(jwt.id);
+        const user = await new User({
+            id: jwt.id
+        }).get();
         res.json(user);
         
     } catch (error) {
-        throw new CustomError(500, "Internal server error", error.message);
+        next(error);
     }  
 })
 
@@ -39,7 +41,7 @@ router.put('/', Auth.check, async (req, res, next) => {
         res.send('User has been updated');
 
     } catch (error) {
-        throw new CustomError(500, "Internal server error", error.message);
+        next(error);
     }
 });
 
@@ -50,7 +52,7 @@ router.delete('/', Auth.check, async (req, res, next) => {
         res.send(`User ${jwt.id} has been deleted`)
 
     } catch (error) {
-        throw new CustomError(500, "Internal server error", error.message);
+        next(error);
     }
 })
 
@@ -70,7 +72,7 @@ router.get('/:name', async (req, res, next) => {
         });
     }
     catch (error) {
-        throw new CustomError(500, "Internal server error", error.message);
+        next(error);
     }  
 })
 
@@ -78,7 +80,7 @@ router.post('/login', async (req, res, next) => {
     try {
         const login = await Auth.login(req, res, next);
     } catch (error) {
-        throw new CustomError(500, "Internal server error", error.message);
+        next(error);
     }
 })
 

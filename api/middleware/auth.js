@@ -12,7 +12,7 @@ export default class Auth {
             const clientId = process.env.GOOGLE_CLIENT_ID;
             const client = new OAuth2Client();
             const token = Auth.retrieveToken(req.headers['authorization']);
-                        
+            
             const getGooglePayload = async () => {
                 try {
                     const googleData = await client.verifyIdToken({
@@ -22,7 +22,7 @@ export default class Auth {
                     return googleData.getPayload();
                 }
                 catch (error) {
-                    throw new CustomError(500, 'Internal Server Error', error.message);
+                    throw new CustomError(401, 'Invalid token.', error.message);
                 }
             }
 
@@ -31,7 +31,7 @@ export default class Auth {
                 const { email, given_name: firstName, family_name: lastName, sub: googleid } = googleData;
                 await Auth.lookForUser(email, firstName, lastName, googleid);
     
-                const userPayload = await Auth.getPayload(email);
+                const userPayload = await Auth.createPayload(email);
                 const token = jwt.sign(userPayload, process.env.SIGN_TOKEN);
                 res.json({ token });
 
@@ -51,7 +51,6 @@ export default class Auth {
             jwt.verify(token, process.env.SIGN_TOKEN, (err, user) => {
                 if (err) throw new CustomError(403, 'Token is invalid');
                 req.user = user;
-                User.updateActive(user.id)
                 next();
             });
 
@@ -86,7 +85,7 @@ export default class Auth {
         }
     }
 
-    static async getPayload(email){
+    static async createPayload(email){
         const payloadQuery = await Db.find('users', {
             filter: { email: `${email}`},
             view: ['id'],
