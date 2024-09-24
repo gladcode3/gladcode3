@@ -24,6 +24,7 @@ export default class User {
 
     async add(){
         try {
+            const activeTime = await utcFix();
             const sql = await Db.insert('users',
             {
                 email: `${this.email}`,
@@ -33,34 +34,33 @@ export default class User {
                 lastName: `${this.lastName}`,
                 profilePicture: `${this.profilePicture}`,
                 pasta: `${this.pasta}`,
-                active: `${Db.toDateTime(Date.now())}`
+                active: activeTime
             });
 
             return;
 
         } catch (error) {
-            console.log(error);
+            throw new CustomError(500, "Internal Server Error", error.message);
         }
     }
 
-    async getUserData(){
-            const users = await Db.find('users', {
-                filter: { id: Db.like(this.id) },
-                view: [ 'email', 'nickname', 'firstName', 'lastName', 'profilePicture', 'pasta' ]
-            });
+    static async getUserData(id) {
+        const users = await Db.find('users', {
+            filter: { id: id },
+            view: ['email', 'nickname', 'firstName', 'lastName', 'profilePicture']
+        });
 
-            if(users.length === 0) throw new CustomError(404, `User does not exist`);
+        if (users.length === 0) throw new CustomError(404, `User does not exist`);
 
-            const user = await new User({
-                id: this.id,
-                email: users[0].email,
-                nickname: users[0].nickname,
-                firstName: users[0].firstName,
-                lastName: users[0].lastName,
-                profilePicture: users[0].profilePicture,
-                pasta: crypto.createHash('md5').update(users[0].email).digest('hex')
-            });
-            return user;
+        return new User({
+            id,
+            email: users[0].email,
+            nickname: users[0].nickname,
+            firstName: users[0].firstName,
+            lastName: users[0].lastName,
+            profilePicture: users[0].profilePicture,
+            pasta: crypto.createHash('md5').update(users[0].email).digest('hex')
+        });
     }
 
     async updateUser() {
@@ -86,7 +86,6 @@ export default class User {
             }
         
         } catch (error) {
-            console.error(`Error in updateUser: ${error.message}`);
             throw new CustomError(500, "Internal server error");
         }
     }
@@ -102,25 +101,56 @@ export default class User {
     }
 
     async loginUser(){
-        if(!this.pasta) throw new CustomError(400, 'Password is required');
+        try {
+            if(!this.pasta) throw new CustomError(400, 'Password is required');
         
-        const idCheck = await Db.find('users', {
-            filter: { id: Db.like(this.id) },
-            view: ['email'],
-            opt: { limit: 1}
-        });
-        if(idCheck.length === 0) throw new CustomError(404, `User ID not found`);
+            const idCheck = await Db.find('users', {
+                filter: { id: Db.like(this.id) },
+                view: ['email'],
+                opt: { limit: 1}
+            });
+            if(idCheck.length === 0) throw new CustomError(404, `User ID not found`);
+    
+            const pswd = await Db.find('users', {
+                filter: { id: `${this.id}`}, 
+                view: ['pasta'] 
+            });
+            if(pswd.length === 0 || this.pasta !== pswd[0].pasta) throw new CustomError(401, `Wrong username or password`);
+            
+            const userPayload = {
+                email: `${idCheck[0].email}`,
+                id: `${this.id}`
+            }
+            return jwt.sign(userPayload, process.env.SIGN_TOKEN);
 
-        const pswd = await Db.find('users', {
-            filter: { id: `${this.id}`}, 
-            view: ['pasta'] 
-        });
-        if(pswd.length === 0 || this.pasta !== pswd[0].pasta) throw new CustomError(401, `Wrong username or password`);
-        
-        const userPayload = {
-            email: `${idCheck[0].email}`,
-            id: `${this.id}`
+        } catch (error) {
+            throw new CustomError(500, "Internal server error", error.message);
         }
-        return jwt.sign(userPayload, config.signToken);
+
     }
+    //Static por enquanto. Depois vai ser por objeto
+    static async updateUserNews(id){
+        try {
+            const activeTime = await utcFix();
+            await Db.update('users', { read_news: activeTime }, id)
+            await User.updateActive(id)
+        } catch (error) {
+            throw new CustomError(500, "Internal Server Error", error.message)
+        }
+    }
+
+    static async updateActive(id){
+        try {
+            const activeTime = await utcFix();
+            await Db.update('users', { active: activeTime }, id)
+        } catch (error) {
+            throw new CustomError(500, "Internal Server Error", error.message)
+        }
+    }
+}
+
+async function utcFix() {
+    const now = Date.now();
+    const utcfix = now - (3 * 60 * 60 * 1000); 
+    return Db.toDateTime(utcfix); 
 }
