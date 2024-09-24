@@ -1,25 +1,32 @@
 import express from 'express'
-import db from '../core/mysql.js'
+import News from '../model/news.js'
+import User from '../model/users.js';
+import CustomError from '../core/error.js';
+import Auth from '../middleware/auth.js';
 const router = express.Router();
 
-router
-.route('/')
-.get(async (req, res) => {
+router.get('/', Auth.check, async (req, res) => {
     try {
-        res.send({ message: 'Hello World! '})
+        const query = await News.getNews();
+        if(!query) res.send(`No posts were found.`);
+        res.send(query)
+
     } catch (error) {
-        console.log(error)
+        throw new CustomError(500, "Internal server error", error.message)
     }
 });
 
-router
-.route('/:hash')
-.get(async (req, res) => {
+router.get('/:hash', Auth.check, async (req, res) => {
     try {
-        res.send({ message: 'Hello World!'})
+        const jwt = req.user;
+        const query = await News.getNewsById(req.params.hash);
+        if(!query) res.send(`No posts found for the given URL: ${req.params.hash}`);
+        User.updateUserNews(jwt.id);
+        res.send(query);
+
     } catch (error) {
-        console.log(error)
+        throw new CustomError(500, "Internal server error", error.message)
     }  
-})
+});
 
 export default router
