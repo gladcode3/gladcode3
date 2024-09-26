@@ -43,6 +43,7 @@ export default class Auth {
         }
     }
 
+    //updateActive não deveria ser static
     static async check(req, res, next) {
         try{
             const token = Auth.retrieveToken(req.headers['authorization']);
@@ -78,7 +79,6 @@ export default class Auth {
                     profilePicture: `https://www.gravatar.com/avatar/${crypto.createHash('md5').update(email.toLowerCase().trim()).digest('hex')}?d=retro`,
                     active: Date.now()
                 });
-                console.log(userProfile.active)
                 await userProfile.add();
             }
         } catch (error) {

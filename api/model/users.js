@@ -43,7 +43,7 @@ export default class User {
         }
     }
 
-    static async getUserData(id) {
+    static async get(id) {
         const users = await Db.find('users', {
             filter: { id: id },
             view: ['email', 'nickname', 'firstName', 'lastName', 'profilePicture']

@@ -8,7 +8,7 @@ const router = express.Router();
 router.get('/', Auth.check, async (req, res, next) => {
     try {
         const jwt = req.user;
-        const user = await User.getUserData(jwt.id);
+        const user = await User.get(jwt.id);
         res.json(user);
         
     } catch (error) {
