@@ -1,7 +1,6 @@
 import CustomError from '../core/error.js';
 import Db from '../core/mysql.js';
 import jwt from 'jsonwebtoken';
-import config from '../config.js';
 import crypto from 'crypto';
 
 export default class User {
