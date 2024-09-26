@@ -6,7 +6,7 @@ import Auth from '../middleware/auth.js';
 const router = express.Router();
 
 router.get('/', Auth.check, async (req, res) => {
-    try {s
+    try {
         const query = await News.getNews();
         if(!query) res.send(`No posts were found.`);
         res.send(query)
@@ -20,7 +20,8 @@ router.get('/:hash', Auth.check, async (req, res) => {
     try {
         const jwt = req.user;
         const query = await News.getNewsById(req.params.hash);
-        if(!query) res.send(`No posts found for the given URL: ${req.params.hash}`);
+        if(!query) res.status(404).send(`No posts found for the given URL: ${req.params.hash}`);
+
         User.updateUserNews(jwt.id);
         res.send(query);
 
