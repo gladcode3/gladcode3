@@ -8,16 +8,20 @@ const router = express.Router();
 router.get('/', Auth.check, async (req, res, next) => {
     try {
         const jwt = req.user;
-        const user = await User.get(jwt.id);
-        res.json(user);
+        if(jwt.code !== 200) throw new CustomError(jwt.code, jwt.message);
+        const user = await User.get(jwt.user.id);
+        res.json(user)
         
     } catch (error) {
-        throw new CustomError(500, "Internal server error", error.message);
+        const code = error.code ?? 500;
+        const msg = error.message ?? "Internal Login issues"
+        res.status(code).send({ "code": code, "message": msg});
     }  
 })
 
 //Atualiza usuários
 //Por algum motivo a função precisa de um email, mesmo se estiver vazio
+//Isso é devido ao construtor. O problema realmente era mais na falta de padronização, com padronização o email sempre é construído junto.
 router.put('/', Auth.check, async (req, res, next) => {
     try {
         if (!req.user) throw new CustomError(401, "Missing JWT");
@@ -46,7 +50,8 @@ router.put('/', Auth.check, async (req, res, next) => {
 router.delete('/', Auth.check, async (req, res, next) => {
     try {
         const jwt = req.user;
-        await new User({ id: jwt.id }).delete();
+        const user = new User({ id: jwt.id, email: jwt.email })
+        user.deleteUser();
         res.send(`User ${jwt.id} has been deleted`)
 
     } catch (error) {
@@ -77,8 +82,14 @@ router.get('/:name', async (req, res, next) => {
 router.post('/login', async (req, res, next) => {
     try {
         const login = await Auth.login(req, res, next);
+        const httpCode = login.code ?? 200 
+        if(httpCode !== 200) throw login;
+        res.send(login);
+
     } catch (error) {
-        throw new CustomError(500, "Internal server error", error.message);
+        const code = error.code ?? 500;
+        const msg = error.message ?? "Internal Login issues"
+        res.status(code).send({ "code": code, "message": msg});
     }
 })
 

@@ -2,92 +2,93 @@ import CustomError from '../core/error.js';
 import Db from '../core/mysql.js';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import { type } from 'os';
 
 export default class User {
 
-    constructor({ id, email, googleid, firstName, lastName, nickname, profilePicture}) {
+    // id, email, googleid, nickname, first_name, last_name, profile_picture, spoken_language, emoji
+    // pasta, lvl, xp, silver, credits, active, premium, show_tutorial, editor_theme, editor_font
+    // pref_message, pref_friend, pref_update, pref_duel, pref_tourn, email_update, read_news
+    // pref_language, apothecary
+
+    //Snake casing para atributos associados com o MySQL
+
+    constructor({ id, email, googleid, nickname, first_name, last_name, profile_picture}) {
         this.id = id,
         this.email = email,
         this.googleid = googleid,
-        this.nickname = nickname,
-        this.firstName = firstName,
-        this.lastName = lastName,
-        this.profilePicture = profilePicture || null,
+        this.nickname = nickname || `${first_name}${Math.floor(Math.random() * 900) + 100}`,
+        this.first_name = first_name,
+        this.last_name = last_name,
+        this.profile_picture = profile_picture || `https://www.gravatar.com/avatar/${crypto.createHash('md5').update(email.toLowerCase().trim()).digest('hex')}?d=retro`,
         this.pasta = crypto.createHash('md5').update(email).digest('hex');
+    };
 
-    }
-
-    static async deleteUser(id){
-        Db.delete('users', id);
-    }
+    async deleteUser(){
+        await Db.delete('users', this.id);
+    };
 
     async add(){
         try {
             const activeTime = await utcFix();
-            const sql = await Db.insert('users',
+            await Db.insert('users',
             {
                 email: `${this.email}`,
                 googleid: `${this.googleid}`,
                 nickname: `${this.nickname}`,
-                firstName: `${this.firstName}`,
-                lastName: `${this.lastName}`,
-                profilePicture: `${this.profilePicture}`,
+                first_name: `${this.first_name}`,
+                last_name: `${this.last_name}`,
+                profile_picture: `${this.profile_picture}`,
                 pasta: `${this.pasta}`,
-                active: activeTime
+                active: `${activeTime}`
             });
-
             return;
 
         } catch (error) {
             throw new CustomError(500, "Internal Server Error", error.message);
-        }
-    }
+        };
+    };
 
     static async get(id) {
         const users = await Db.find('users', {
             filter: { id: id },
-            view: ['email', 'nickname', 'firstName', 'lastName', 'profilePicture']
+            view: ['email', 'nickname', 'first_name', 'last_name', 'profile_picture']
         });
 
         if (users.length === 0) throw new CustomError(404, `User does not exist`);
 
         return new User({
-            id,
-            email: users[0].email,
-            nickname: users[0].nickname,
-            firstName: users[0].firstName,
-            lastName: users[0].lastName,
-            profilePicture: users[0].profilePicture,
-            pasta: crypto.createHash('md5').update(users[0].email).digest('hex')
+            id: id,
+            email:`${users[0].email}`,
+            nickname: `${users[0].nickname}`,
+            firstName: `${users[0].firstName}`,
+            lastName: `${users[0].lastName}`,
+            profilePicture: `${users[0].profilePicture}`,
         });
-    }
+    };
 
     async updateUser() {
         try {
             if (this.nickname !== undefined && this.nickname !== null) {
-                console.log(`Updating nickname: ${this.nickname}`);
                 Db.update('users', { nickname: this.nickname }, this.id);
-            }
+            };
         
-            if (this.firstName !== undefined && this.firstName !== null) {
-                console.log(`Updating firstName: ${this.firstName}`);
-                Db.update('users', { firstName: this.firstName }, this.id);
-            }
+            if (this.first_name !== undefined && this.first_name !== null) {
+                Db.update('users', { first_name: this.first_name }, this.id);
+            };
         
-            if (this.lastName !== undefined && this.lastName !== null) {
-                console.log(`Updating lastName: ${this.lastName}`);
-                Db.update('users', { lastName: this.lastName }, this.id);
-            }
+            if (this.last_name !== undefined && this.last_name !== null) {
+                Db.update('users', { last_name: this.last_name }, this.id);
+            };
         
             if (this.email !== undefined && this.email !== null) {
-                console.log(`Updating email: ${this.email}`);
                 Db.update('users', { email: this.email }, this.id);
-            }
+            };
         
         } catch (error) {
             throw new CustomError(500, "Internal server error");
-        }
-    }
+        };
+    };
     
     async getNameList(){
         if (!this.name) throw new CustomError(400, 'Nickname is required');
@@ -97,7 +98,7 @@ export default class User {
             view: ['nickname']
         });
         return users;
-    }
+    };
 
     async loginUser(){
         try {
@@ -117,7 +118,6 @@ export default class User {
             if(pswd.length === 0 || this.pasta !== pswd[0].pasta) throw new CustomError(401, `Wrong username or password`);
             
             const userPayload = {
-                email: `${idCheck[0].email}`,
                 id: `${this.id}`
             }
             return jwt.sign(userPayload, process.env.SIGN_TOKEN);
@@ -127,25 +127,45 @@ export default class User {
         }
 
     }
-    //Static por enquanto. Depois vai ser por objeto
-    static async updateUserNews(id){
+
+    async updateUserNews(){
         try {
             const activeTime = await utcFix();
-            await Db.update('users', { read_news: activeTime }, id)
-            await User.updateActive(id)
+            await Db.update('users', { read_news: activeTime }, this.id)
         } catch (error) {
             throw new CustomError(500, "Internal Server Error", error.message)
         }
     }
 
-    static async updateActive(id){
+    async updateActive(){
         try {
             const activeTime = await utcFix();
-            await Db.update('users', { active: activeTime }, id)
+            await Db.update('users', { active: activeTime }, this.id)
         } catch (error) {
             throw new CustomError(500, "Internal Server Error", error.message)
         }
     }
+
+    static async fetchData(filter, value){
+        if(filter === "email" && typeof(value) === "string"){
+            try {
+                const id = await Db.find('users', { filter: { email: value }, view: [ 'id' ], opt: { limit: 1 } });
+                return id[0].id;
+
+            } catch (error) {
+                throw new CustomError(500, "Internal Server Error", error.message);
+            };
+
+        } else if(filter === "id"){
+            try {
+                const email = await Db.find('users', { filter:  { id: value }, view: [ 'email' ], opt: { limit: 1 } });
+                return email[0].email;
+
+            } catch (error) {
+                throw new CustomError(500, "Internal Server Error", error.message);
+            };
+        };
+    };
 }
 
 async function utcFix() {
@@ -153,3 +173,4 @@ async function utcFix() {
     const utcfix = now - (3 * 60 * 60 * 1000); 
     return Db.toDateTime(utcfix); 
 }
+

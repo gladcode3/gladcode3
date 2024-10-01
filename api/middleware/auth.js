@@ -12,7 +12,9 @@ export default class Auth {
             const clientId = process.env.GOOGLE_CLIENT_ID;
             const client = new OAuth2Client();
             const token = Auth.retrieveToken(req.headers['authorization']);
-                        
+            
+            if(!token) return new CustomError(401, "Empty token header")
+
             const getGooglePayload = async () => {
                 try {
                     const googleData = await client.verifyIdToken({
@@ -22,7 +24,9 @@ export default class Auth {
                     return googleData.getPayload();
                 }
                 catch (error) {
-                    throw new CustomError(500, 'Internal Server Error', error.message);
+                    const code = error.code ?? 500;
+                    const msg = error.message ?? "Failed to get Google Payload";
+                    throw new CustomError(code, msg, error.message);
                 }
             }
 
@@ -33,31 +37,42 @@ export default class Auth {
     
                 const userPayload = await Auth.getPayload(email);
                 const token = jwt.sign(userPayload, process.env.SIGN_TOKEN);
-                res.json({ token });
+                return {
+                    token: token,
+                    code: 200
+                }
 
             } else {
-                throw new CustomError(401, 'Invalid Google token');
+                return new CustomError(401, 'Invalid Google token');
             }
         } catch (error) {
-            next(error);
+            const code = error.code ?? 500
+            const msg = error.message ?? "Internal Authenticaion Issues"
+            return new CustomError(code, msg, error.message);
         }
     }
 
     //updateActive não deveria ser static
     static async check(req, res, next) {
         try{
+            
             const token = Auth.retrieveToken(req.headers['authorization']);
             if (!token) throw new CustomError(401, 'Token is null');
 
-            jwt.verify(token, process.env.SIGN_TOKEN, (err, user) => {
-                if (err) throw new CustomError(403, 'Token is invalid');
-                req.user = user;
-                User.updateActive(user.id)
-                next();
+            const decoded = jwt.verify(token, process.env.SIGN_TOKEN)
+            const email = await User.fetchData("id", decoded.id);
+            const obj = new User({
+                id: decoded.id,
+                email: email
             });
+            await obj.updateActive();
+            req.user = {"user": obj, "code": 200};
+            next();
 
         }catch(error){
-            next(error);
+            const code = error.code ?? 500
+            const msg = error.message ?? "Server issues when verifying user"
+            return {"code": code, "message": msg};
         }
     }
 
@@ -89,11 +104,10 @@ export default class Auth {
     static async getPayload(email){
         const payloadQuery = await Db.find('users', {
             filter: { email: `${email}`},
-            view: ['id'],
+            view: ['id', 'nickname'],
             opt: { limit: 1}
         });
         return {
-            email,
             id: payloadQuery[0].id
         }
     }

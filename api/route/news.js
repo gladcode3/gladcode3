@@ -23,7 +23,10 @@ router.get('/:hash', Auth.check, async (req, res) => {
         const query = await News.getByHash(req.params.hash);
         if(!query) res.status(404).json( { message: `No posts found for the given URL: ${req.params.hash}` } );
 
-        User.updateUserNews(jwt.id);
+        const user = new User({
+            id: jwt.user.id,
+            email: jwt.user.email
+        }).updateUserNews(jwt.id);
         res.send(query);
 
     } catch (error) {
