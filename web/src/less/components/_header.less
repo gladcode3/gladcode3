@@ -83,3 +83,16 @@ header {
 		}
 	}
 }
+
+@media only screen and (max-width: 310px) {
+    header #logotype>.logotype__home-link .home-link__gc-icon {
+        display: none;
+    }
+}
+
+@media only screen and (max-width: 880px) {
+    header {
+        nav#header-navigator { display: none; }
+        #hamburguer-menu { display: flex; }
+    }
+}

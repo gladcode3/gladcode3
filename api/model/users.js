@@ -1,25 +1,20 @@
 import CustomError from '../core/error.js';
 import Db from '../core/mysql.js';
-import jwt from 'jsonwebtoken';
-import config from '../config.js';
-import crypto from 'crypto';
 
 export default class User {
 
     constructor({ id, email, googleid, firstName, lastName, nickname, profilePicture}) {
-        this.id = id,
-        this.email = email,
-        this.googleid = googleid,
-        this.nickname = nickname,
-        this.firstName = firstName,
-        this.lastName = lastName,
-        this.profilePicture = profilePicture || null,
-        this.pasta = crypto.createHash('md5').update(email).digest('hex');
-
+        this.id = id;
+        this.email = email;
+        this.googleid = googleid;
+        this.nickname = nickname;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.profilePicture = profilePicture || null;
     }
 
-    static async deleteUser(id){
-        Db.delete('users', id);
+    async delete(){
+        Db.delete('users', this.id);
     }
 
     async add(){
@@ -32,38 +27,35 @@ export default class User {
                 firstName: `${this.firstName}`,
                 lastName: `${this.lastName}`,
                 profilePicture: `${this.profilePicture}`,
-                pasta: `${this.pasta}`,
                 active: `${Db.toDateTime(Date.now())}`
             });
 
-            return;
+            this.id = sql[0].insertId;
+            return this.get();
 
         } catch (error) {
             console.log(error);
         }
     }
 
-    async getUserData(){
+    async get(){
             const users = await Db.find('users', {
                 filter: { id: Db.like(this.id) },
-                view: [ 'email', 'nickname', 'firstName', 'lastName', 'profilePicture', 'pasta' ]
+                view: [ 'email', 'nickname', 'firstName', 'lastName', 'profilePicture' ]
             });
 
             if(users.length === 0) throw new CustomError(404, `User does not exist`);
 
-            const user = await new User({
-                id: this.id,
-                email: users[0].email,
-                nickname: users[0].nickname,
-                firstName: users[0].firstName,
-                lastName: users[0].lastName,
-                profilePicture: users[0].profilePicture,
-                pasta: crypto.createHash('md5').update(users[0].email).digest('hex')
-            });
-            return user;
+            this.email = users[0].email;
+            this.nickname = users[0].nickname;
+            this.firstName = users[0].firstName;
+            this.lastName = users[0].lastName;
+            this.profilePicture = users[0].profilePicture;
+
+            return this;
     }
 
-    async updateUser() {
+    async update() {
         try {
             if (this.nickname !== undefined && this.nickname !== null) {
                 console.log(`Updating nickname: ${this.nickname}`);
@@ -84,9 +76,10 @@ export default class User {
                 console.log(`Updating email: ${this.email}`);
                 Db.update('users', { email: this.email }, this.id);
             }
+            return this.get();
         
         } catch (error) {
-            console.error(`Error in updateUser: ${error.message}`);
+            console.error(`Error in update: ${error.message}`);
             throw new CustomError(500, "Internal server error");
         }
     }
@@ -99,28 +92,5 @@ export default class User {
             view: ['nickname']
         });
         return users;
-    }
-
-    async loginUser(){
-        if(!this.pasta) throw new CustomError(400, 'Password is required');
-        
-        const idCheck = await Db.find('users', {
-            filter: { id: Db.like(this.id) },
-            view: ['email'],
-            opt: { limit: 1}
-        });
-        if(idCheck.length === 0) throw new CustomError(404, `User ID not found`);
-
-        const pswd = await Db.find('users', {
-            filter: { id: `${this.id}`}, 
-            view: ['pasta'] 
-        });
-        if(pswd.length === 0 || this.pasta !== pswd[0].pasta) throw new CustomError(401, `Wrong username or password`);
-        
-        const userPayload = {
-            email: `${idCheck[0].email}`,
-            id: `${this.id}`
-        }
-        return jwt.sign(userPayload, config.signToken);
     }
 }

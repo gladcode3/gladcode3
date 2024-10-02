@@ -10,7 +10,7 @@ router.get('/', Auth.check, async (req, res, next) => {
         const jwt = req.user;
         const user = await new User({
             id: jwt.id
-        }).getUserData();
+        }).get();
         res.json(user);
         
     } catch (error) {
@@ -31,15 +31,13 @@ router.put('/', Auth.check, async (req, res, next) => {
         if (req.body.firstName !== undefined && req.body.firstName !== null) updateData.firstName = req.body.firstName;
         if (req.body.lastName !== undefined && req.body.lastName !== null) updateData.lastName = req.body.lastName;
 
-        const userObject = new User({
+        await new User({
             id: jwt.id,
             email: updateData.email,
             nickname: updateData.nickname,
             firstName: updateData.firstName,
             lastName: updateData.lastName,
-        })
-
-        await userObject.updateUser();
+        }).update();
         res.send('User has been updated');
 
     } catch (error) {
@@ -50,7 +48,7 @@ router.put('/', Auth.check, async (req, res, next) => {
 router.delete('/', Auth.check, async (req, res, next) => {
     try {
         const jwt = req.user;
-        await User.deleteUser(jwt.id)
+        await new User({ id: jwt.id }).delete();
         res.send(`User ${jwt.id} has been deleted`)
 
     } catch (error) {
