@@ -12,20 +12,104 @@ export default class User {
     // pref_language, apothecary
 
     //Snake casing para atributos associados com o MySQL
-
-    constructor({ id, email, googleid, nickname, first_name, last_name, profile_picture}) {
+    //Esse construtor provavelmente vai causar problema
+    constructor({ id, email, googleid, nickname, first_name, last_name, profile_picture, pasta}) {
         this.id = id,
         this.email = email,
         this.googleid = googleid,
-        this.nickname = nickname || `${first_name}${Math.floor(Math.random() * 900) + 100}`,
+        this.nickname = nickname,
         this.first_name = first_name,
         this.last_name = last_name,
-        this.profile_picture = profile_picture || `https://www.gravatar.com/avatar/${crypto.createHash('md5').update(email.toLowerCase().trim()).digest('hex')}?d=retro`,
-        this.pasta = crypto.createHash('md5').update(email).digest('hex');
+        this.profile_picture = profile_picture,
+        this.pasta = pasta;
+    };
+
+    async get() {
+        let user;
+        try {
+            user = await Db.find('users', {
+                filter: { id: this.id },
+                view: ['email', 'nickname', 'first_name', 'last_name', 'profile_picture']
+            });
+            if (user.length === 0) throw new CustomError(404, `User does not exist`);
+
+        } catch (error) {
+            const code = error.code ?? 500;
+            const msg = error.message ?? "Failed to retrieve user data."
+            return new CustomError(code, msg);
+        }
+
+        const obj = new User({
+            id: this.id,
+            email:`${user[0].email}`,
+            nickname: `${user[0].nickname}`,
+            first_name: `${user[0].first_name}`,
+            last_name: `${user[0].last_name}`,
+            profile_picture: `${user[0].profile_picture}`,
+        });
+        return { "code": 200, "user": obj};
+    };
+
+    static async getNameList(name){
+        if (!name) throw new CustomError(400, 'Nickname is required');
+
+        const results = [];
+        try {
+            const exact = await Db.find('users', {
+                filter: { nickname: name },
+                view: [ 'nickname', 'profile_picture' ],
+                opt: { limit: 1 }
+            });
+            if(exact.length === 1) results.push(exact[0]);
+
+            const prefix = await Db.find('users', {
+                filter: { nickname: Db.like( `${name}_%` ) },
+                view: [ 'nickname', 'profile_picture' ],
+                opt: { limit: 5 }
+            });
+            if(prefix.length >= 1) {
+                prefix.forEach(query => {
+                    results.push(query);
+                });
+            };
+            
+            const suffix = await Db.find('users', {
+                filter: { nickname: Db.like( `%_${name}` ) },
+                view: ['nickname', 'profile_picture'],
+                opt: { limit: 5 }
+            });
+            if(suffix.length >= 1) {
+                suffix.forEach(query => {
+                    results.push(query);
+                });
+            };
+
+            if(results.length === 0) throw new CustomError(404, "No results found.");
+            return { "results": results, "code": 200};
+
+        } catch (error) {
+            const code = error.code ?? 500;
+            const msg = error.message ?? "Internal Server Issues: GET '/:users'"
+            return new CustomError(code, msg);
+        }
     };
 
     async deleteUser(){
-        await Db.delete('users', this.id);
+        try {
+            const find = await Db.find('users', {
+                filter: { id: this.id },
+                view: [ 'id' ],
+                opt: { limit: 1 }
+            });
+            if(find.length === 0) throw new CustomError(404, "User not found.")
+            const query = await Db.delete('users', this.id);
+            return { "code": 200 };
+            
+        } catch (error) {
+            const code = error.code ?? 500;
+            const msg = error.message ?? "Internal Server Issues: DELETE '/'"
+            return new CustomError(code, msg);
+        };
     };
 
     async add(){
@@ -42,29 +126,13 @@ export default class User {
                 pasta: `${this.pasta}`,
                 active: `${activeTime}`
             });
-            return;
+            return { "code": 200 };
 
         } catch (error) {
-            throw new CustomError(500, "Internal Server Error", error.message);
+            const code = error.code ?? 500;
+            const msg = error.message ?? "Internal Server Issues: User.add()"
+            return new CustomError(code, msg);
         };
-    };
-
-    static async get(id) {
-        const users = await Db.find('users', {
-            filter: { id: id },
-            view: ['email', 'nickname', 'first_name', 'last_name', 'profile_picture']
-        });
-
-        if (users.length === 0) throw new CustomError(404, `User does not exist`);
-
-        return new User({
-            id: id,
-            email:`${users[0].email}`,
-            nickname: `${users[0].nickname}`,
-            firstName: `${users[0].firstName}`,
-            lastName: `${users[0].lastName}`,
-            profilePicture: `${users[0].profilePicture}`,
-        });
     };
 
     async updateUser() {
@@ -90,15 +158,6 @@ export default class User {
         };
     };
     
-    async getNameList(){
-        if (!this.name) throw new CustomError(400, 'Nickname is required');
-
-        const users = await Db.find('users', {
-            filter: { name: Db.like(this.nickname) },
-            view: ['nickname']
-        });
-        return users;
-    };
 
     async loginUser(){
         try {
@@ -124,53 +183,60 @@ export default class User {
 
         } catch (error) {
             throw new CustomError(500, "Internal server error", error.message);
-        }
-
-    }
+        };
+    };
 
     async updateUserNews(){
         try {
             const activeTime = await utcFix();
-            await Db.update('users', { read_news: activeTime }, this.id)
+            await Db.update('users', { read_news: activeTime }, this.id);
         } catch (error) {
-            throw new CustomError(500, "Internal Server Error", error.message)
-        }
-    }
+            throw new CustomError(500, "Internal Server Error", error.message);
+        };
+    };
 
     async updateActive(){
         try {
             const activeTime = await utcFix();
             await Db.update('users', { active: activeTime }, this.id)
         } catch (error) {
-            throw new CustomError(500, "Internal Server Error", error.message)
-        }
-    }
+            const code = error.code ?? 500;
+            const msg = error.message ?? "Failed to update active";
+            return new CustomError(code, msg);
+        };
+    };
 
     static async fetchData(filter, value){
         if(filter === "email" && typeof(value) === "string"){
             try {
                 const id = await Db.find('users', { filter: { email: value }, view: [ 'id' ], opt: { limit: 1 } });
-                return id[0].id;
+                if(id.length === 0) throw { "code": 404, "message": "User not Found" };
+                return { "code": 200, "id": id[0].id };
 
             } catch (error) {
-                throw new CustomError(500, "Internal Server Error", error.message);
+                const code = error.code ?? 500;
+                const msg = error.message ?? "Internal Auth Issues";
+                return new CustomError(code, msg);
             };
 
         } else if(filter === "id"){
             try {
                 const email = await Db.find('users', { filter:  { id: value }, view: [ 'email' ], opt: { limit: 1 } });
-                return email[0].email;
+                if(email.length === 0) throw { "code": 404, "message": "User not Found" };
+                return { "code": 200, "email": email[0].email };
 
             } catch (error) {
-                throw new CustomError(500, "Internal Server Error", error.message);
+                const code = error.code ?? 500;
+                const msg = error.message ?? "Internal Auth Issues";
+                return new CustomError(code, msg);
             };
         };
     };
-}
+};
 
 async function utcFix() {
     const now = Date.now();
     const utcfix = now - (3 * 60 * 60 * 1000); 
     return Db.toDateTime(utcfix); 
-}
+};
 
