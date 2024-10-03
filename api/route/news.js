@@ -26,7 +26,7 @@ router.get('/:hash', Auth.check, async (req, res) => {
         const user = new User({
             id: jwt.user.id,
             email: jwt.user.email
-        }).updateUserNews(jwt.id);
+        }).updateReadNews(jwt.id);
         res.send(query);
 
     } catch (error) {

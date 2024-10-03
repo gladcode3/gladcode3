@@ -46,7 +46,11 @@ router.delete('/', Auth.check, async (req, res, next) => {
         const jwt = req.user;
         if(jwt.code !== 200) throw jwt;
 
-        const query = await jwt.user.deleteUser();
+        const user = new User ({
+            id: jwt.user.id,
+            email: jwt.user.email
+        });
+        const query = await user.delete();
         if(query.code !== 200) throw query;
         
         res.send(`User ${jwt.user.id} has been deleted`)

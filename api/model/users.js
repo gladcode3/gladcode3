@@ -1,8 +1,6 @@
 import CustomError from '../core/error.js';
 import Db from '../core/mysql.js';
 import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
-import { type } from 'os';
 
 export default class User {
 
@@ -12,7 +10,6 @@ export default class User {
     // pref_language, apothecary
 
     //Snake casing para atributos associados com o MySQL
-    //Esse construtor provavelmente vai causar problema
     constructor({ id, email, googleid, nickname, first_name, last_name, profile_picture, pasta}) {
         this.id = id,
         this.email = email,
@@ -94,7 +91,7 @@ export default class User {
         }
     };
 
-    async deleteUser(){
+    async delete(){
         try {
             const find = await Db.find('users', {
                 filter: { id: this.id },
@@ -196,19 +193,24 @@ export default class User {
         };
     };
 
-    async updateUserNews(){
+    async updateReadNews(){
         try {
             const activeTime = await utcFix();
             await Db.update('users', { read_news: activeTime }, this.id);
+            return { "code": 200 };
+
         } catch (error) {
-            throw new CustomError(500, "Internal Server Error", error.message);
+            const code = error.code ?? 500;
+            const msg = error.message ?? "Internal Server Issues.";
+            return new CustomError(code, msg);
         };
     };
 
     async updateActive(){
         try {
             const activeTime = await utcFix();
-            await Db.update('users', { active: activeTime }, this.id)
+            await Db.update('users', { active: activeTime }, this.id);
+            return { "code": 200 };
         } catch (error) {
             const code = error.code ?? 500;
             const msg = error.message ?? "Failed to update active";
@@ -237,7 +239,7 @@ export default class User {
 
             } catch (error) {
                 const code = error.code ?? 500;
-                const msg = error.message ?? "Internal Auth Issues";
+                const msg = error.message ?? "Internal Server Issues";
                 return new CustomError(code, msg);
             };
         };
