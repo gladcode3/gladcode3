@@ -18,20 +18,21 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.get('/:hash', Auth.check, async (req, res) => {
+router.get('/:hash', async (req, res) => {
     try {
-        const jwt = req.user;
+        const auth = await Auth.optionalCheck(req.headers['authorization']);
 
         const query = await News.getByHash(req.params.hash);
-        if(!query) res.status(404).json( { message: `No posts found for the given URL: ${req.params.hash}` } );
-        if(query !== 200) throw query;
-
-        const user = new User({
-            id: jwt.user.id,
-            email: jwt.user.email
-        })
-        const updateQuery = await user.updateReadNews();
-        if(updateQuery.code !== 200) throw updateQuery;
+        if(query.code !== 200) throw query;
+        
+        if(auth){
+            const user = new User({
+                id: auth.user.id,
+                email: auth.user.email
+            });
+            const updateQuery = await user.updateReadNews();
+            if(updateQuery.code !== 200) throw updateQuery;
+        }
         res.status(200).send(query);
 
     } catch (error) {

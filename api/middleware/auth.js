@@ -53,7 +53,6 @@ export default class Auth {
         };
     };
 
-    //updateActive não deveria ser static
     static async check(req, res, next) {
         try{
             const token = Auth.retrieveToken(req.headers['authorization']);
@@ -75,7 +74,30 @@ export default class Auth {
             const code = error.code ?? 500
             const msg = error.message ?? "Server issues when verifying user"
             return new CustomError(code, msg);
-        }
+        };
+    };
+
+    static async optionalCheck(authHeader){
+        try{
+            const token = Auth.retrieveToken(authHeader);
+            if (!token) return false;
+
+            const decoded = jwt.verify(token, process.env.SIGN_TOKEN)
+            const fetch = await User.fetchData("id", decoded.id); //Queries for the email, so it can be used on the constructor.
+            if(fetch.code !== 200) throw fetch;
+
+            const obj = new User({
+                id: decoded.id,
+                email: fetch.email
+            });
+            await obj.updateActive();
+            return { "user": obj, "code": 200 };
+
+        }catch(error){
+            const code = error.code ?? 500
+            const msg = error.message ?? "Server issues when verifying user"
+            return new CustomError(code, msg);
+        };
     }
 
     static async lookForUser(email, first_name, last_name, googleid){
@@ -103,13 +125,12 @@ export default class Auth {
                 return { "code": 200 };
             }
             
-
         } catch (error) {
             const code = error.code ?? 500;
             const msg = error.message ?? "Server issues when verifying user";
             return new CustomError(code, msg);
         }
-    }
+    };
 
     static async getPayload(email){
         const payloadQuery = await Db.find('users', {
@@ -120,9 +141,10 @@ export default class Auth {
         return {
             id: payloadQuery[0].id
         }
-    }
+    };
+
 
     static retrieveToken(authHeader){
         return authHeader && authHeader.split(' ')[1];
-    }
-}
+    };
+};

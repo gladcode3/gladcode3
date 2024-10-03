@@ -75,11 +75,6 @@ router.post('/login', async (req, res, next) => {
     }
 });
 
-//Atualiza usuários
-//Por algum motivo a função precisa de um email, mesmo se estiver vazio
-//Isso é devido ao construtor. O problema realmente era mais na falta de padronização, com padronização o email sempre é construído junto.
-
-//TODO Próximo Commit
 router.put('/', Auth.check, async (req, res, next) => {
     try {
         const jwt = req.user;
@@ -91,8 +86,15 @@ router.put('/', Auth.check, async (req, res, next) => {
         });
         
         const updateData = {};
-        //TODO: Proper email check
-        if (req.body.email !== undefined && req.body.email !== '') updateData.email = req.body.email;
+        if (req.body.email !== undefined && req.body.email !== ''){
+            const isEmailValid = (email) => {
+                const regex = /^[a-zA-z-Z0-9._%+-]+@[a-zA-Z-0-9.-]+\.[a-zA-Z]{2,}$/;
+                return regex.test(email)
+            };
+            if(!isEmailValid(req.body.email)) throw new CustomError(400,  "Invalid email.");
+            updateData.email = req.body.email;
+        } 
+
         if (req.body.nickname !== undefined && req.body.nickname !== '') updateData.nickname = req.body.nickname;
         if (req.body.first_name !== undefined && req.body.first_name !== '') updateData.first_name = req.body.first_name;
         if (req.body.last_name !== undefined && req.body.last_name !== '') updateData.last_name = req.body.last_name;
@@ -100,7 +102,7 @@ router.put('/', Auth.check, async (req, res, next) => {
         if (req.body.pasta !== undefined && req.body.pasta !== '') updateData.pasta = crypto.createHash('md5').update(req.body.pasta).digest('hex');
 
         const isEmpty = (obj) => JSON.stringify(obj) === '{}';
-        if(isEmpty(updateData)) throw new CustomError(400, "No information was sent");
+        if(isEmpty(updateData)) throw new CustomError(400, "No data was sent");
 
         const newUser = new User({
             id: user.id,

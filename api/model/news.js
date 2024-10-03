@@ -33,13 +33,11 @@ export default class News {
     // Não cheguei a usar nada da classe;
     // Ao meu ver, pegar ítems associados com o hash não é algo específico de algum post, e sim do sistema como um todo.
     static async getByHash(id){
-        
         const posts = { 
             "prevPost": null,
             "currentPost": null,
             "nextPost": null
         }
-
         try {
             const news = await Db.find('news', 
                 {
@@ -48,7 +46,7 @@ export default class News {
                     opt: { limit: 1, }
                 });
             
-            if(news.length === 0) return { "code": 404, "message": `News not Found: Id: ${id} `};
+            if(news.length === 0) return { "code": 404, "message": `No posts were found: Id: ${id} `};
             if(news.length === 1) posts.currentPost = news[0];
             
             const prevNews = await News.fetchPrevPost(news[0].time);
@@ -107,10 +105,11 @@ export default class News {
 }
 
 function cleanPostObj(obj){
-    const newObj = { "code":200 }
+    const newObj = {}
     if(obj.prevPost !== null) newObj.prevPost = obj.prevPost;
     if(obj.currentPost !== null) newObj.currentPost = obj.currentPost;
     if(obj.nextPost !== null) newObj.nextPost = obj.nextPost
-    
-    return JSON.stringify(newObj)
+    newObj.code = 200;
+
+    return newObj;
 }
