@@ -15,12 +15,13 @@ router.get('/', Auth.check, async (req, res, next) => {
             email: jwt.user.email
         });
         const query = await user.get();
-        if(jwt.code !== 200) throw user;
+        if(query.code !== 200) throw query;
+
         res.json(query)
         
     } catch (error) {
         const code = error.code ?? 500;
-        const msg = error.message ?? "Internal Server Issues: GET '/'"
+        const msg = error.message ?? "Internal Server Issues"
         res.status(code).send( { "code": code, "message": msg} );
     }  
 });
@@ -34,7 +35,7 @@ router.get('/:name', async (req, res, next) => {
     }
     catch (error) {
         const code = error.code ?? 500;
-        const msg = error.message ?? "Internal Server issues: Delete '/'";
+        const msg = error.message ?? "Internal Server issues";
         res.status(code).send( { "code": code, "message": msg } );
     }  
 });
@@ -52,7 +53,7 @@ router.delete('/', Auth.check, async (req, res, next) => {
 
     } catch (error) {
         const code = error.code ?? 500;
-        const msg = error.message ?? "Internal Server issues: Delete '/'";
+        const msg = error.message ?? "Internal Server issues";
         res.status(code).send( { "code": code, "message": msg } );
     }
 });
@@ -77,28 +78,43 @@ router.post('/login', async (req, res, next) => {
 //TODO Próximo Commit
 router.put('/', Auth.check, async (req, res, next) => {
     try {
-        if (!req.user) throw new CustomError(401, "Missing JWT");
         const jwt = req.user;
-        const user = jwt.user;
+        if(jwt.code !== 200) throw jwt;
+        
+        const user = new User ({
+            id: jwt.user.id,
+            email: jwt.user.email
+        });
         
         const updateData = {};
-        if (req.body.email !== undefined && req.body.email !== null) updateData.email = req.body.email;
-        if (req.body.nickname !== undefined && req.body.nickname !== null) updateData.nickname = req.body.nickname;
-        if (req.body.firstName !== undefined && req.body.firstName !== null) updateData.firstName = req.body.firstName;
-        if (req.body.lastName !== undefined && req.body.lastName !== null) updateData.lastName = req.body.lastName;
+        //TODO: Proper email check
+        if (req.body.email !== undefined && req.body.email !== '') updateData.email = req.body.email;
+        if (req.body.nickname !== undefined && req.body.nickname !== '') updateData.nickname = req.body.nickname;
+        if (req.body.first_name !== undefined && req.body.first_name !== '') updateData.first_name = req.body.first_name;
+        if (req.body.last_name !== undefined && req.body.last_name !== '') updateData.last_name = req.body.last_name;
+        //TODO: Proper password check
+        if (req.body.pasta !== undefined && req.body.pasta !== '') updateData.pasta = crypto.createHash('md5').update(req.body.pasta).digest('hex');
 
-        await new User({
-            id: jwt.id,
-            email: updateData.email,
-            nickname: updateData.nickname,
-            firstName: updateData.firstName,
-            lastName: updateData.lastName,
-        }).update();
-        res.send('User has been updated');
+        const isEmpty = (obj) => JSON.stringify(obj) === '{}';
+        if(isEmpty(updateData)) throw new CustomError(400, "No information was sent");
+
+        const newUser = new User({
+            id: user.id,
+            email: updateData.email ?? null,
+            nickname: updateData.nickname ?? null,
+            first_name: updateData.first_name ?? null,
+            last_name: updateData.last_name ?? null,
+            pasta: updateData.pasta ?? null
+        });
+        const query = await newUser.update();
+        if(query.code !== 200) throw query;
+        res.status(200).send( { "code": 200, "message": "User has been updated." } );
 
     } catch (error) {
-        throw new CustomError(500, "Internal server error", error.message);
-    }
+        const code = error.code ?? 500;
+        const msg = error.message ?? "Internal Server issues"
+        res.status(code).send( { "code": code, "message": msg} ) ;
+    };
 });
 
 export default router;

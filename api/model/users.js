@@ -135,26 +135,36 @@ export default class User {
         };
     };
 
-    async updateUser() {
+    async update() {
         try {
-            if (this.nickname !== undefined && this.nickname !== null) {
+            if (this.nickname !== null) {
                 Db.update('users', { nickname: this.nickname }, this.id);
             };
         
-            if (this.first_name !== undefined && this.first_name !== null) {
+            if (this.first_name !== null) {
                 Db.update('users', { first_name: this.first_name }, this.id);
             };
         
-            if (this.last_name !== undefined && this.last_name !== null) {
+            if (this.last_name !== null) {
                 Db.update('users', { last_name: this.last_name }, this.id);
             };
-        
-            if (this.email !== undefined && this.email !== null) {
+            
+            //TODO: Implement proper email change
+            //O googleid também precisaria mudar
+            if (this.email !== null) {
                 Db.update('users', { email: this.email }, this.id);
             };
+
+            if (this.pasta !== null){
+                Db.update('users', { pasta: this.pasta }, this.id);
+            };
+
+            return { "code": 200 };
         
         } catch (error) {
-            throw new CustomError(500, "Internal server error");
+            const code = error.code ?? 500;
+            const msg = error.message ?? "Failed to retrieve user data."
+            return new CustomError(code, msg);
         };
     };
     
