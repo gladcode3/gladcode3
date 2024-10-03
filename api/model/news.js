@@ -15,16 +15,18 @@ export default class News {
                 {
                     filter: {id: Db.like("%")}, 
                     view: ['id', 'title', 'time', 'post'],
-                    opt: { sort: { id: -1} }
+                    opt: { order: { id: -1} }
                 }
             );
-            if(news.length === 0) return;
+            if(news.length === 0) throw { "code": 404, "message": "No news were found."};
 
             const jsonNews = JSON.stringify(news);
-            return jsonNews;
+            return { "code": 200, "news": jsonNews };
             
         }catch(error){
-            throw new CustomError(500, `Internal Server error`, error.message);
+            const code = error.code ?? 500;
+            const msg = error.message ?? "Failed to retrieve news"
+            return new CustomError(code, msg);
         }
     }
 
@@ -46,12 +48,9 @@ export default class News {
                     opt: { limit: 1, }
                 });
             
-            if(news.length === 0) return;
-            if(news.length === 1) {
-
-                posts.currentPost = news[0];
-            }
-        
+            if(news.length === 0) return { "code": 404, "message": `News not Found: Id: ${id} `};
+            if(news.length === 1) posts.currentPost = news[0];
+            
             const prevNews = await News.fetchPrevPost(news[0].time);
             if(prevNews.length === 1) posts.prevPost = prevNews[0];
 
@@ -59,7 +58,9 @@ export default class News {
             if(nextNews.length === 1) posts.nextPost = nextNews[0];
 
         } catch (error) {
-            throw new CustomError(500, "Internal Server Error", error.message);
+            const code = error.code ?? 500;
+            const msg = error.message ?? "Failed to retrieve news"
+            return new CustomError(code, msg);
         }
         const resPosts = cleanPostObj(posts);
         return resPosts;
@@ -77,11 +78,12 @@ export default class News {
         if(prevNews.length === 1) return prevNews;
 
         } catch (error) {
-            throw new CustomError(500, "Internal Server Error. ", error.message);
-        }
-
+            const code = error.code ?? 500;
+            const msg = error.message ?? "Failed to retrieve news"
+            return new CustomError(code, msg);
+        };
         return false;
-    }
+    };
 
     static async fetchNextPost(basetime){
         try{
@@ -95,7 +97,9 @@ export default class News {
             if(nextNews.length === 1) return nextNews;
 
         } catch(error){
-            throw new CustomError(500, "Internal Server Error.", error.message);
+            const code = error.code ?? 500;
+            const msg = error.message ?? "Failed to retrieve news"
+            return new CustomError(code, msg);
         }
 
         return false;
@@ -103,7 +107,7 @@ export default class News {
 }
 
 function cleanPostObj(obj){
-    const newObj = {}
+    const newObj = { "code":200 }
     if(obj.prevPost !== null) newObj.prevPost = obj.prevPost;
     if(obj.currentPost !== null) newObj.currentPost = obj.currentPost;
     if(obj.nextPost !== null) newObj.nextPost = obj.nextPost
