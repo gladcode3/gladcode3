@@ -4,7 +4,7 @@ import newsAction from './view/news.js';
 import validateSession from './helpers/session-validator.js';
 import GoogleLogin from './helpers/google-login.js';
 
-import '../less/profile.less';
+import '../less/dashboard.less';
 
 // esta é a credencial que tem que enviar para o backend
 const credential = GoogleLogin.getCredential();

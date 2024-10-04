@@ -7,7 +7,7 @@ import NodemonPlugin from 'nodemon-webpack-plugin';
 export default {
     entry: {
         home: './src/js/home.js',
-        profile: './src/js/profile.js',
+        dashboard: './src/js/dashboard.js',
     },
     output: {
         filename: 'js/[name].min.js',

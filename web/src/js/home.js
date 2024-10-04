@@ -6,7 +6,7 @@ import '../less/home.less';
 
 async function main() {
 
-    const loginPath = `profile`;
+    const loginPath = `dashboard`;
 
     await GoogleLogin.init({ redirectUri: `https://${window.location.hostname}/${loginPath}` });
     GoogleLogin.onFail(async () => {
