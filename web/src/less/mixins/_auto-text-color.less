@@ -1,0 +1,5 @@
+.auto-text-color(@bg-color) {
+    @lightness: lightness(@bg-color);
+
+    color: if(@lightness > 50%, #000, #fff);
+}

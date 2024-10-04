@@ -25,11 +25,11 @@ app.get('/', (req, res) => {
     });
 });
 
-app.get('/profile', (req, res) => {
-    res.templateRender('profile');
+app.get('/dashboard', (req, res) => {
+    res.templateRender('dashboard');
 });
-app.post('/profile', (req, res) => {
-    res.templateRender('profile', {
+app.post('/dashboard', (req, res) => {
+    res.templateRender('dashboard', {
         googleCredential: req.body.credential,
     });
 });

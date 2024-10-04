@@ -1,0 +1,35 @@
+:root { font-size: 62.5%; } // 1rem = 10px
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	font-family: @default-font;
+    font-weight: @normal-weight;
+}
+
+html, body {
+	width: 100vw;
+	height: 100vh;
+	overflow: hidden;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+h2 {
+	color: @primary-color;
+	text-align: left;
+	text-transform: uppercase;
+	font-size: @subtitles-font-size;
+}
+
+a { text-decoration: none }
+img { display: block }
+ul { list-style: none }
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background-color: transparent }
+::-webkit-scrollbar-thumb { background-color: @black-opacity-3 }

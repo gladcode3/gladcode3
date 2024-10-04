@@ -1,10 +1,10 @@
 import HTMLLoaderMenu from './components/html-loader-menu.js';
 import Switch from './components/switch-input.js';
-import newsAction from './view/profile-news.js';
+import newsAction from './view/news.js';
 import validateSession from './helpers/session-validator.js';
 import GoogleLogin from './helpers/google-login.js';
 
-import '../less/profile.less';
+import '../less/dashboard.less';
 
 // esta é a credencial que tem que enviar para o backend
 const credential = GoogleLogin.getCredential();
