@@ -7,7 +7,9 @@ const router = express.Router();
 
 router.get('/', async (req, res) => {
     try {
-        const query = await News.get();
+        if(req.query.limit > 20) throw { "code": 400, "message": "Limit is too high." };
+        
+        const query = await News.get(req.query.page, req.query.limit);
         if(!query) res.send( { "code": 404, "message":`No posts were found.` } );
         res.status(200).send(query); //Retorna em JSON
 
@@ -32,7 +34,7 @@ router.get('/:hash', async (req, res) => {
             });
             const updateQuery = await user.updateReadNews();
             if(updateQuery.code !== 200) throw updateQuery;
-        }
+        }  
         res.status(200).send(query);
 
     } catch (error) {

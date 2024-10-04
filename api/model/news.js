@@ -9,26 +9,30 @@ export default class News {
         this.post = post;
     }
 
-    static async get(){
+    static async get(page, qnt){
+        if(!page) throw { "code": 400, "message": "Page was not sent." };
+        if(!qnt) throw { "code": 400, "message": "No limit was sent."};
         try{
+            const pageQuery = (page*qnt)-qnt
             const news = await Db.find('news', 
                 {
                     filter: {id: Db.like("%")}, 
-                    view: ['id', 'title', 'time', 'post'],
-                    opt: { order: { id: -1} }
+                    view: ['id'],
+                    opt: { limit: qnt, order: { id: -1}, skip: pageQuery },
+                    skip: pageQuery
                 }
             );
-            if(news.length === 0) throw { "code": 404, "message": "No news were found."};
+            if(news.length === 0) throw { "code": 404, "message": "Page contains no posts."};
 
             const jsonNews = JSON.stringify(news);
             return { "code": 200, "news": jsonNews };
             
         }catch(error){
             const code = error.code ?? 500;
-            const msg = error.message ?? "Failed to retrieve news"
+            const msg = error.message ?? "Failed to retrieve news";
             return new CustomError(code, msg);
-        }
-    }
+        };
+    };
 
     // Não cheguei a usar nada da classe;
     // Ao meu ver, pegar ítems associados com o hash não é algo específico de algum post, e sim do sistema como um todo.
@@ -37,7 +41,7 @@ export default class News {
             "prevPost": null,
             "currentPost": null,
             "nextPost": null
-        }
+        };
         try {
             const news = await Db.find('news', 
                 {
@@ -57,7 +61,7 @@ export default class News {
 
         } catch (error) {
             const code = error.code ?? 500;
-            const msg = error.message ?? "Failed to retrieve news"
+            const msg = error.message ?? "Failed to retrieve news";
             return new CustomError(code, msg);
         }
         const resPosts = cleanPostObj(posts);
