@@ -56,49 +56,31 @@ export default class Auth {
     static async check(req, res, next) {
         try{
             const token = Auth.retrieveToken(req.headers['authorization']);
-            if (!token) throw new CustomError(401, 'Token is null');
+
+            const isOptional = req.optional ?? false;
+            if(!token && isOptional) return { "code": 202, "message": "User has access but not logged in." };
+            if (!token) throw new CustomError(400, 'Token is null');
 
             const decoded = jwt.verify(token, process.env.SIGN_TOKEN)
             const fetch = await User.fetchData("id", decoded.id); //Queries for the email, so it can be used on the constructor.
             if(fetch.code !== 200) throw fetch;
-
             const obj = new User({
                 id: decoded.id,
                 email: fetch.email
             });
             await obj.updateActive();
+            
             req.user = { "user": obj, "code": 200 };
             next();
 
         }catch(error){
-            const code = error.code ?? 500
-            const msg = error.message ?? "Server issues when verifying user"
-            return new CustomError(code, msg);
+            const code = error.code ?? 500;
+            const msg = error.message ?? "Server issues when verifying user";
+            const customError = new CustomError(code, msg);
+            req.user = customError;
+            next();
         };
     };
-
-    static async optionalCheck(authHeader){
-        try{
-            const token = Auth.retrieveToken(authHeader);
-            if (!token) return false;
-
-            const decoded = jwt.verify(token, process.env.SIGN_TOKEN)
-            const fetch = await User.fetchData("id", decoded.id); //Queries for the email, so it can be used on the constructor.
-            if(fetch.code !== 200) throw fetch;
-
-            const obj = new User({
-                id: decoded.id,
-                email: fetch.email
-            });
-            await obj.updateActive();
-            return { "user": obj, "code": 200 };
-
-        }catch(error){
-            const code = error.code ?? 500
-            const msg = error.message ?? "Server issues when verifying user"
-            return new CustomError(code, msg);
-        };
-    }
 
     static async lookForUser(email, first_name, last_name, googleid){
         try {

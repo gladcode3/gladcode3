@@ -22,12 +22,15 @@ router.get('/', async (req, res) => {
 
 router.get('/:hash', async (req, res) => {
     try {
-        const auth = await Auth.optionalCheck(req.headers['authorization']);
+        req.optional = true;
+        const auth = await Auth.check(req, res);
+        if(auth.code === 500) throw auth;
 
         const query = await News.getByHash(req.params.hash);
         if(query.code !== 200) throw query;
         
-        if(auth){
+        if(auth.code === 200){
+            console.log(auth)
             const user = new User({
                 id: auth.user.id,
                 email: auth.user.email
