@@ -79,47 +79,33 @@ router.put('/', Auth.check, async (req, res, next) => {
     try {
         const jwt = req.user;
         if(jwt.code !== 200) throw jwt;
-        
-        const user = new User ({
-            id: jwt.user.id,
-            email: jwt.user.email
-        });
-        
-        const updateData = {};
-        if (req.body.email !== undefined && req.body.email !== ''){
-            const isEmailValid = (email) => {
-                const regex = /^[a-zA-z-Z0-9._%+-]+@[a-zA-Z-0-9.-]+\.[a-zA-Z]{2,}$/;
-                return regex.test(email)
-            };
-            if(!isEmailValid(req.body.email)) throw new CustomError(400,  "Invalid email.");
-            updateData.email = req.body.email;
-        } 
 
+        const updateData = {};
         if (req.body.nickname !== undefined && req.body.nickname !== '') updateData.nickname = req.body.nickname;
-        if (req.body.first_name !== undefined && req.body.first_name !== '') updateData.first_name = req.body.first_name;
-        if (req.body.last_name !== undefined && req.body.last_name !== '') updateData.last_name = req.body.last_name;
-        //TODO: Proper password check
-        if (req.body.pasta !== undefined && req.body.pasta !== '') updateData.pasta = crypto.createHash('md5').update(req.body.pasta).digest('hex');
+        if (req.body.pfp !== undefined && req.body.pfp !== '') updateData.profile_picture = req.body.profile_picture;
+        if (req.body.prefLanguage !== undefined && req.body.prefLanguage !== '') {
+            const prefLanguage = req.body.prefLanguage;
+            if(prefLanguage === 'c' || prefLanguage === 'python' || prefLanguage === 'blocks' ) updateData.pref_language = prefLanguage;
+        };
 
         const isEmpty = (obj) => JSON.stringify(obj) === '{}';
         if(isEmpty(updateData)) throw new CustomError(400, "No data was sent");
 
         const newUser = new User({
-            id: user.id,
-            email: updateData.email ?? null,
+            id: jwt.user.id,
             nickname: updateData.nickname ?? null,
-            first_name: updateData.first_name ?? null,
-            last_name: updateData.last_name ?? null,
-            pasta: updateData.pasta ?? null
+            profile_picture: updateData.pfp ?? null,
+            pref_language: updateData.pref_language ?? null
         });
         const query = await newUser.update();
         if(query.code !== 200) throw query;
+
         res.status(200).send( { "code": 200, "message": "User has been updated." } );
 
     } catch (error) {
         const code = error.code ?? 500;
         const msg = error.message ?? "Internal Server issues"
-        res.status(code).send( { "code": code, "message": msg} ) ;
+        res.status(code).send( { "code": code, "message": msg } ) ;
     };
 });
 

@@ -10,7 +10,7 @@ export default class User {
     // pref_language, apothecary
 
     //Snake casing para atributos associados com o MySQL
-    constructor({ id, email, googleid, nickname, first_name, last_name, profile_picture, pasta}) {
+    constructor({ id, email, googleid, nickname, first_name, last_name, profile_picture, pasta, pref_language }) {
         this.id = id,
         this.email = email,
         this.googleid = googleid,
@@ -19,6 +19,7 @@ export default class User {
         this.last_name = last_name,
         this.profile_picture = profile_picture,
         this.pasta = pasta;
+        this.pref_language = pref_language
     };
 
     async get() {
@@ -137,25 +138,14 @@ export default class User {
             if (this.nickname !== null) {
                 Db.update('users', { nickname: this.nickname }, this.id);
             };
-        
-            if (this.first_name !== null) {
-                Db.update('users', { first_name: this.first_name }, this.id);
-            };
-        
-            if (this.last_name !== null) {
-                Db.update('users', { last_name: this.last_name }, this.id);
-            };
-            
-            //TODO: Implement proper email change
-            //O googleid também precisaria mudar
-            if (this.email !== null) {
-                Db.update('users', { email: this.email }, this.id);
-            };
+    
+            if (this.profile_picture !== null) {
+                Db.update('users', { profile_picture: this.profile_picture }, this.id);
+            }
 
-            if (this.pasta !== null){
-                Db.update('users', { pasta: this.pasta }, this.id);
-            };
-
+            if (this.pref_language !== null){
+                Db.update('users', { pref_language: this.pref_language }, this.id);
+            }
             return { "code": 200 };
         
         } catch (error) {
