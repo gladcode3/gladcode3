@@ -1,25 +1,50 @@
 import express from 'express'
-import db from '../core/mysql.js'
+import News from '../model/news.js'
+import User from '../model/users.js';
+import CustomError from '../core/error.js';
+import Auth from '../middleware/auth.js';
 const router = express.Router();
 
-router
-.route('/')
-.get(async (req, res) => {
+router.get('/', async (req, res) => {
     try {
-        res.send({ message: 'Hello World! '})
+        if(req.query.limit > 20) throw { "code": 400, "message": "Limit is too high." };
+        
+        const query = await News.get(req.query.page, req.query.limit);
+        if(!query) res.send( { "code": 404, "message":`No posts were found.` } );
+        res.status(200).send(query); //Retorna em JSON
+
     } catch (error) {
-        console.log(error)
+        const code = error.code ?? 500;
+        const msg = error.message ?? "Failed to retrieve news";
+        res.status(code).send( { "code": code, "message": msg } );
     }
 });
 
-router
-.route('/:hash')
-.get(async (req, res) => {
+router.get('/:hash', async (req, res) => {
     try {
-        res.send({ message: 'Hello World!'})
+        req.optional = true;
+        const auth = await Auth.check(req, res);
+        if(auth.code === 500) throw auth;
+
+        const query = await News.getByHash(req.params.hash);
+        if(query.code !== 200) throw query;
+        
+        if(auth.code === 200){
+            console.log(auth)
+            const user = new User({
+                id: auth.user.id,
+                email: auth.user.email
+            });
+            const updateQuery = await user.updateReadNews();
+            if(updateQuery.code !== 200) throw updateQuery;
+        }  
+        res.status(200).send(query);
+
     } catch (error) {
-        console.log(error)
-    }  
-})
+        const code = error.code ?? 500;
+        const msg = error.message ?? "Failed to retrieve news";
+        res.status(code).send( { "code": code, "message": msg } );
+    };
+});
 
 export default router
