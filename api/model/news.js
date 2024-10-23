@@ -17,15 +17,14 @@ export default class News {
             const news = await Db.find('news', 
                 {
                     filter: {id: Db.like("%")}, 
-                    view: ['id'],
+                    view: ['id', 'title', 'time', 'post'],
                     opt: { limit: qnt, order: { id: -1}, skip: pageQuery },
                     skip: pageQuery
                 }
             );
             if(news.length === 0) throw { "code": 404, "message": "Page contains no posts."};
 
-            const jsonNews = JSON.stringify(news);
-            return { "code": 200, "news": jsonNews };
+            return { "code": 200, "news": news };
             
         }catch(error){
             const code = error.code ?? 500;
