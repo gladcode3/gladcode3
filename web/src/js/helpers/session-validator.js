@@ -1,4 +1,4 @@
-import GladcodeV2API from "./request-old.js";
+import Request from "./request.js";
 import GoogleLogin from "./google-login.js";
 import TemplateVar from "./template-var.js";
 
@@ -19,12 +19,12 @@ const validateSession = async () => {
         location.href = '/';
     };
 
-    const api = new GladcodeV2API({ url: 'https://gladcode.werlang.site', sessionId: userSession.sessionId });
+    const api = new Request({ url: 'https://api.localtest.me' });
 
-    await api.post('back_login', {
-        action: 'SET',
-        token: userSession.token
-    });
+    // await api.post('back_login', {
+    //     action: 'SET',
+    //     token: userSession.token
+    // });
 
     return api;
 };

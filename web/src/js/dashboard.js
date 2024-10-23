@@ -1,8 +1,9 @@
+import Request from './helpers/request.js';
 import HTMLLoaderMenu from './components/html-loader-menu.js';
 import Switch from './components/switch-input.js';
 import newsAction from './view/news.js';
-import validateSession from './helpers/session-validator.js';
 import GoogleLogin from './helpers/google-login.js';
+// import validateSession from './helpers/session-validator.js';
 
 import '../less/dashboard.less';
 
@@ -10,7 +11,8 @@ import '../less/dashboard.less';
 const credential = GoogleLogin.getCredential();
 // console.log(credential);
 
-const api = await validateSession();
+// const api = await validateSession();
+const api = new Request({ url: 'https://api.localtest.me'});
 const user = await api.post('back_login.php', { action: 'GET' });
 console.log(user);
 

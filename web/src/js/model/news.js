@@ -1,10 +1,15 @@
-import validateSession from "../helpers/session-validator.js";
+// import validateSession from "../helpers/session-validator.js";
+import Request from "../helpers/request.js";
 
-const api = await validateSession();
+// const api = await validateSession();
+
+const api = new Request({ url: 'https://api.localtest.me'});
+console.log(api);
 
 export default class News {
-    constructor({ page }) {
+    constructor({ page, limit }) {
         this.page = page;
+        this.limit = limit;
     }
 
     async getNews() {
