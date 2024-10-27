@@ -1,16 +1,15 @@
 import express from 'express'
 import News from '../model/news.js'
 import User from '../model/users.js';
-import CustomError from '../core/error.js';
 import Auth from '../middleware/auth.js';
 const router = express.Router();
 
 router.get('/', async (req, res) => {
     try {
         if(req.query.limit > 20) throw { "code": 400, "message": "Limit is too high." };
-        
+
         const query = await News.get(req.query.page, req.query.limit);
-        if(!query) res.send( { "code": 404, "message":`No posts were found.` } );
+        if(query.code != 200) throw query;
         res.status(200).send(query); //Retorna em JSON
 
     } catch (error) {
