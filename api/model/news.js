@@ -12,14 +12,16 @@ export default class News {
     static async get(page, qnt){
         if(!page) throw { "code": 400, "message": "Page was not sent." };
         if(!qnt) throw { "code": 400, "message": "No limit was sent."};
+        if(isNaN(page) || isNaN(qnt)) throw { "code": 400, "message": "Query must be a number"};
+
         try{
-            const pageQuery = (page*qnt)-qnt
+            const offset = (page*qnt)-qnt
             const news = await Db.find('news', 
                 {
                     filter: {id: Db.like("%")}, 
                     view: ['id', 'title', 'time', 'post'],
-                    opt: { limit: qnt, order: { id: -1}, skip: pageQuery },
-                    skip: pageQuery
+                    opt: { limit: qnt, order: { id: -1}, skip: offset },
+                    skip: offset
                 }
             );
             if(news.length === 0) throw { "code": 404, "message": "Page contains no posts."};
