@@ -1,4 +1,3 @@
-import Request from "./request.js";
 import GoogleLogin from "./google-login.js";
 import TemplateVar from "./template-var.js";
 
@@ -18,15 +17,6 @@ const validateSession = async () => {
     if (!userSession) {
         location.href = '/';
     };
-
-    const api = new Request({ url: 'https://api.localtest.me' });
-
-    // await api.post('back_login', {
-    //     action: 'SET',
-    //     token: userSession.token
-    // });
-
-    return api;
 };
 
 export default validateSession;

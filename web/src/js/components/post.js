@@ -12,11 +12,11 @@ class Post {
     // Returns Post HTMLElement
     generatePost(title, { year, month, day, hours, minutes }, post) {
         const postHTML = `
-            <section class="news__post">
+            <article class="news__post">
                 <header class="post__header">
                     <h3>${title}</h3>
 
-                    <span class="header__timestamp">Publicado em ${day}/${month}/${year} - ${hours}:${minutes}</span>
+                    <time datetime="${year}-${month}-${day}" class="header__timestamp">Publicado em ${day}/${month}/${year} - ${hours}:${minutes}</time>
                 </header>
 
                 <div class="post_body">${post}</div>
@@ -24,7 +24,7 @@ class Post {
                 <button class="post__share-btn">
                     <i class="fas fa-share-alt"></i>
                 </button>
-            </section>
+            </artic>
         `;
 
         const parser = new DOMParser();

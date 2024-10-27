@@ -4,11 +4,11 @@
 
 
 import GoogleLogin from "./google-login.js";
+import LocalData from "./local-data.js";
 import Request from "./request.js";
 import TemplateVar from "./template-var.js";
 
 export default class Api {
-
     constructor({ auth, token }={}) {
         this.auth = auth || true;
         this.token = token;
@@ -30,11 +30,10 @@ export default class Api {
 
         const requestInstance = new Request({ 
             url: `https://${TemplateVar.get('apiurl')}`,
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { 'Authorization': `Bearer ${token.token}` }
         });
         return requestInstance;
     }
-
 
     async get(endpoint, data) {
         return this.requestInstance.get(endpoint, data);
