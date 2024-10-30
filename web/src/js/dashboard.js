@@ -6,6 +6,8 @@ import Api from './helpers/api.js';
 
 import '../less/dashboard.less';
 
+console.log(GoogleLogin.getCredential())
+
 // Login
 const api = new Api();
 
@@ -18,8 +20,6 @@ try {
 } catch (e) {
     console.error(e);
 }
-
-
 
 // Logout
 const logout = async () => {

@@ -7,6 +7,7 @@ import '../less/home.less';
 async function main() {
     const loginPath = `dashboard`;
 
+    // Init Google Login and Save JWT in LS
     await GoogleLogin.init({ redirectUri: `https://${window.location.hostname}/${loginPath}` });
 
     // on login fail
