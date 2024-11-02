@@ -81,7 +81,7 @@ export default class Auth {
                 const googleData = await getGooglePayload();
 
                 if (googleData.sub) {
-                    const { email } = googleData;
+                    const { email } = googleData;p
                     const fetch = await User.fetchData("email", email);
             
                     if(fetch.code !== 200) throw fetch;
