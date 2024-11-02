@@ -54,6 +54,61 @@ export default class Auth {
     };
 
     static async check(req, res, next) {
+        try {
+            const token = Auth.retrieveToken(req.headers['authorization']);
+
+            const isOptional = req.optional ?? false;
+            if(!token && isOptional) return { "code": 202, "message": "User has access but not logged in." };
+            if (!token) throw new CustomError(400, 'Token is null');
+
+            const clientId = process.env.GOOGLE_CLIENT_ID;
+            const client = new OAuth2Client();
+
+            const getGooglePayload = async () => {
+                try {
+                    const googleData = await client.verifyIdToken({
+                        idToken: token,
+                        audience: clientId,
+                    });
+                    return googleData.getPayload();
+                }
+                catch (error) {
+                    const code = error.code ?? 500;
+                    const msg = error.message ?? "Failed to get Google Payload";
+                    throw new CustomError(code, msg);
+                };
+            ;}
+                const googleData = await getGooglePayload();
+
+                if (googleData.sub) {
+                    const { email } = googleData;
+                    const fetch = await User.fetchData("email", email);
+            
+                    if(fetch.code !== 200) throw fetch;
+                    const obj = new User({
+                        id: fetch.id,
+                        email: email
+                    });
+                    await obj.updateActive();
+
+                    req.user = { "user": obj, "code":200 };
+                    next();
+                    
+                };
+        
+        } catch (error) {
+            const code = error.code ?? 500;
+            const msg = error.message ?? "Server issues when verifying user";
+            const customError = new CustomError(code, msg);
+            req.user = customError;
+            next();
+        }
+    }
+
+    /*
+    //Checks platform's JWT
+
+    static async check(req, res, next) {
         try{
             const token = Auth.retrieveToken(req.headers['authorization']);
 
@@ -81,9 +136,9 @@ export default class Auth {
             next();
         };
     };
+    */
 
     static async lookForUser(email, first_name, last_name, googleid){
-        try {
             const user = await Db.find('users', {
                 filter: { email: `${email}` },
                 view: [ 'email' ],
@@ -106,12 +161,6 @@ export default class Auth {
             }else{
                 return { "code": 200 };
             }
-            
-        } catch (error) {
-            const code = error.code ?? 500;
-            const msg = error.message ?? "Server issues when verifying user";
-            return new CustomError(code, msg);
-        }
     };
 
     static async getPayload(email){

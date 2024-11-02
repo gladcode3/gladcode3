@@ -9,11 +9,12 @@ const port = 3000;
 const host = '0.0.0.0';
 const app = express();
 
+const allowedOrigins = [ 'https://localtest.me', 'https://api.localtest.me' ]
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors({
-    origin: 'https://localtest.me',
+    origin: allowedOrigins,
 }));
 
 app.get('/', async (req, res) => {
@@ -23,7 +24,6 @@ app.get('/', async (req, res) => {
 app.use('/news', newsRouter);
 app.use('/users', usersRouter);
 app.use('/rank', rankRouter);
-
 
 // error handling
 app.use(errors);
