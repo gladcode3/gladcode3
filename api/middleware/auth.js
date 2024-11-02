@@ -77,7 +77,7 @@ export default class Auth {
                     const msg = error.message ?? "Failed to get Google Payload";
                     throw new CustomError(code, msg);
                 };
-            ;}
+            }
                 const googleData = await getGooglePayload();
 
                 if (googleData.sub) {
