@@ -30,7 +30,7 @@
                 // "--headless",
                 "--remote-debugging-port=9233"
             ],
-            "url": "https://localtest.me",
+            "url": "https://gc3.werlang.site",
         },
         {
             "name": "Debug Edge",
