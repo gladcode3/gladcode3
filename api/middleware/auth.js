@@ -97,11 +97,12 @@ export default class Auth {
                 };
         
         } catch (error) {
+            console.log(error)
             const code = error.code ?? 500;
             const msg = error.message ?? "Server issues when verifying user";
             const customError = new CustomError(code, msg);
             req.user = customError;
-            next();
+            return;
         }
     }
 
