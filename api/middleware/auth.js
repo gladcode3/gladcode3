@@ -7,7 +7,7 @@ import crypto from 'crypto';
 
 export default class Auth {
 
-    static async login(req, res, next) {
+    static async login(req, res) {
         try {
             const clientId = process.env.GOOGLE_CLIENT_ID;
             const client = new OAuth2Client();
@@ -39,7 +39,7 @@ export default class Auth {
                 throw new CustomError(401, 'Invalid Google token');
             }
         } catch (error) {
-            next(error);
+            throw new CustomError(500, "Internal Server Error", error.message);
         }
     }
 
