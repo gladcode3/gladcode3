@@ -18,7 +18,9 @@ router.get("/users", Auth.check, async (req, res) => {
 
     res.status(200).json(user);
   } catch (error) {
-    throw new CustomError(500, "Internal Server Error", error.message);
+    const code = error.code ?? 500;
+    const msg = error.message ?? "Failed to check user";
+    throw new CustomError(code, msg, error.data);
   }
 });
 
@@ -48,7 +50,9 @@ router.put("/users", Auth.check, async (req, res) => {
     }).update();
     res.send("User has been updated");
   } catch (error) {
-    throw new CustomError(500, "Internal Server Error", error.message);
+    const code = error.code ?? 500;
+    const msg = error.message ?? "Failed to update user";
+    throw new CustomError(code, msg, error.data);
   }
 });
 
@@ -58,7 +62,9 @@ router.delete("/users", Auth.check, async (req, res) => {
     await new User({ id: jwt.id }).delete();
     res.status(200).send(`User ${jwt.id} has been deleted`);
   } catch (error) {
-    throw new CustomError(500, "Internal Server Error", error.message);
+    const code = error.code ?? 500;
+    const msg = error.message ?? "Failed to delete user";
+    throw new CustomError(code, msg, error.data);
   }
 });
 
@@ -77,7 +83,9 @@ router.get("/:name", async (req, res) => {
       message: "User found!",
     });
   } catch (error) {
-    throw new CustomError(500, "Internal Server Error", error.message);
+    const code = error.code ?? 500;
+    const msg = error.message ?? "Failed to search user";
+    throw new CustomError(code, msg, error.data);
   }
 });
 
@@ -85,7 +93,9 @@ router.post("/login", async (req, res) => {
   try {
     await Auth.login(req, res);
   } catch (error) {
-    throw new CustomError(500, "Internal Server Error", error.message);
+    const code = error.code ?? 500;
+    const msg = error.message ?? "Login failed";
+    throw new CustomError(code, msg, error.data);
   }
 });
 
