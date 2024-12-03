@@ -5,7 +5,7 @@ import Auth from "../middleware/auth.js";
 const router = express.Router();
 
 // Registra usuários
-router.get("/", Auth.check, async (req, res) => {
+router.get("/users", Auth.check, async (req, res) => {
   try {
     const jwt = req.user;
     const user = await new User({
@@ -24,7 +24,7 @@ router.get("/", Auth.check, async (req, res) => {
 
 //Atualiza usuários
 //Por algum motivo a função precisa de um email, mesmo se estiver vazio
-router.put("/", Auth.check, async (req, res) => {
+router.put("/users", Auth.check, async (req, res) => {
   try {
     if (!req.user) throw new CustomError(401, "Missing JWT");
     const jwt = req.user;
@@ -52,7 +52,7 @@ router.put("/", Auth.check, async (req, res) => {
   }
 });
 
-router.delete("/", Auth.check, async (req, res) => {
+router.delete("/users", Auth.check, async (req, res) => {
   try {
     const jwt = req.user;
     await new User({ id: jwt.id }).delete();
