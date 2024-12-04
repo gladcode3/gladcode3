@@ -9,7 +9,7 @@ const port = 3000;
 const host = '0.0.0.0';
 const app = express();
 
-const allowedOrigins = [ 'https://localtest.me', 'https://api.localtest.me' ]
+const allowedOrigins = process.env.ALLOWED_ORIGINS;
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
