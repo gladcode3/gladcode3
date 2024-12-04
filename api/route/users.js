@@ -4,7 +4,7 @@ import CustomError from "../core/error.js";
 import Auth from "../middleware/auth.js";
 const router = express.Router();
 
-// Registra usuários
+// Retorna as próprias informações.
 router.get("/users", Auth.check, async (req, res) => {
   try {
     const jwt = req.user;
@@ -24,31 +24,32 @@ router.get("/users", Auth.check, async (req, res) => {
   }
 });
 
-//Atualiza usuários
-//Por algum motivo a função precisa de um email, mesmo se estiver vazio
 router.put("/users", Auth.check, async (req, res) => {
   try {
     if (!req.user) throw new CustomError(401, "Missing JWT");
     const jwt = req.user;
 
     const updateData = {};
-    if (req.body.email !== undefined && req.body.email !== null)
-      updateData.email = req.body.email;
-    if (req.body.nickname !== undefined && req.body.nickname !== null)
-      updateData.nickname = req.body.nickname;
-    if (req.body.firstName !== undefined && req.body.firstName !== null)
-      updateData.firstName = req.body.firstName;
-    if (req.body.lastName !== undefined && req.body.lastName !== null)
-      updateData.lastName = req.body.lastName;
+    //TODO !== ''
+        const updateData = {};
+        if (req.body.nickname !== undefined && req.body.nickname !== '') updateData.nickname = req.body.nickname;
+        if (req.body.pfp !== undefined && req.body.pfp !== '') updateData.profile_picture = req.body.profile_picture;
+        if (req.body.prefLanguage !== undefined && req.body.prefLanguage !== '') {
+            const prefLanguage = req.body.prefLanguage;
+            if(prefLanguage === 'c' || prefLanguage === 'python' || prefLanguage === 'blocks' ) updateData.pref_language = prefLanguage;
+        };
+    
+        const isEmpty = (obj) => JSON.stringify(obj) === '{}';
+        if(isEmpty(updateData)) throw new CustomError(400, "No data was sent");
 
-    await new User({
-      id: jwt.id,
-      email: updateData.email,
-      nickname: updateData.nickname,
-      firstName: updateData.firstName,
-      lastName: updateData.lastName,
-    }).update();
-    res.send("User has been updated");
+        await new User({
+            id: jwt.user.id,
+            nickname: updateData.nickname ?? null,
+            profile_picture: updateData.pfp ?? null,
+            pref_language: updateData.pref_language ?? null
+        }).update();
+        res.status.(200).send("User has been updated");
+    
   } catch (error) {
     const code = error.code ?? 500;
     const msg = error.message ?? "Failed to update user";
@@ -78,7 +79,7 @@ router.get("/:name", async (req, res) => {
     if (!users || users.length === 0) {
       throw new CustomError(404, "User not found");
     }
-    res.send({
+    res.status(200).send({
       users,
       message: "User found!",
     });
@@ -89,6 +90,7 @@ router.get("/:name", async (req, res) => {
   }
 });
 
+
 router.post("/login", async (req, res) => {
   try {
     await Auth.login(req, res);
@@ -97,6 +99,8 @@ router.post("/login", async (req, res) => {
     const msg = error.message ?? "Login failed";
     throw new CustomError(code, msg, error.data);
   }
+
+    }
 });
 
 export default router;

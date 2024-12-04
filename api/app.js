@@ -1,14 +1,21 @@
 import express from 'express';
+import cors from 'cors';
 import errors from './middleware/errors.js';
-import newsRouter from './route/news.js'
-import usersRouter from './route/users.js'
+import newsRouter from './route/news.js';
+import rankRouter from './route/rank.js';
+import usersRouter from './route/users.js';
 
 const port = 3000;
 const host = '0.0.0.0';
 const app = express();
 
+const allowedOrigins = ['https://localtest.me', 'https://api.localtest.me', 'https://gc3lapi.werlang.site', 'https://gc3gweb.werlang.site']
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(cors({
+    origin: allowedOrigins,
+}));
 
 app.get('/', async (req, res) => {
     res.send({ message: 'Hello World!' });
@@ -16,6 +23,7 @@ app.get('/', async (req, res) => {
 
 app.use('/news', newsRouter);
 app.use('/users', usersRouter);
+app.use('/rank', rankRouter);
 
 // error handling
 app.use(errors);
