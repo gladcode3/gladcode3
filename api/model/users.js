@@ -21,7 +21,7 @@ export default class User {
         this.pasta = pasta;
         this.pref_language = pref_language
     };
-
+  
     async get() {
         let user;
         try {
@@ -36,16 +36,12 @@ export default class User {
             const msg = error.message ?? "Failed to retrieve user data."
             return new CustomError(code, msg);
         }
-
-        const obj = new User({
-            id: this.id,
-            email:`${user[0].email}`,
-            nickname: `${user[0].nickname}`,
-            first_name: `${user[0].first_name}`,
-            last_name: `${user[0].last_name}`,
-            profile_picture: `${user[0].profile_picture}`,
-        });
-        return { "code": 200, "user": obj};
+            this.email = users[0].email;
+            this.nickname = users[0].nickname;
+        this.firstName = users[0].firstName;
+        this.lastName = users[0].lastName;
+        this.profilePicture = users[0].profilePicture;
+        return this;
     };
 
     static async getNameList(name){
@@ -91,7 +87,7 @@ export default class User {
             return new CustomError(code, msg);
         }
     };
-
+              
     async delete(){
         try {
             const find = await Db.find('users', {
@@ -109,22 +105,33 @@ export default class User {
             return new CustomError(code, msg);
         };
     };
+  
+            if(users.length === 0) throw new CustomError(404, `User does not exist`);
 
+            this.email = users[0].email;
+            this.nickname = users[0].nickname;
+            this.firstName = users[0].firstName;
+            this.lastName = users[0].lastName;
+            this.profilePicture = users[0].profilePicture;
+
+            return this;
+    }
     async add(){
         try {
             const activeTime = await utcFix();
-            await Db.insert('users',
+            const sql = await Db.insert('users',
             {
                 email: `${this.email}`,
                 googleid: `${this.googleid}`,
                 nickname: `${this.nickname}`,
-                first_name: `${this.first_name}`,
-                last_name: `${this.last_name}`,
-                profile_picture: `${this.profile_picture}`,
-                pasta: `${this.pasta}`,
-                active: `${activeTime}`
+                firstName: `${this.firstName}`,
+                lastName: `${this.lastName}`,
+                profilePicture: `${this.profilePicture}`,
+                active: `${Db.toDateTime(Date.now())}`
             });
-            return { "code": 200 };
+
+            this.id = sql[0].insertId;
+            return this.get();
 
         } catch (error) {
             const code = error.code ?? 500;
@@ -135,7 +142,8 @@ export default class User {
 
     async update() {
         try {
-            if (this.nickname !== null) {
+            //TODO
+            if (this.nickname !== null && this.nickname !== undefined) {
                 Db.update('users', { nickname: this.nickname }, this.id);
             };
     
@@ -146,6 +154,15 @@ export default class User {
             if (this.pref_language !== null){
                 Db.update('users', { pref_language: this.pref_language }, this.id);
             }
+
+            return this.get();
+        
+        } catch (error) {
+            console.error(`Error in update: ${error.message}`);
+            throw new CustomError(500, "Internal server error");
+        }
+    }
+
             return { "code": 200 };
         
         } catch (error) {
@@ -241,4 +258,3 @@ async function utcFix() {
     const utcfix = now - (3 * 60 * 60 * 1000); 
     return Db.toDateTime(utcfix); 
 };
-

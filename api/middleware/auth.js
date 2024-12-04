@@ -7,7 +7,7 @@ import crypto from 'crypto';
 
 export default class Auth {
 
-    static async login(req, res, next) {
+    static async login(req, res) {
         try {
             const clientId = process.env.GOOGLE_CLIENT_ID;
             const client = new OAuth2Client();
@@ -36,12 +36,9 @@ export default class Auth {
                 const query = await Auth.lookForUser(email, first_name, last_name, googleid);
                 if(query.code !== 200) throw query;
     
-                const userPayload = await Auth.getPayload(email);
+                const userPayload = await Auth.createPayload(email);
                 const token = jwt.sign(userPayload, process.env.SIGN_TOKEN);
-                return {
-                    "token": token,
-                    "code": 200
-                };
+                res.json({ token });
 
             } else {
                 return new CustomError(401, 'Invalid Google token');
@@ -97,12 +94,7 @@ export default class Auth {
                 };
         
         } catch (error) {
-            console.log(error)
-            const code = error.code ?? 500;
-            const msg = error.message ?? "Server issues when verifying user";
-            const customError = new CustomError(code, msg);
-            req.user = customError;
-            return;
+            throw new CustomError(500, "Internal Server Error", error.message);
         }
     }
 
@@ -112,17 +104,10 @@ export default class Auth {
     static async check(req, res, next) {
         try{
             const token = Auth.retrieveToken(req.headers['authorization']);
-
-            const isOptional = req.optional ?? false;
-            if(!token && isOptional) return { "code": 202, "message": "User has access but not logged in." };
-            if (!token) throw new CustomError(400, 'Token is null');
-
-            const decoded = jwt.verify(token, process.env.SIGN_TOKEN)
-            const fetch = await User.fetchData("id", decoded.id); //Queries for the email, so it can be used on the constructor.
-            if(fetch.code !== 200) throw fetch;
-            const obj = new User({
-                id: decoded.id,
-                email: fetch.email
+            jwt.verify(token, process.env.SIGN_TOKEN, (err, user) => {
+                if (err) throw new CustomError(403, 'Token is invalid');
+                req.user = user;
+                next();
             });
             await obj.updateActive();
             
