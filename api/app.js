@@ -9,7 +9,7 @@ const port = 3000;
 const host = '0.0.0.0';
 const app = express();
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS;
+const allowedOrigins = ['https://localtest.me', 'https://api.localtest.me', 'https://gc3lapi.werlang.site', 'https://gc3gweb.werlang.site']
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
