@@ -19,39 +19,49 @@ import GladcodeV2API from './request-old.js';
 
 
 export default class GoogleLogin {
-
     static logged = false;
     static loaded = false;
     static storageKey = 'user-session';
+    static onFailCallback = null;
+    static onSignInCallback = null;
 
-    static async init({ redirectUri }) {
-        if (GoogleLogin.loaded) {
-            return GoogleLogin;
-        }
-        console.log('GoogleLogin.init', { redirectUri });
-        if (!redirectUri) {
-            throw new Error('redirectUri not set');
+    static #generateInitConfig(auto, redirectUri, callback = _res => {}) {        
+        const initConfig = {
+            client_id: TemplateVar.get('googleClientId'),
+            callback,
+            auto_select: auto,
         }
 
-        this.GCAPIv2 = new GladcodeV2API({ url: TemplateVar.get('oldApi') });
+        if (redirectUri) {
+            initConfig.ux_mode = 'redirect';
+            initConfig.login_uri = redirectUri;
+        }
+
+        return initConfig;
+    }
+
+    static async init({ redirectUri, auto=true } = {}) {
+        if (GoogleLogin.loaded) return GoogleLogin;
+
+        // this.GCAPIv2 = new GladcodeV2API({ url: TemplateVar.get('oldApi') });
 
         const pledge = new Pledge();
 
         new DynamicScript('https://accounts.google.com/gsi/client', () => {
+            // console.log('Script do Google carregado');
+            
             async function handleCredentialResponse(response) {
-                // console.log(response.credential);
+                console.log('handleCredentialResponse()', response);
                 GoogleLogin.logged = true;
                 GoogleLogin.saveCredential(response.credential);
             }
 
-            google.accounts.id.initialize({
-                client_id: TemplateVar.get('googleClientId'),
-                callback: handleCredentialResponse,
-                auto_select: true,
-                ux_mode: 'redirect',
-                login_uri: redirectUri,
-                // use_fedcm_for_prompt: true,
-            });
+            const initConfig = this.#generateInitConfig(
+                auto,
+                redirectUri,
+                handleCredentialResponse
+            );
+            google.accounts.id.initialize(initConfig);
 
             GoogleLogin.loaded = true;
             pledge.resolve(GoogleLogin);
@@ -79,9 +89,15 @@ export default class GoogleLogin {
         if (!GoogleLogin.loaded) {
             throw new Error('GoogleLogin not loaded');
         }
+        
         google.accounts.id.prompt(notification => {
+            console.log('notification', notification);
+
             if (!notification.isNotDisplayed()) return;
-            if (GoogleLogin.onFailCallback) GoogleLogin.onFailCallback(notification);
+
+            if (GoogleLogin.onFailCallback) {
+                GoogleLogin.onFailCallback(notification);
+            }
         });
 
         await GoogleLogin.waitLogged();
@@ -104,12 +120,13 @@ export default class GoogleLogin {
     }
 
     static saveCredential(credential) {
-        if (!this.GCAPIv2) {
-            this.GCAPIv2 = new GladcodeV2API({ url: TemplateVar.get('oldApi') });
+        console.log('Salvando credencial:', credential);
+
+        new LocalData({ id: GoogleLogin.storageKey }).set({ data: { token: credential } });
+        
+        if (GoogleLogin.onSignInCallback) {
+            GoogleLogin.onSignInCallback(credential);
         }
-        const sessionId = this.GCAPIv2.getSessionId();
-        new LocalData({ id: GoogleLogin.storageKey }).set({ data: { token: credential, sessionId } });
-        if (GoogleLogin.onSignInCallback) GoogleLogin.onSignInCallback(credential);
     }
 
     static getCredential() {

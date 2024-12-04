@@ -1,103 +1,173 @@
-class Switch extends HTMLElement {
+/*
+    SwitchElement class: Create a switch input in HTML using the <switch-input> tag
+    * @element switch-input
+    * @attribute {boolean} checked - true if the switch is on and false otherwise
+    * @attribute {boolean} disabled - true if the switch is disabled and false otherwise
+
+    METHODS:
+
+    toggleValue method: Turns the switch ON (true) or OFF (false)
+    toggleDisabled method: Enable or disable the switch
+    enable method: Enable the switch
+    disable method: Disable the switch
+*/
+
+/*
+    EXAMPLES:
+
+    // Ex. 1: (HTML)
+    <form>
+        <fieldset>
+            <label for='my-switch1'>Preference 1:</label>
+            <switch-input id='my-switch1'></switch-input>
+
+            <label for='my-switch2'>Preference 2:</label>
+            <switch-input id='my-switch2' checked disabled></switch-input>
+        </fieldset>
+    </form>
+
+
+    // Ex. 2: (JS)
+    const mySwitch1 = document.querySelector('#my-switch1');
+    const mySwitch2 = document.querySelector('#my-switch2');
+
+    mySwitch1.disable(); // Disable switch
+    mySwitch2.enable(); // Enable switch
+
+    mySwitch1.toggleDisabled(); // Enable switch again
+
+    console.log(mySwitch1.checked); // false
+    mySwitch1.toggleValue();
+    console.log(mySwitch1.checked); // true
+
+    console.log(mySwitch1.disable);
+
+
+    // Ex. 3: (JS)
+    const switchInput = document.querySelector('.my-switch');
+
+    console.log(switchInput.value === switchInput.checked); // true
+    
+    switchInput.toggleValue();
+    console.log(switchInput.value === switchInput.checked); // true
+
+    // SwitchInput.value and SwitchInput.checked are the same thing
+*/
+
+import HTMLParser from '../helpers/html-parser.js';
+
+import raw from '../../less/components/_switchs.less?raw';
+
+class SwitchElement extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
+        
+        this._value = this.hasAttribute('checked');
+        this._disabled = this.hasAttribute('disabled');
+        
+        this.relationId = 'switch-input';
+        this.styleNodeElement = this.#generateStyles();
+        this.switchNodeElement = this.#generateSwitch();
+    }
 
-        this.onOffState = false;
-    };
-
-    connectedCallback() { this.build() };
-
-    build() {
-        this.shadowRoot.appendChild(this.styles());
-        this.shadowRoot.appendChild(this.createSwitch());
-    };
-
-    getBooleanState() {
-        const checkbox = this.shadowRoot.querySelector('#switch-input');
-
-        return checkbox.checked;
-    };
-
-    createCheckbox() {
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.id = 'switch-input';
-
-        return checkbox;
-    };
-
-    createLabel() {
-        const label = document.createElement('label');
-        label.setAttribute('for', 'switch-input')
-        label.id = 'switch-element';
-
-        return label;
-    };
-
-    createSwitch() {
-        const switchButton = document.createElement('div');
-        switchButton.classList.add('switch');
-        switchButton.appendChild(this.createCheckbox());
-        switchButton.appendChild(this.createLabel());
-
-        return switchButton;
-    };
-
-    styles() {
-        const styles = document.createElement('style');
-        styles.innerText = `
-            :root {
-                --gray-c: #ccc;
-                --gc-blue: #00638d;
-            }
-
-            .switch {
-                position: relative;
-                margin: 10px 10px 10px 30px;
-                display: flex;
-            }
-
-            #switch-input {
-                margin: 0;
-                padding: 0;
-                width: 1px;
-                height: 1px;
-                position: relative;
-                opacity: 0;
-                pointer-events: none;
-            }
-
-            #switch-element {
-                display: block;
-                width: 3em;
-                height: 1.5em;
-                background-color: var(--gray-c);
-                border-radius: 20px;
-                position: relative;
-                margin-right: 10px;
-                cursor: pointer;
-                transition: all 0.3s;
-            }
-
-            #switch-element:before {
-                content: '';
-                width: 1.4em;
-                height: 1.4em;
-                background: white;
-                border-radius: 50%;
-                position: absolute;
-                top: 1px;
-                left: 1px;
-                transition: all 0.3s;
-            }
-
-            #switch-input:checked + #switch-element { background-color: var(--gc-blue); }
-            #switch-input:checked + #switch-element:before { transform: translateX(1.5em); }
+    #generateSwitch() {
+        const switchRaw = `
+            <div class="switch">
+                <input id="${this.relationId}" type="checkbox">
+                <label id="switch-element" for="${this.relationId}"></label>
+            </div>
         `;
 
-        return styles;
-    };
-};
+        const __switch = HTMLParser.parse(switchRaw);
 
-export default Switch;
+        return __switch;
+    }
+
+    #generateStyles() {
+        const styles = HTMLParser.parse(`<style>${raw}</style>`);
+
+        return styles;
+    }
+
+    #setChangeEvent() {
+        const checkbox = this.shadowRoot.querySelector(`#${this.relationId}`);
+
+        checkbox.addEventListener('change', () => {
+            this.toggleValue();
+        });
+    }
+
+    connectedCallback() {
+        this.shadowRoot.appendChild(this.styleNodeElement);
+        this.shadowRoot.appendChild(this.switchNodeElement);
+        this.#renderCheckbox();
+        this.#setChangeEvent();
+    }
+
+    // Getters
+    get value() { return this._value; }
+    get checked() { return this._value; }
+    get disabled() { return this._disabled; }
+
+    // Setters
+    set value(val) { this._value = val; this.#renderCheckbox(); }
+    set checked(val) { this._value = val; this.#renderCheckbox(); }
+    set disabled(val) { this._disabled = val; this.#renderCheckbox(); }
+    
+    #renderChecked() {
+        if (this._value) {
+            this.setAttribute('checked', '');
+            return;
+        }
+
+        this.removeAttribute('checked');
+    }
+
+    #renderDisabled() {
+        if (this._disabled) {
+            this.setAttribute('disabled', '');
+            return;
+        }
+
+        this.removeAttribute('disabled');
+    }
+
+    #renderCheckbox() {
+        this.#renderChecked();
+        this.#renderDisabled();
+
+        const checkbox = this.shadowRoot.querySelector(`#${this.relationId}`);
+
+        if (checkbox) {
+            checkbox.checked = this._value;
+            checkbox.disabled = this._disabled;
+        }
+    }
+
+    // Methods
+
+    toggleValue() {
+        this._value = !this._value;
+        this.#renderCheckbox();
+    }
+
+    toggleDisabled() {
+        this._disabled = !this._disabled;
+        this.#renderCheckbox();
+    }
+
+    enable() {
+        this._disabled = false;
+        this.#renderCheckbox();
+    }
+
+    disable() {
+        this._disabled = true;
+        this.#renderCheckbox();
+    }
+}
+
+customElements.define('switch-input', SwitchElement);
+
+export default SwitchElement;

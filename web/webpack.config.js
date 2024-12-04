@@ -1,7 +1,7 @@
 import path from 'path';
 import TerserPlugin from 'terser-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
-import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
+import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import NodemonPlugin from 'nodemon-webpack-plugin';
 
 export default {
@@ -28,7 +28,7 @@ export default {
             new CssMinimizerPlugin({
                 minimizerOptions: {
                     preset: [
-                        "default",
+                        'default',
                         {
                             discardComments: { removeAll: true },
                         },
@@ -41,19 +41,28 @@ export default {
         rules: [
             {
                 test: /\.less$/,
-                use: [
-                    MiniCssExtractPlugin.loader,
-                    'css-loader',
-                    'less-loader',
+                oneOf: [
+                    {
+                        resourceQuery: /raw/,
+                        use: 'raw-loader',
+                        
+                    },
+                    {
+                        use: [
+                            MiniCssExtractPlugin.loader,
+                            'css-loader',
+                            'less-loader',
+                        ],
+                    },
                 ],
             },
             {
                 test: /\.(png|jpg|webp)$/i,
                 type: 'asset/resource',
                 generator: {
-                    filename: 'img/generated/[hash][ext][query]'
-                }
-            }
+                    filename: 'img/generated/[hash][ext][query]',
+                },
+            },
         ],
     },
     plugins: [

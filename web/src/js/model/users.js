@@ -1,0 +1,1 @@
+// Criar um model para chamar todas as rotas envolvendo usuários

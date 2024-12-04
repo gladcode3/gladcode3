@@ -1,14 +1,14 @@
 import HTMLLoaderMenu from './components/html-loader-menu.js';
-import Switch from './components/switch-input.js';
 import newsAction from './view/news.js';
 import validateSession from './helpers/session-validator.js';
 import GoogleLogin from './helpers/google-login.js';
 
 import '../less/dashboard.less';
 
+console.log('att')
 // esta é a credencial que tem que enviar para o backend
 const credential = GoogleLogin.getCredential();
-// console.log(credential);
+console.log(credential);
 
 const api = await validateSession();
 const user = await api.post('back_login.php', { action: 'GET' });
@@ -44,4 +44,6 @@ const panelSelectorInfos = {
 };
 
 new HTMLLoaderMenu(panelSelectorInfos);
-customElements.define('switch-input', Switch);
+
+// Fazer com que o Dashboard apenas instancie uma classe header e a classe do menu
+// Fazer um model para os Users

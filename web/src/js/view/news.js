@@ -1,5 +1,5 @@
 import News from "../model/news.js";
-import PostModel  from "../model/post.js";
+import PostModel from "../model/post.js";
 import Post from "../components/post.js";
 
 const newsAction = async () => {

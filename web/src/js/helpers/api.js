@@ -8,7 +8,6 @@ import Request from "./request.js";
 import TemplateVar from "./template-var.js";
 
 export default class Api {
-
     constructor({ auth, token }={}) {
         this.auth = auth || true;
         this.token = token;
@@ -17,13 +16,15 @@ export default class Api {
 
     setInstance() {
         if (!this.auth) {
+            console.log('!this.auth');
             const requestInstance = new Request({ 
                 url: `https://${TemplateVar.get('apiurl')}`,
             });
             return requestInstance;
         }
 
-        const token = this.token || GoogleLogin.getCredential();
+        const token = this.token || GoogleLogin.getCredential().token;
+
         if (!token) {
             throw new Error('Credential not found');
         }
@@ -32,6 +33,8 @@ export default class Api {
             url: `https://${TemplateVar.get('apiurl')}`,
             headers: { 'Authorization': `Bearer ${token}` }
         });
+        console.log('reqInstance expected', requestInstance);
+        console.log(requestInstance.headers.get('Authorization'));
         return requestInstance;
     }
 
