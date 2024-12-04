@@ -1,7 +1,7 @@
 // Request class to make API requests
 // Usage:
 // Unauthenticated request:
-// const request = new Request({ url: 'http://localhost:3000' });
+// const request = new Request({ url: 'http://api.localtest.me' });
 // request.setHeader('Authorization', 'Bearer ' + token);
 // request.get('endpoint', { key: value });
 // request.post('endpoint', { key: value });
@@ -48,6 +48,7 @@ export default class Request {
             endpoint += '?' + queryString;
         }
 
+        console.log(`${this.url}/${endpoint}`);
         const request = await fetch(`${this.url}/${endpoint}`, options);
 
         const text = await request.text();

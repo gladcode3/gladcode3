@@ -19,7 +19,8 @@ export default class User {
 
     async add(){
         try {
-            const sql = await Db.insert('users',
+            const activeTime = await utcFix();
+            await Db.insert('users',
             {
                 email: `${this.email}`,
                 googleid: `${this.googleid}`,
@@ -57,19 +58,16 @@ export default class User {
 
     async update() {
         try {
-            if (this.nickname !== undefined && this.nickname !== null) {
-                console.log(`Updating nickname: ${this.nickname}`);
+            if (this.nickname !== null) {
                 Db.update('users', { nickname: this.nickname }, this.id);
+            };
+    
+            if (this.profile_picture !== null) {
+                Db.update('users', { profile_picture: this.profile_picture }, this.id);
             }
-        
-            if (this.firstName !== undefined && this.firstName !== null) {
-                console.log(`Updating firstName: ${this.firstName}`);
-                Db.update('users', { firstName: this.firstName }, this.id);
-            }
-        
-            if (this.lastName !== undefined && this.lastName !== null) {
-                console.log(`Updating lastName: ${this.lastName}`);
-                Db.update('users', { lastName: this.lastName }, this.id);
+
+            if (this.pref_language !== null){
+                Db.update('users', { pref_language: this.pref_language }, this.id);
             }
         
             if (this.email !== undefined && this.email !== null) {

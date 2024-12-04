@@ -100,7 +100,7 @@ class Post {
         const timestamp = this.getTimestamp(true);
 
         const postHTML = `
-            <section class="news__post">
+            <article class="news__post">
                 <header class="post__header">
                     <h3>${this.title}</h3>
 
@@ -112,7 +112,7 @@ class Post {
                 <button class="post__share-btn">
                     <i class="fas fa-share-alt"></i>
                 </button>
-            </section>
+            </artic>
         `;
 
         // Parse HTML String
