@@ -2,8 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import errors from './middleware/errors.js';
 import newsRouter from './route/news.js';
-import usersRouter from './route/users.js';
 import rankRouter from './route/rank.js';
+import usersRouter from './route/users.js';
 
 const port = 3000;
 const host = '0.0.0.0';
