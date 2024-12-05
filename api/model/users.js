@@ -1,6 +1,5 @@
 import CustomError from '../core/error.js';
 import Db from '../core/mysql.js';
-import jwt from 'jsonwebtoken';
 
 export default class User {
 
@@ -23,155 +22,87 @@ export default class User {
     };
   
     async get() {
-        let user;
-        try {
-            user = await Db.find('users', {
-                filter: { id: this.id },
-                view: ['email', 'nickname', 'first_name', 'last_name', 'profile_picture']
-            });
-            if (user.length === 0) throw new CustomError(404, `User does not exist`);
-
-        } catch (error) {
-            const code = error.code ?? 500;
-            const msg = error.message ?? "Failed to retrieve user data."
-            return new CustomError(code, msg);
-        }
-            this.email = users[0].email;
-            this.nickname = users[0].nickname;
-        this.firstName = users[0].firstName;
-        this.lastName = users[0].lastName;
-        this.profilePicture = users[0].profilePicture;
-        return this;
+        const user = await Db.find('users', {
+            filter: { id: this.id },
+            view: ['email', 'nickname', 'first_name', 'last_name', 'profile_picture']
+        });
+        if (user.length === 0) throw new CustomError(404, `User does not exist`);
+        return user[0];
     };
 
     static async getNameList(name){
         if (!name) throw new CustomError(400, 'Nickname is required');
 
         const results = [];
-        try {
-            const exact = await Db.find('users', {
-                filter: { nickname: name },
-                view: [ 'nickname', 'profile_picture' ],
-                opt: { limit: 1 }
-            });
-            if(exact.length === 1) results.push(exact[0]);
+        const exact = await Db.find('users', {
+            filter: { nickname: name },
+            view: [ 'nickname', 'profile_picture' ],
+            opt: { limit: 1 }
+        });
+        if(exact.length === 1) results.push(exact[0]);
 
-            const prefix = await Db.find('users', {
-                filter: { nickname: Db.like( `${name}_%` ) },
-                view: [ 'nickname', 'profile_picture' ],
-                opt: { limit: 5 }
+        const prefix = await Db.find('users', {
+            filter: { nickname: Db.like( `${name}_%` ) },
+            view: [ 'nickname', 'profile_picture' ],
+            opt: { limit: 5 }
+        });
+        if(prefix.length >= 1) {
+            prefix.forEach(query => {
+                results.push(query);
             });
-            if(prefix.length >= 1) {
-                prefix.forEach(query => {
-                    results.push(query);
-                });
-            };
-            
-            const suffix = await Db.find('users', {
-                filter: { nickname: Db.like( `%_${name}` ) },
-                view: ['nickname', 'profile_picture'],
-                opt: { limit: 5 }
+        };
+        
+        const suffix = await Db.find('users', {
+            filter: { nickname: Db.like( `%_${name}` ) },
+            view: ['nickname', 'profile_picture'],
+            opt: { limit: 5 }
+        });
+        if(suffix.length >= 1) {
+            suffix.forEach(query => {
+                results.push(query);
             });
-            if(suffix.length >= 1) {
-                suffix.forEach(query => {
-                    results.push(query);
-                });
-            };
+        };
 
-            if(results.length === 0) throw new CustomError(404, "No results found.");
-            return { "results": results, "code": 200};
-
-        } catch (error) {
-            const code = error.code ?? 500;
-            const msg = error.message ?? "Internal Server Issues: GET '/:users'"
-            return new CustomError(code, msg);
-        }
+        if(results.length === 0) throw new CustomError(404, "No results found.");
+        return { "results": results };
     };
               
     async delete(){
-        try {
-            const find = await Db.find('users', {
-                filter: { id: this.id },
-                view: [ 'id' ],
-                opt: { limit: 1 }
-            });
-            if(find.length === 0) throw new CustomError(404, "User not found.")
-            const query = await Db.delete('users', this.id);
-            return { "code": 200 };
-            
-        } catch (error) {
-            const code = error.code ?? 500;
-            const msg = error.message ?? "Internal Server Issues: DELETE '/'"
-            return new CustomError(code, msg);
-        };
+        const find = await Db.find('users', {
+            filter: { id: this.id },
+            view: [ 'id' ],
+            opt: { limit: 1 }
+        });
+        if(find.length === 0) throw new CustomError(404, "User not found.")
+        await Db.delete('users', this.id);
+
+        return { "message": "User has been deleted successfully." };
     };
-  
-            if(users.length === 0) throw new CustomError(404, `User does not exist`);
 
-            this.email = users[0].email;
-            this.nickname = users[0].nickname;
-            this.firstName = users[0].firstName;
-            this.lastName = users[0].lastName;
-            this.profilePicture = users[0].profilePicture;
-
-            return this;
-    }
     async add(){
-        try {
-            const activeTime = await utcFix();
-            const sql = await Db.insert('users',
-            {
-                email: `${this.email}`,
-                googleid: `${this.googleid}`,
-                nickname: `${this.nickname}`,
-                firstName: `${this.firstName}`,
-                lastName: `${this.lastName}`,
-                profilePicture: `${this.profilePicture}`,
-                active: `${Db.toDateTime(Date.now())}`
-            });
+        const activeTime = await utcFix();
+        const sql = await Db.insert('users',
+        {
+            email: `${this.email}`,
+            googleid: `${this.googleid}`,
+            nickname: `${this.nickname}`,
+            first_name: `${this.first_name}`,
+            last_name: `${this.last_name}`,
+            profile_picture: `${this.profile_picture}`,
+            active: `${activeTime}`,
+            pasta: `${this.pasta}`
+        });
 
-            this.id = sql[0].insertId;
-            return this.get();
-
-        } catch (error) {
-            const code = error.code ?? 500;
-            const msg = error.message ?? "Internal Server Issues: User.add()"
-            return new CustomError(code, msg);
-        };
+        this.id = sql[0].insertId;
+        return { "User": this.get(), "code": 200 };
     };
 
     async update() {
-        try {
-            //TODO
-            if (this.nickname !== null && this.nickname !== undefined) {
-                Db.update('users', { nickname: this.nickname }, this.id);
-            };
-    
-            if (this.profile_picture !== null) {
-                Db.update('users', { profile_picture: this.profile_picture }, this.id);
-            }
-
-            if (this.pref_language !== null){
-                Db.update('users', { pref_language: this.pref_language }, this.id);
-            }
-
-            return this.get();
-        
-        } catch (error) {
-            console.error(`Error in update: ${error.message}`);
-            throw new CustomError(500, "Internal server error");
-        }
+        if (this.nickname !== undefined) await Db.update('users', { nickname: this.nickname }, this.id);
+        if (this.profile_picture !== undefined) await Db.update('users', { profile_picture: this.profile_picture }, this.id);
+        if (this.pref_language !== undefined) await Db.update('users', { pref_language: this.pref_language }, this.id);
+        return this.get();
     }
-
-            return { "code": 200 };
-        
-        } catch (error) {
-            const code = error.code ?? 500;
-            const msg = error.message ?? "Failed to retrieve user data."
-            return new CustomError(code, msg);
-        };
-    };
-    
 
     async loginUser(){
         try {
@@ -196,33 +127,22 @@ export default class User {
             return jwt.sign(userPayload, process.env.SIGN_TOKEN);
 
         } catch (error) {
-            throw new CustomError(500, "Internal server error", error.message);
+            const code = error.code ?? 500;
+            const msg = error.message ?? "Failed to login."
+            return new CustomError(code, msg);
         };
     };
 
     async updateReadNews(){
-        try {
-            const activeTime = await utcFix();
-            await Db.update('users', { read_news: activeTime }, this.id);
-            return { "code": 200 };
-
-        } catch (error) {
-            const code = error.code ?? 500;
-            const msg = error.message ?? "Internal Server Issues.";
-            return new CustomError(code, msg);
-        };
+        const activeTime = await utcFix();
+        await Db.update('users', { read_news: activeTime }, this.id);
+        return;
     };
 
     async updateActive(){
-        try {
-            const activeTime = await utcFix();
-            await Db.update('users', { active: activeTime }, this.id);
-            return { "code": 200 };
-        } catch (error) {
-            const code = error.code ?? 500;
-            const msg = error.message ?? "Failed to update active";
-            return new CustomError(code, msg);
-        };
+        const activeTime = await utcFix();
+        await Db.update('users', { active: activeTime }, this.id);
+        return;
     };
 
     static async fetchData(filter, value){
