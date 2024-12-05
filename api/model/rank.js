@@ -36,26 +36,6 @@ export default class Rank {
             throw new CustomError(code, msg, error.data);
         };
     };
-        try {
-            const offset = (page*limit)-limit;
-
-            sql = ` SELECT cod FROM gladiators g INNER JOIN users u on g.master = u.id ${newSearch}`;
-            const total = await Db.query(sql, []);
-            const num_rows = total.length ;
-
-            const sumreward = `SELECT sum(r.reward) FROM reports r INNER JOIN logs l ON l.id = r.log WHERE g.cod = r.gladiator AND l.time > CURRENT_TIME() - INTERVAL 1 DAY`;
-            const position = `SELECT count(*) FROM gladiators g2 WHERE g2.mmr >= g.mmr`;
-
-            sql = ` SELECT g.name, g.mmr, u.nickname, (${sumreward}) AS sumreward, (${position}) AS position FROM gladiators g INNER JOIN users u ON g.master = u.id ${newSearch} ORDER BY g.mmr DESC limit ${limit} OFFSET ${offset}`
-            const result = await Db.query(sql, []);
-            return { "showing": offset+limit, "numRows": num_rows, "result": result };
-
-        } catch (error) {
-            const code = error.code ?? 500;
-            const msg = error.message ?? "Failed to retrieve Rank";
-            throw new CustomError(code, msg, error.data);
-        };
-    };
 
     static async getWatchTab(){
         // TODO
