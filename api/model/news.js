@@ -35,42 +35,33 @@ export default class News {
         };
     };
 
-    // Não cheguei a usar nada da classe;
-    // Ao meu ver, pegar ítems associados com o hash não é algo específico de algum post, e sim do sistema como um todo.
     static async getByHash(id){
         const posts = { 
             "prevPost": null,
             "currentPost": null,
             "nextPost": null
         };
-        try {
-            const news = await Db.find('news', 
-                {
-                    filter: { id: id },
-                    view: ['id', 'title', 'time', 'post'],
-                    opt: { limit: 1, }
-                });
-            
-            if(news.length === 0) return { "code": 404, "message": `No posts were found: Id: ${id} `};
-            if(news.length === 1) posts.currentPost = news[0];
-            
-            const prevNews = await News.fetchPrevPost(news[0].time);
-            if(prevNews.length === 1) posts.prevPost = prevNews[0];
+        const news = await Db.find('news', 
+            {
+                filter: { id: id },
+                view: ['id', 'title', 'time', 'post'],
+                opt: { limit: 1, }
+            });
+        
+        if(news.length === 0) throw { "code": 404, "message": `No posts were found: Id: ${id} `};
+        if(news.length === 1) posts.currentPost = news[0];
+        
+        const prevNews = await News.fetchPrevPost(news[0].time);
+        if(prevNews.length === 1) posts.prevPost = prevNews[0];
 
-            const nextNews = await News.fetchNextPost(news[0].time);
-            if(nextNews.length === 1) posts.nextPost = nextNews[0];
+        const nextNews = await News.fetchNextPost(news[0].time);
+        if(nextNews.length === 1) posts.nextPost = nextNews[0];
 
-        } catch (error) {
-            const code = error.code ?? 500;
-            const msg = error.message ?? "Failed to retrieve news";
-            return new CustomError(code, msg);
-        }
         const resPosts = cleanPostObj(posts);
         return resPosts;
     }
 
     static async fetchPrevPost(basetime){
-    try {
         const prevNews = await Db.find('news',
             {
                 filter: { time: {'<': basetime} },
@@ -79,32 +70,18 @@ export default class News {
             }
         );
         if(prevNews.length === 1) return prevNews;
-
-        } catch (error) {
-            const code = error.code ?? 500;
-            const msg = error.message ?? "Failed to retrieve news"
-            return new CustomError(code, msg);
-        };
         return false;
     };
 
     static async fetchNextPost(basetime){
-        try{
-            const nextNews = await Db.find('news',
-                {
-                    filter: { time: {'>': basetime} },
-                    view: ['id', 'title', 'time', 'post'],
-                    opt: { limit: 1 }
-                }
-            );
-            if(nextNews.length === 1) return nextNews;
-
-        } catch(error){
-            const code = error.code ?? 500;
-            const msg = error.message ?? "Failed to retrieve news"
-            return new CustomError(code, msg);
-        }
-
+        const nextNews = await Db.find('news',
+            {
+                filter: { time: {'>': basetime} },
+                view: ['id', 'title', 'time', 'post'],
+                opt: { limit: 1 }
+            }
+        );
+        if(nextNews.length === 1) return nextNews;
         return false;
     }
 }
