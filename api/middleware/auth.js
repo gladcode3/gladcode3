@@ -61,7 +61,7 @@ export default class Auth {
                     const googleData = await client.verifyIdToken({
                         idToken: token,
                         audience: clientId,
-                    });
+                    })
                     return googleData.getPayload();
                 }
                 catch (error) {
