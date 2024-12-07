@@ -85,13 +85,19 @@ export default class User {
         }
     }
     
+    // TODO - Add pagination
     async getNameList(){
-        if (!this.name) throw new CustomError(400, 'Nickname is required');
-
-        const users = await Db.find('users', {
-            filter: { name: Db.like(this.nickname) },
-            view: ['nickname']
-        });
-        return users;
+        try {
+          const [rows, _] = await db.execute(
+            "SELECT * FROM users LIMIT 20",
+          );
+    
+          if (rows.length === 0)
+            throw new CustomError(404, "No users were found");
+          return rows;
+        } catch (error) {
+          console.error(`Error in getNameList: ${error.message}`);
+          throw new CustomError(500, "Internal server error");
+        }
     }
 }

@@ -6,27 +6,28 @@ const router = express.Router();
 
 // Registra usuários
 const user = new User({});
-router.get("/", /* Auth.check, */ async (req, res) => {
-  try {
-    const jwt = req.user;
-    const user = await new User({
-      id: jwt.id,
-    }).get();
+// router.get("/", /* Auth.check, */ async (req, res) => {
+//   try {
+//     const jwt = req.user;
+//     const user = await new User({
+//       id: jwt.id,
+//     }).get();
 
-    // Se o usuário for encontrado, retorna um status 200 OK
-    res.status(200).json(user);
+//     // Se o usuário for encontrado, retorna um status 200 OK
+//     res.status(200).json(user);
 
-    // Tratar individualmente erro na query do banco, se o usuário não for encontrado, retorna um status 404 (Not Found)
-    if (!user) {
-      return res.status(404).send({
-        message: "Usuário não encontrado",
-      });
-    }
-  } catch (error) {
-    // tratar erro interno para separar de um simples erro de query e enviar erro para o frontend para mostrar quando necessário, além de melhor debug, se quiser mandar com status enviar status 500 (internal server error)
-    res.status(500).send(error);
-  }
-});
+//     // Tratar individualmente erro na query do banco, se o usuário não for encontrado, retorna um status 404 (Not Found)
+//     if (!user) {
+//       return res.status(404).send({
+//         message: "Usuário não encontrado",
+//       });
+//     }
+//   } catch (error) {
+//     // tratar erro interno para separar de um simples erro de query e enviar erro para o frontend para mostrar quando necessário, além de melhor debug, se quiser mandar com status enviar status 500 (internal server error)
+//     res.status(500).send(error);
+//   }
+// });
+
 //Atualiza usuários
 //Por algum motivo a função precisa de um email, mesmo se estiver vazio
 router.put("/", /* Auth.check, */ async (req, res, next) => {
@@ -66,6 +67,11 @@ router.delete("/", /* Auth.check, */ async (req, res, next) => {
     next(error);
   }
 });
+
+router.get('/', async (request, reply) => {
+  const list = await user.getNameList()
+  reply.json(list)
+})
 
 // Busca por usuários
 router.get("/:nickname", async (req, res) => {
