@@ -1,3 +1,6 @@
+// Deprecated
+// No documentation...
+
 class GladcodeV2API {
     constructor({ url, headers, sessionId }) {
         // set fixed values

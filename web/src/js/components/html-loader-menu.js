@@ -1,25 +1,40 @@
 /*
-HTMLLoaderMenu class: Loads an HTML menu with various items
+    HTMLLoaderMenu class: Defines a menu capable of rendering HTML and/or triggering functions
+    * @param {Object} config - Configure menu settings
+        * @param {HTMLElement} config.menu - The HTML element that will be defined as menu
+        * @param {ItemConfig[]} config.items - Configuring menu items
+        * @param {HTMLElement} config.target - The HTML element that will render the items
+    
+    @typedef {Object} ItemConfig - Configuration object for menu items
+    * @property {string} id - The item's unique id attribute
+    * @property {string} [path] - The path to the item content in the .html file (optional)
+    * @property {boolean} [default] - If true, the item will be loaded by default automatically (optional)
+    * @property {function(): void} [action] - A callback that is called whenever the item is selected from the menu
 
-const myMenu = new HTMLLoaderMenu({ menu, items, target });
 
-items:
-    - id: (required) a unique id for the item
-    - path: (optional) the path to the item's content
-    - default: (optional) if true, this item will be loaded by default
-    - action: (optional) a function that will be executed when the item is loaded
 
-Example:
+    METHODS:
 
-const myMenu = new HTMLLoaderMenu({
-    menu: document.getElementById('myMenu'),
-    items: [
-        { id: 'home', path: 'home.html', default: true },
-        { id: 'about', path: 'about.html' },
-        { id: 'contact', path: 'contact.html', action: () => console.log('Contact loaded') }
-    ],
-    target: document.getElementById('content')
-});
+    getTimestamp method: Returns a formatted timestamp with or without a label
+    * @param {boolean} [withLabel] - If true, the label is returned along with the timestamp (optional)
+    * @returns {string} The formatted timestamp
+
+    generatePost method: Get the Post DOM-Element and put in "element" attribute
+    * @returns {ChildNode | null} The DOM element of the Post or null
+*/
+
+/*
+    EXAMPLE:
+
+    const myMenu = new HTMLLoaderMenu({
+        menu: document.getElementById('myMenu'),
+        items: [
+            { id: 'home', path: 'home.html', default: true },
+            { id: 'about', path: 'about.html' },
+            { id: 'contact', path: 'contact.html', action: () => console.log('Contact loaded') }
+        ],
+        target: document.getElementById('content')
+    });
 */
 
 class HTMLLoaderMenu {

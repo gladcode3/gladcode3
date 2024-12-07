@@ -17,7 +17,6 @@ export default class Api {
 
     setInstance() {
         if (!this.auth) {
-            console.log('!this.auth');
             const requestInstance = new Request({ 
                 url: `https://${TemplateVar.get('apiurl')}`,
             });
@@ -32,10 +31,9 @@ export default class Api {
 
         const requestInstance = new Request({ 
             url: `https://${TemplateVar.get('apiurl')}`,
-            headers: { 'Authorization': `Bearer ${token.token}` }
+            headers: { 'Authorization': `Bearer ${token}` }
         });
-        console.log('reqInstance expected', requestInstance);
-        console.log(requestInstance.headers.get('Authorization'));
+
         return requestInstance;
     }
 

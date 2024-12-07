@@ -15,8 +15,6 @@ import TemplateVar from './template-var.js';
 import DynamicScript from './dynamic-script.js';
 import Pledge from './pledge.js';
 import LocalData from './local-data.js';
-// import GladcodeV2API from './request-old.js';
-import Request from './request.js';
 
 
 export default class GoogleLogin {
@@ -44,15 +42,10 @@ export default class GoogleLogin {
     static async init({ redirectUri, auto=true } = {}) {
         if (GoogleLogin.loaded) return GoogleLogin;
 
-        // this.GCAPIv2 = new GladcodeV2API({ url: TemplateVar.get('oldApi') });
-
         const pledge = new Pledge();
 
-        new DynamicScript('https://accounts.google.com/gsi/client', () => {
-            // console.log('Script do Google carregado');
-            
+        new DynamicScript('https://accounts.google.com/gsi/client', () => {            
             async function handleCredentialResponse(response) {
-                console.log('handleCredentialResponse()', response);
                 GoogleLogin.logged = true;
                 GoogleLogin.saveCredential(response.credential);
             }
@@ -92,8 +85,6 @@ export default class GoogleLogin {
         }
         
         google.accounts.id.prompt(notification => {
-            console.log('notification', notification);
-
             if (!notification.isNotDisplayed()) return;
 
             if (GoogleLogin.onFailCallback) {
@@ -121,9 +112,8 @@ export default class GoogleLogin {
     }
 
     static saveCredential(credential) {
-        console.log('Salvando credencial:', credential);
-
-        new LocalData({ id: GoogleLogin.storageKey }).set({ data: { token: credential } });
+        new LocalData({ id: GoogleLogin.storageKey })
+            .set({ data: { token: credential } });
         
         if (GoogleLogin.onSignInCallback) {
             GoogleLogin.onSignInCallback(credential);

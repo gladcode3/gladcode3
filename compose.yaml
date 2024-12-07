@@ -39,7 +39,7 @@ services:
             - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
         volumes:
             - mysql:/var/lib/mysql
-            # - .:/app
+            - .:/app
         ports:
             - 127.0.0.1:${MYSQL_PORT}:3306
         networks:

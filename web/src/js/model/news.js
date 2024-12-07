@@ -6,7 +6,7 @@ class News {
     constructor({ page, limit }) {
         this.page = page;
         this.limit = limit;
-    };
+    }
 
     async getNews() {
         const data = await api.get('news', {
@@ -15,7 +15,7 @@ class News {
         });
 
         return data;
-    };
-};
+    }
+}
 
 export default News;

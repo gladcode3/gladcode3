@@ -1,4 +1,11 @@
 /*
+    WARNING:
+    
+    This component has a problem,
+    when placing an addEventListener in any of its instances it triggers the events incorrectly
+*/
+
+/*
     SwitchElement class: Create a switch input in HTML using the <switch-input> tag
     * @element switch-input
     * @attribute {boolean} checked - true if the switch is on and false otherwise
@@ -7,8 +14,11 @@
     METHODS:
 
     toggleValue method: Turns the switch ON (true) or OFF (false)
+
     toggleDisabled method: Enable or disable the switch
+
     enable method: Enable the switch
+    
     disable method: Disable the switch
 */
 

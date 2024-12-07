@@ -4,7 +4,6 @@ import GoogleLogin from "../helpers/google-login.js";
 class UserAuth {
     static async auth() {
         await GoogleLogin.init({ auto: false });
-        console.log('GoogleLogin.getCredential()', GoogleLogin.getCredential());
 
         let credential = GoogleLogin.getCredential();
 
@@ -20,14 +19,13 @@ class UserAuth {
         }
 
         const onFailE = async () => {
-            console.warn('onFailE');
-
             const loginBtn = document.querySelector('#button-login');
             GoogleLogin.renderButton(loginBtn);
         };
 
         const onSucessE = () => {
-            console.warn('onSucessE');
+            console.log('sucess', GoogleLogin.getCredential());
+            // location.href = '/dashboard';
         };
 
         GoogleLogin.onFail(onFailE);
@@ -38,7 +36,7 @@ class UserAuth {
             return;
         }
 
-        GoogleLogin.prompt();
+        await GoogleLogin.prompt();
     }
 }
 

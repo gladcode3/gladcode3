@@ -1,5 +1,5 @@
 import News from "../model/news.js";
-import PostModel from "../model/post.js";
+import PostInfo from "../model/post-info.js";
 import Post from "../components/post.js";
 
 const newsAction = async () => {
@@ -9,8 +9,8 @@ const newsAction = async () => {
     console.log(newsData);
 
     newsData.posts.forEach(postInfo => {
-        const post = new PostModel(postInfo);
-        new Post(post);
+        const postInfo = new PostInfo(postInfo);
+        new Post(postInfo);
     });
 };
 
