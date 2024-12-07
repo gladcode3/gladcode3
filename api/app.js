@@ -1,9 +1,10 @@
 import express from 'express';
 import cors from 'cors';
 import errors from './middleware/errors.js';
-import newsRouter from './route/news.js';
-import rankRouter from './route/rank.js';
+// import newsRouter from './route/news.js';
+// import rankRouter from './route/rank.js';
 import usersRouter from './route/users.js';
+import gladiatorRouter from './route/gladiator.js'
 
 const port = 3000;
 const host = '0.0.0.0';
@@ -21,9 +22,10 @@ app.get('/', async (req, res) => {
     res.send({ message: 'Hello World!' });
 });
 
-app.use('/news', newsRouter);
+// app.use('/news', newsRouter);
 app.use('/users', usersRouter);
-app.use('/rank', rankRouter);
+app.use('/gladiators', gladiatorRouter)
+// app.use('/rank', rankRouter);
 
 // error handling
 app.use(errors);

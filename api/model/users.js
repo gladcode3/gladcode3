@@ -1,6 +1,5 @@
 import CustomError from '../core/error.js';
-import Db, { db } from '../core/mysql.js';
-
+import { db } from '../core/mysql.js';
 export default class User {
 
     constructor({ id, email, googleid, firstName, lastName, nickname, profilePicture}) {
@@ -38,17 +37,17 @@ export default class User {
         }
     }
 
-    async getUser(name) {
-        if (!name) throw new CustomError(400, "Name is required");
+    async getByNickname(nickname) {
+        if (!nickname) throw new CustomError(400, "Nickname is required");
     
         try {
           const [rows, _] = await db.execute(
             "SELECT * FROM users WHERE nickname = ?",
-            [name] // The value of name is safely passed as a parameter
+            [nickname] // The value of name is safely passed as a parameter
           );
     
           if (rows.length === 0)
-            throw new CustomError(404, "No users found with the given name");
+            throw new CustomError(404, "No users found with the given nickname");
           return rows;
         } catch (error) {
           console.error(`Error in getNameList: ${error.message}`);

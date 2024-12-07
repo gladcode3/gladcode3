@@ -1,12 +1,12 @@
 import express from "express";
 import User from "../model/users.js";
 import CustomError from "../core/error.js";
-import Auth from "../middleware/auth.js";
+// import Auth from "../middleware/auth.js";
 const router = express.Router();
 
 // Registra usuários
 const user = new User({});
-router.get("/", Auth.check, async (req, res) => {
+router.get("/", /* Auth.check, */ async (req, res) => {
   try {
     const jwt = req.user;
     const user = await new User({
@@ -29,7 +29,7 @@ router.get("/", Auth.check, async (req, res) => {
 });
 //Atualiza usuários
 //Por algum motivo a função precisa de um email, mesmo se estiver vazio
-router.put("/", Auth.check, async (req, res, next) => {
+router.put("/", /* Auth.check, */ async (req, res, next) => {
   try {
     if (!req.user) throw new CustomError(401, "Missing JWT");
     const jwt = req.user;
@@ -57,7 +57,7 @@ router.put("/", Auth.check, async (req, res, next) => {
   }
 });
 
-router.delete("/", Auth.check, async (req, res, next) => {
+router.delete("/", /* Auth.check, */ async (req, res, next) => {
   try {
     const jwt = req.user;
     await new User({ id: jwt.id }).delete();
@@ -68,15 +68,16 @@ router.delete("/", Auth.check, async (req, res, next) => {
 });
 
 // Busca por usuários
-router.get("/:name", async (req, res, next) => {
+router.get("/:nickname", async (req, res) => {
   try {
-    const { name } = req.params;
-    const users = await user.getUser(name);
-    res.json(users);
+    const { nickname } = req.params;
+    const users = await user.getByNickname(nickname);
 
     if(!users){
       throw new CustomError(404, "user not found");
     }
+    res.json(users);
+
   } catch (error) {
     let code = error.code ?? 404
     let message = error.message ?? "Internal server error"
