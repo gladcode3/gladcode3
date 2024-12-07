@@ -5,6 +5,8 @@ import errors from './middleware/errors.js';
 // import rankRouter from './route/rank.js';
 import usersRouter from './route/users.js';
 import gladiatorRouter from './route/gladiator.js'
+import dotenv from 'dotenv';
+dotenv.config();
 
 const port = 3000;
 const host = '0.0.0.0';

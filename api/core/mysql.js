@@ -1,5 +1,7 @@
-import database from 'mysql2/promise'
+import database from "mysql2/promise";
+import dotenv from 'dotenv';
+dotenv.config();
 
 export const db = await database.createConnection(
-  "mysql://root:root@localhost:8889/gladcode"
+  process.env.DATABASE_URL ?? "mysql://root:root@localhost:3306/gladcode"
 );
