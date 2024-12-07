@@ -1,5 +1,5 @@
 import CustomError from '../core/error.js';
-import Db from '../core/mysql.js';
+import Db, { db } from '../core/mysql.js';
 
 export default class User {
 
@@ -38,22 +38,24 @@ export default class User {
         }
     }
 
-    async get(){
-            const users = await Db.find('users', {
-                filter: { id: Db.like(this.id) },
-                view: [ 'email', 'nickname', 'firstName', 'lastName', 'profilePicture' ]
-            });
-
-            if(users.length === 0) throw new CustomError(404, `User does not exist`);
-
-            this.email = users[0].email;
-            this.nickname = users[0].nickname;
-            this.firstName = users[0].firstName;
-            this.lastName = users[0].lastName;
-            this.profilePicture = users[0].profilePicture;
-
-            return this;
-    }
+    async getUser(name) {
+        if (!name) throw new CustomError(400, "Name is required");
+    
+        try {
+          const [rows, _] = await db.execute(
+            "SELECT * FROM users WHERE nickname = ?",
+            [name] // The value of name is safely passed as a parameter
+          );
+    
+          if (rows.length === 0)
+            throw new CustomError(404, "No users found with the given name");
+          return rows;
+        } catch (error) {
+          console.error(`Error in getNameList: ${error.message}`);
+          throw new CustomError(500, "Internal server error");
+        }
+      }
+    
 
     async update() {
         try {
