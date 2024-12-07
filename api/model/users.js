@@ -1,96 +1,95 @@
-import CustomError from '../core/error.js';
-import Db from '../core/mysql.js';
+import express from "express";
+import User from "../model/users.js";
+import CustomError from "../core/error.js";
+import Auth from "../middleware/auth.js";
+const router = express.Router();
 
-export default class User {
+// Registra usuários
+const user = new User({});
+router.get("/", Auth.check, async (req, res) => {
+  try {
+    const jwt = req.user;
+    const user = await new User({
+      id: jwt.id,
+    }).get();
 
-    constructor({ id, email, googleid, firstName, lastName, nickname, profilePicture}) {
-        this.id = id;
-        this.email = email;
-        this.googleid = googleid;
-        this.nickname = nickname;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.profilePicture = profilePicture || null;
+    // Se o usuário for encontrado, retorna um status 200 OK
+    res.status(200).json(user);
+
+    // Tratar individualmente erro na query do banco, se o usuário não for encontrado, retorna um status 404 (Not Found)
+    if (!user) {
+      return res.status(404).send({
+        message: "Usuário não encontrado",
+      });
     }
+  } catch (error) {
+    // tratar erro interno para separar de um simples erro de query e enviar erro para o frontend para mostrar quando necessário, além de melhor debug, se quiser mandar com status enviar status 500 (internal server error)
+    res.status(500).send(error);
+  }
+});
+//Atualiza usuários
+//Por algum motivo a função precisa de um email, mesmo se estiver vazio
+router.put("/", Auth.check, async (req, res, next) => {
+  try {
+    if (!req.user) throw new CustomError(401, "Missing JWT");
+    const jwt = req.user;
 
-    async delete(){
-        Db.delete('users', this.id);
+    const updateData = {};
+    if (req.body.email !== undefined && req.body.email !== null)
+      updateData.email = req.body.email;
+    if (req.body.nickname !== undefined && req.body.nickname !== null)
+      updateData.nickname = req.body.nickname;
+    if (req.body.firstName !== undefined && req.body.firstName !== null)
+      updateData.firstName = req.body.firstName;
+    if (req.body.lastName !== undefined && req.body.lastName !== null)
+      updateData.lastName = req.body.lastName;
+
+    await new User({
+      id: jwt.id,
+      email: updateData.email,
+      nickname: updateData.nickname,
+      firstName: updateData.firstName,
+      lastName: updateData.lastName,
+    }).update();
+    res.send("User has been updated");
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.delete("/", Auth.check, async (req, res, next) => {
+  try {
+    const jwt = req.user;
+    await new User({ id: jwt.id }).delete();
+    res.send(`User ${jwt.id} has been deleted`);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Busca por usuários
+router.get("/:name", async (req, res, next) => {
+  try {
+    const { name } = req.params;
+    const users = await user.getUser(name);
+    res.json(users);
+
+    if(!users){
+      throw new CustomError(404, "user not found");
     }
+  } catch (error) {
+    let code = error.code ?? 404
+    let message = error.message ?? "Internal server error"
+    throw new CustomError(code, message);
+  }
+});
 
-    async add(){
-        try {
-            const sql = await Db.insert('users',
-            {
-                email: `${this.email}`,
-                googleid: `${this.googleid}`,
-                nickname: `${this.nickname}`,
-                firstName: `${this.firstName}`,
-                lastName: `${this.lastName}`,
-                profilePicture: `${this.profilePicture}`,
-                active: `${Db.toDateTime(Date.now())}`
-            });
+router.post("/login", async (req, res, next) => {
+  try {
+    const login = await Auth.login(req, res, next);
+  } catch (error) {
+    next(error);
+  }
+});
 
-            this.id = sql[0].insertId;
-            return this.get();
-
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
-    async get(){
-            const users = await Db.find('users', {
-                filter: { id: Db.like(this.id) },
-                view: [ 'email', 'nickname', 'firstName', 'lastName', 'profilePicture' ]
-            });
-
-            if(users.length === 0) throw new CustomError(404, `User does not exist`);
-
-            this.email = users[0].email;
-            this.nickname = users[0].nickname;
-            this.firstName = users[0].firstName;
-            this.lastName = users[0].lastName;
-            this.profilePicture = users[0].profilePicture;
-
-            return this;
-    }
-
-    async update() {
-        try {
-            if (this.nickname !== undefined && this.nickname !== null) {
-                console.log(`Updating nickname: ${this.nickname}`);
-                Db.update('users', { nickname: this.nickname }, this.id);
-            }
-        
-            if (this.firstName !== undefined && this.firstName !== null) {
-                console.log(`Updating firstName: ${this.firstName}`);
-                Db.update('users', { firstName: this.firstName }, this.id);
-            }
-        
-            if (this.lastName !== undefined && this.lastName !== null) {
-                console.log(`Updating lastName: ${this.lastName}`);
-                Db.update('users', { lastName: this.lastName }, this.id);
-            }
-        
-            if (this.email !== undefined && this.email !== null) {
-                console.log(`Updating email: ${this.email}`);
-                Db.update('users', { email: this.email }, this.id);
-            }
-            return this.get();
-        
-        } catch (error) {
-            console.error(`Error in update: ${error.message}`);
-            throw new CustomError(500, "Internal server error");
-        }
-    }
-    
-    async getNameList(){
-        if (!this.name) throw new CustomError(400, 'Nickname is required');
-
-        const users = await Db.find('users', {
-            filter: { name: Db.like(this.nickname) },
-            view: ['nickname']
-        });
-        return users;
-    }
-}
+export default router;

@@ -5,28 +5,31 @@ import Auth from "../middleware/auth.js";
 const router = express.Router();
 
 // Registra usuários
-router.get("/users", Auth.check, async (req, res) => {
+const user = new User({});
+router.get("/", Auth.check, async (req, res) => {
   try {
     const jwt = req.user;
     const user = await new User({
       id: jwt.id,
     }).get();
 
-    if (!user) {
-      throw new CustomError(404, "user check failed");
-    }
-
+    // Se o usuário for encontrado, retorna um status 200 OK
     res.status(200).json(user);
+
+    // Tratar individualmente erro na query do banco, se o usuário não for encontrado, retorna um status 404 (Not Found)
+    if (!user) {
+      return res.status(404).send({
+        message: "Usuário não encontrado",
+      });
+    }
   } catch (error) {
-    const code = error.code ?? 500;
-    const msg = error.message ?? "Failed to check user";
-    throw new CustomError(code, msg, error.data);
+    // tratar erro interno para separar de um simples erro de query e enviar erro para o frontend para mostrar quando necessário, além de melhor debug, se quiser mandar com status enviar status 500 (internal server error)
+    res.status(500).send(error);
   }
 });
-
 //Atualiza usuários
 //Por algum motivo a função precisa de um email, mesmo se estiver vazio
-router.put("/users", Auth.check, async (req, res) => {
+router.put("/", Auth.check, async (req, res, next) => {
   try {
     if (!req.user) throw new CustomError(401, "Missing JWT");
     const jwt = req.user;
@@ -50,52 +53,42 @@ router.put("/users", Auth.check, async (req, res) => {
     }).update();
     res.send("User has been updated");
   } catch (error) {
-    const code = error.code ?? 500;
-    const msg = error.message ?? "Failed to update user";
-    throw new CustomError(code, msg, error.data);
+    next(error);
   }
 });
 
-router.delete("/users", Auth.check, async (req, res) => {
+router.delete("/", Auth.check, async (req, res, next) => {
   try {
     const jwt = req.user;
     await new User({ id: jwt.id }).delete();
-    res.status(200).send(`User ${jwt.id} has been deleted`);
+    res.send(`User ${jwt.id} has been deleted`);
   } catch (error) {
-    const code = error.code ?? 500;
-    const msg = error.message ?? "Failed to delete user";
-    throw new CustomError(code, msg, error.data);
+    next(error);
   }
 });
 
 // Busca por usuários
-router.get("/:name", async (req, res) => {
+router.get("/:name", async (req, res, next) => {
   try {
-    const users = await new User({
-      name: req.params.name,
-    }).getNameList();
+    const { name } = req.params;
+    const users = await user.getUser(name);
+    res.json(users);
 
-    if (!users || users.length === 0) {
-      throw new CustomError(404, "User not found");
+    if(!users){
+      throw new CustomError(404, "user not found");
     }
-    res.send({
-      users,
-      message: "User found!",
-    });
   } catch (error) {
-    const code = error.code ?? 500;
-    const msg = error.message ?? "Failed to search user";
-    throw new CustomError(code, msg, error.data);
+    let code = error.code ?? 404
+    let message = error.message ?? "Internal server error"
+    throw new CustomError(code, message);
   }
 });
 
-router.post("/login", async (req, res) => {
+router.post("/login", async (req, res, next) => {
   try {
-    await Auth.login(req, res);
+    const login = await Auth.login(req, res, next);
   } catch (error) {
-    const code = error.code ?? 500;
-    const msg = error.message ?? "Login failed";
-    throw new CustomError(code, msg, error.data);
+    next(error);
   }
 });
 
