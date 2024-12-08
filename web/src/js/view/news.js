@@ -3,8 +3,8 @@ import PostInfo from "../model/post-info.js";
 import Post from "../components/post.js";
 
 const newsAction = async () => {
-    const newsRequest = new News({ page: 1, limit: 10 });
-    const newsData = await newsRequest.getNews();
+    const news = new News({ page: 1, limit: 10 });
+    const newsData = await news.getNews();
 
     console.log(newsData);
 

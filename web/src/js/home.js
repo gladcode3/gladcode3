@@ -1,21 +1,20 @@
-import GoogleLogin from "./helpers/google-login.js";
 // import Toast from "./components/toast.js";
 import UserAuth from "./model/user-auth.js";
+import Users from "./model/users.js";
 
 import '../less/home.less';
-import Api from "./helpers/api.js";
 
 const loginBtn = document.querySelector('#login-btn');
+
 loginBtn.addEventListener('click', async () => {
     await UserAuth.auth()
         .catch(e => console.error(e));
     
-    const api = new Api({ auth: true });
-    const loginRes = await api.post('users/login');
-    console.log('loginRes:', loginRes);
+    await Users.login()
+        .catch(e => console.error(e));
 });
 
-
-
-
-// Fazer com que o arquivo home seja responsável já por chamar a rota de login e salvar apenas os dados importantes no LS
+// Chamar o GoogleAuth através do UserAuth
+// Chamar a rota de login
+// Salvar o token da rota de login no LS
+// Salvar no LS alguns dados (obviamenta dados não-sensíveis), isso poderia ajudar a reduzir algumas requisições, o header por exemplo faria requisições apenas para conseguir a foto de perfil do usuário. Com essa técnica ele apenas pegaria ela do LS.

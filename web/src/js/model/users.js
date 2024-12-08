@@ -4,11 +4,14 @@ const api = new Api();
 
 class Users {
     constructor() {
-        this.apiInstance = api;
+        this.api = api;
+        console.log('this.api', api);
     }
 
     static async login() {
-        const loginResponse = await this.apiInstance.post('users/login');
+        const loginResponse = await this.api.post('users/login');
+        
+        console.log('loginResponse', loginResponse);
         return loginResponse;
     }
 }
