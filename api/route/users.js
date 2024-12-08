@@ -1,126 +1,103 @@
-import express from 'express'
-import User from '../model/users.js';
-import CustomError from '../core/error.js';
-import Auth from '../middleware/auth.js'
+import express from "express";
+import User from "../model/users.js";
+import CustomError from "../core/error.js";
+import Auth from "../middleware/auth.js";
 const router = express.Router();
 
 // Retorna as próprias informações.
-router.get('/', Auth.check, async (req, res, next) => {
-    try {
-        const jwt = req.user;
-        const user = await new User({
-            id: jwt.id
-        }).get();
-        res.json(user);
-        
-    } catch (error) {
-        next(error);
-    }  
-})
+router.get("/user", Auth.check, async (req, res) => {
+  try {
+    const check = req.check;
+    if(!check.user) throw check;
 
-//Atualiza usuários
-//Por algum motivo a função precisa de um email, mesmo se estiver vazio
-router.put('/', Auth.check, async (req, res, next) => {
-    try {
-        if (!req.user) throw new CustomError(401, "Missing JWT");
-        const jwt = req.user;
+    const user = await check.user.get();
+    res.status(200).json(user);
 
-        const updateData = {};
-        if (req.body.email !== undefined && req.body.email !== null) updateData.email = req.body.email;
-        if (req.body.nickname !== undefined && req.body.nickname !== null) updateData.nickname = req.body.nickname;
-        if (req.body.firstName !== undefined && req.body.firstName !== null) updateData.firstName = req.body.firstName;
-        if (req.body.lastName !== undefined && req.body.lastName !== null) updateData.lastName = req.body.lastName;
-
-        await new User({
-            id: jwt.id,
-            email: updateData.email,
-            nickname: updateData.nickname,
-            firstName: updateData.firstName,
-            lastName: updateData.lastName,
-        }).update();
-        res.send('User has been updated');
-
-    } catch (error) {
-        next(error);
-    }
+  } catch (error) {
+    const code = error.code ?? 500;
+    const msg = error.message ?? "Failed to retrieve user data.";
+    // console.log({ "Status" : code, "Message" : msg, "Data": error.data || "No Data"}, error);
+    res.status(code).json({ "message":msg });
+  }
 });
-
-router.delete('/', Auth.check, async (req, res, next) => {
-    try {
-        const jwt = req.user;
-        await new User({ id: jwt.id }).delete();
-        res.send(`User ${jwt.id} has been deleted`)
-
-    } catch (error) {
-        next(error);
-    }
-})
 
 // Busca por usuários
-router.get('/:name', async (req, res, next) => {
-    try {
-        const users = await new User({
-            name: req.params.name,
-        }).getNameList();
+router.get("/:name", async (req, res) => {
+  try {
+    const users = await User.getNameList(req.params.name);
+    res.status(200).json(users);
 
-        if (!users || users.length === 0) {
-            throw new CustomError(404, 'User not found');
-        }
-        res.send({
-            users,
-            message: 'User found!',
-        });
-    }
-    catch (error) {
-        next(error);
-    }  
-})
-
-router.post('/login', async (req, res, next) => {
-    try {
-        const login = await Auth.login(req, res, next);
-        if(login.code !== 200) throw login;
-        res.send(login);
-
-    } catch (error) {
-        const code = error.code ?? 500;
-        const msg = error.message ?? "Internal Login issues"
-        res.status(code).send({ "code": code, "message": msg});
-    }
+  } catch (error) {
+    const code = error.code ?? 500;
+    const msg = error.message ?? "Failure to retrieve users.";
+    // console.log({ "Status" : code, "Message" : msg, "Data": error.data || "No Data"}, error);
+    res.status(code).json({ "message":msg });
+  }
 });
 
-router.put('/', Auth.check, async (req, res, next) => {
-    try {
-        const jwt = req.user;
-        if(jwt.code !== 200) throw jwt;
+router.put("/user", Auth.check, async (req, res) => {
+  try {
+    const check = req.check;
+    if(!check.user) throw check;
 
-        const updateData = {};
-        if (req.body.nickname !== undefined && req.body.nickname !== '') updateData.nickname = req.body.nickname;
-        if (req.body.pfp !== undefined && req.body.pfp !== '') updateData.profile_picture = req.body.profile_picture;
-        if (req.body.prefLanguage !== undefined && req.body.prefLanguage !== '') {
-            const prefLanguage = req.body.prefLanguage;
-            if(prefLanguage === 'c' || prefLanguage === 'python' || prefLanguage === 'blocks' ) updateData.pref_language = prefLanguage;
-        };
+    const updateData = {};
+    const isValid = (value, key) => {
+      if(key === 'pref_language'){
+        if(value === 'c' || value === 'python' || value === 'blocks') update[key] = value;
+      }
+      else if(value !== undefined && value !== null && value !== '') updateData[key] = value;
+    }
+    isValid(req.body.nickname, 'nickname');
+    isValid(req.body.profile_picture, 'profile_picture');
+    isValid(req.body.pref_language, 'pref_language');
 
-        const isEmpty = (obj) => JSON.stringify(obj) === '{}';
-        if(isEmpty(updateData)) throw new CustomError(400, "No data was sent");
+    const isEmpty = (obj) => JSON.stringify(obj) === '{}';
+    if(isEmpty(updateData)) throw new CustomError(400, "No data was sent");
 
-        const newUser = new User({
-            id: jwt.user.id,
-            nickname: updateData.nickname ?? null,
-            profile_picture: updateData.pfp ?? null,
-            pref_language: updateData.pref_language ?? null
-        });
-        const query = await newUser.update();
-        if(query.code !== 200) throw query;
+    const user = await new User({
+        id: check.user.id,
+        nickname: updateData.nickname || undefined,
+        profile_picture: updateData.pfp || undefined,
+        pref_language: updateData.pref_language || undefined
+    }).update();
 
-        res.status(200).send( { "code": 200, "message": "User has been updated." } );
+    res.status(200).json({ "message": "User has been updated", "user": user});
+    
+  } catch (error) {
+    const code = error.code ?? 500;
+    const msg = error.message ?? "Failed to update user.";
+    // console.log({ "Status" : code, "Message" : msg, "Data": error.data || "No Data"}, error);
+    res.status(code).json({ "message":msg });
+  }
+});
 
-    } catch (error) {
-        const code = error.code ?? 500;
-        const msg = error.message ?? "Internal Server issues"
-        res.status(code).send( { "code": code, "message": msg } ) ;
-    };
+router.delete("/user", Auth.check, async (req, res) => {
+  try {
+    const check = req.check;
+    if(!check.user) throw check;
+    
+    await check.user.delete();
+    res.status(200).json({"message": "User has been deleted."});
+
+  } catch (error) {
+    const code = error.code ?? 500;
+    const msg = error.message ?? "Failed to delete user.";
+    console.log({ "Status" : code, "Message" : msg, "Data": error.data || "No Data"}, error);
+    res.status(code).json({ "message":msg });
+  }
+});
+
+router.post("/login", async (req, res) => {
+  try {
+    const login = await Auth.login(req);
+    res.status(login.code).json( { "token":login.token, "message": login.message } );
+
+  } catch (error) {
+    const code = error.code ?? 500;
+    const msg = error.message ?? "Login failed";
+    // console.log({ "Status" : code, "Message" : msg, "Data": error.data || "No Data"});
+    res.status(code).json({ "message":msg });
+  }
 });
 
 export default router;

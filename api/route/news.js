@@ -14,35 +14,29 @@ router.get('/', async (req, res) => {
 
     } catch (error) {
         const code = error.code ?? 500;
-        const msg = error.message ?? "Failed to retrieve news";
-        res.status(code).send( { "code": code, "message": msg } );
+        const msg = error.message ?? "Failure to retrieve post.";
+        // console.log({ "Status" : code, "Message" : msg, "Data": error.data || "No Data"}, error);
+        res.status(code).json({ "message":msg });
     }
 });
 
-router.get('/:hash', async (req, res) => {
+router.get('/:hash', async (req, res, next) => {
     try {
         req.optional = true;
-        const auth = await Auth.check(req, res);
-        if(auth.code === 500) throw auth;
+        await Auth.check(req, res, next);
+        const check = req.check;
 
         const query = await News.getByHash(req.params.hash);
-        if(query.code !== 200) throw query;
-        
-        if(auth.code === 200){
-            console.log(auth)
-            const user = new User({
-                id: auth.user.id,
-                email: auth.user.email
-            });
-            const updateQuery = await user.updateReadNews();
-            if(updateQuery.code !== 200) throw updateQuery;
+        if(check.user){
+            await check.user.updateReadNews();
         }  
-        res.status(200).send(query);
+        res.status(200).json(query);
 
     } catch (error) {
         const code = error.code ?? 500;
-        const msg = error.message ?? "Failed to retrieve news";
-        res.status(code).send( { "code": code, "message": msg } );
+        const msg = error.message ?? "Failure to retrieve post.";
+        // console.log({ "Status" : code, "Message" : msg, "Data": error.data || "No Data"}, error);
+        res.status(code).json({ "message":msg });
     };
 });
 

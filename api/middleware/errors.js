@@ -1,5 +1,4 @@
 // Error handling middleware
-
 export default (err, req, res, next) => {
     // Error list
     const errorList = [
@@ -35,6 +34,5 @@ export default (err, req, res, next) => {
         }});
         return;
     }
-
-    next();
+    //next();
 }
