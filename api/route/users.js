@@ -30,48 +30,56 @@ const user = new User({});
 
 //Atualiza usuários
 //Por algum motivo a função precisa de um email, mesmo se estiver vazio
-router.put("/", /* Auth.check, */ async (req, res, next) => {
-  try {
-    if (!req.user) throw new CustomError(401, "Missing JWT");
-    const jwt = req.user;
+router.put(
+  "/",
+  /* Auth.check, */ async (req, res, next) => {
+    try {
+      if (!req.user) throw new CustomError(401, "Missing JWT");
+      const jwt = req.user;
 
-    const updateData = {};
-    if (req.body.email !== undefined && req.body.email !== null)
-      updateData.email = req.body.email;
-    if (req.body.nickname !== undefined && req.body.nickname !== null)
-      updateData.nickname = req.body.nickname;
-    if (req.body.firstName !== undefined && req.body.firstName !== null)
-      updateData.firstName = req.body.firstName;
-    if (req.body.lastName !== undefined && req.body.lastName !== null)
-      updateData.lastName = req.body.lastName;
+      const { email, nickname, firstName, lastName } = req.body;
 
-    await new User({
-      id: jwt.id,
-      email: updateData.email,
-      nickname: updateData.nickname,
-      firstName: updateData.firstName,
-      lastName: updateData.lastName,
-    }).update();
-    res.send("User has been updated");
-  } catch (error) {
-    next(error);
+      if (email !== undefined && email !== null) updateData.email = email;
+      if (nickname !== undefined && nickname !== null)
+        updateData.nickname = nickname;
+      if (firstName !== undefined && firstName !== null)
+        updateData.firstName = firstName;
+      if (lastName !== undefined && lastName !== null)
+        updateData.lastName = lastName;
+
+      await new User({
+        id: jwt.id,
+        email,
+        nickname,
+        firstName,
+        lastName,
+      }).update();
+      res.send("User has been updated");
+    } catch (error) {
+      let code = error.code ?? 500;
+      let message = error.message ?? "Internal server error";
+      throw new CustomError(code, message);
+    }
   }
-});
+);
 
-router.delete("/", /* Auth.check, */ async (req, res, next) => {
-  try {
-    const jwt = req.user;
-    await new User({ id: jwt.id }).delete();
-    res.send(`User ${jwt.id} has been deleted`);
-  } catch (error) {
-    next(error);
+router.delete(
+  "/",
+  /* Auth.check, */ async (req, res, next) => {
+    try {
+      const jwt = req.user;
+      await new User({ id: jwt.id }).delete();
+      res.send(`User ${jwt.id} has been deleted`);
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
-router.get('/', async (request, reply) => {
-  const list = await user.getNameList()
-  reply.json(list)
-})
+router.get("/", async (request, reply) => {
+  const list = await user.getNameList();
+  reply.json(list);
+});
 
 // Busca por usuários
 router.get("/nickname/:nickname", async (req, res) => {
@@ -79,14 +87,13 @@ router.get("/nickname/:nickname", async (req, res) => {
     const { nickname } = req.params;
     const users = await user.getByNickname(nickname);
 
-    if(!users){
+    if (!users) {
       throw new CustomError(404, "user not found");
     }
     res.json(users);
-
   } catch (error) {
-    let code = error.code ?? 404
-    let message = error.message ?? "Internal server error"
+    let code = error.code ?? 500;
+    let message = error.message ?? "Internal server error";
     throw new CustomError(code, message);
   }
 });
@@ -97,18 +104,16 @@ router.get("/id/:id", async (req, res) => {
     const { id } = req.params;
     const users = await user.getById(id);
 
-    if(!users){
+    if (!users) {
       throw new CustomError(404, "user not found");
     }
     res.json(users);
-
   } catch (error) {
-    let code = error.code ?? 404
-    let message = error.message ?? "Internal server error"
+    let code = error.code ?? 500;
+    let message = error.message ?? "Internal server error";
     throw new CustomError(code, message);
   }
 });
-
 
 router.post("/login", async (req, res, next) => {
   try {
