@@ -37,5 +37,22 @@ router.get("/master/:master", async (request, reply) => {
   }
 });
 
+// rota teste, depois vou deletar e só usar a função checkGladiatorsNumbersByMaster
+router.get("/master/:master/count", async (request, reply) => { 
+  try {
+    const { master } = request.params; 
+    const result = await gladiator.checkGladiatorsNumbersByMaster(master); 
+
+    if (!result) {
+      reply.status(404).json({ error: "User not found" }); 
+      return;
+    }
+
+    reply.json(result);
+  } catch (error) {
+    reply.status(error.code || 500).json({ message: error.message || "Internal server error" });
+  }
+});
+
 
 export default router;
