@@ -109,7 +109,7 @@ export default class User {
   // TODO - Add pagination
   async getNameList() {
     try {
-      const [rows, _] = await db.execute("SELECT * FROM users LIMIT 20");
+      const [rows, _] = await db.execute("SELECT * FROM users ORDER BY lvl DESC LIMIT 20");
 
       if (rows.length === 0) throw new CustomError(404, "No users were found");
       return rows;
