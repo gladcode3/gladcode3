@@ -1,9 +1,0 @@
-export default {
-    mysql: {
-        host: 'mysql',
-        user: 'root',
-        port: process.env.MYSQL_PORT,
-        password: process.env.MYSQL_ROOT_PASSWORD,
-        database: process.env.MYSQL_DATABASE,
-    }
-}
