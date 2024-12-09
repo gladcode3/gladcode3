@@ -44,8 +44,25 @@ export default class Gladiator {
       if (rows.length === 0)
         throw new CustomError(
           404,
-          "No gladiators found with the given master id"
+          "No gladiators found with the given name"
         );
+      return rows;
+    } catch (error) {
+      console.error(`Error in getByName: ${error.message}`);
+      throw new CustomError(500, "Internal server error");
+    }
+  }
+
+  async getByCod(cod) {
+    if (!cod) throw new CustomError(400, "Cod is required");
+    try {
+      const [rows] = await db.execute(
+        "SELECT * FROM gladiators WHERE cod = ?",
+        [cod]
+      );
+
+      if (rows.length === 0)
+        throw new CustomError(404, "No gladiators found with the given cod");
       return rows;
     } catch (error) {
       console.error(`Error in getByName: ${error.message}`);
@@ -72,21 +89,21 @@ export default class Gladiator {
   }
 
   // checar se o usuário possui mais de 6 gladiadores para impedir de criar um novo gladiador
-  async checkGladiatorsNumbersByMaster(master) {
+  async checkGladiatorsNumberByMaster(master) {
     try {
       const [rows] = await db.execute(
         "SELECT COUNT(*) AS gladiator_count FROM gladiators WHERE master = ?",
         [master]
       );
-  
+
       if (rows && rows.length > 0) {
-        return { count: rows[0].gladiator_count }; 
+        return { count: rows[0].gladiator_count };
       }
 
       return { count: 0 };
     } catch (error) {
       console.error(`Error in checkGladiatorNumbersByMaster: ${error.message}`);
       throw new CustomError(500, "Internal server error");
-    }  
+    }
   }
 }

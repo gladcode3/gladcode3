@@ -74,7 +74,7 @@ router.get('/', async (request, reply) => {
 })
 
 // Busca por usuários
-router.get("/:nickname", async (req, res) => {
+router.get("/nickname/:nickname", async (req, res) => {
   try {
     const { nickname } = req.params;
     const users = await user.getByNickname(nickname);
@@ -90,6 +90,25 @@ router.get("/:nickname", async (req, res) => {
     throw new CustomError(code, message);
   }
 });
+
+// Busca por usuários
+router.get("/id/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const users = await user.getById(id);
+
+    if(!users){
+      throw new CustomError(404, "user not found");
+    }
+    res.json(users);
+
+  } catch (error) {
+    let code = error.code ?? 404
+    let message = error.message ?? "Internal server error"
+    throw new CustomError(code, message);
+  }
+});
+
 
 router.post("/login", async (req, res, next) => {
   try {
