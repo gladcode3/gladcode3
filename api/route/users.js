@@ -76,43 +76,40 @@ router.delete(
   }
 );
 
-router.get("/", async (request, reply) => {
-  const list = await user.getNameList();
-  reply.json(list);
+router.get("/", async (_, reply) => {
+  try {
+    const list = await user.getNameList();
+    reply.json(list);
+  } catch (error) {
+    console.log(error);
+  }
 });
 
 // Busca por usuários
 router.get("/nickname/:nickname", async (req, res) => {
-  try {
-    const { nickname } = req.params;
-    const users = await user.getByNickname(nickname);
+  const { nickname } = req.params;
+  const users = await user.getByNickname(nickname);
 
-    if (!users) {
-      throw new CustomError(404, "user not found");
-    }
-    res.json(users);
-  } catch (error) {
-    let code = error.code ?? 500;
-    let message = error.message ?? "Internal server error";
-    throw new CustomError(code, message);
+  if (!users) {
+    res.status(404).send({
+      message: "user not found",
+    });
   }
+
+  res.json(users);
 });
 
 // Busca por usuários
 router.get("/id/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const users = await user.getById(id);
+  const { id } = req.params;
+  const users = await user.getById(id);
 
-    if (!users) {
-      throw new CustomError(404, "user not found");
-    }
-    res.json(users);
-  } catch (error) {
-    let code = error.code ?? 500;
-    let message = error.message ?? "Internal server error";
-    throw new CustomError(code, message);
+  if (!users) {
+    res.status(404).send({
+      message: "user not found",
+    });
   }
+  res.json(users);
 });
 
 router.post("/login", async (req, res, next) => {

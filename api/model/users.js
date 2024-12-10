@@ -1,5 +1,5 @@
 import CustomError from "../core/error.js";
-import { db } from "../core/mysql.js";
+import db from "../core/mysql.js";
 export default class User {
   constructor({
     id,
@@ -20,19 +20,19 @@ export default class User {
   }
 
   async delete() {
-    Db.delete("users", this.id);
+    db.delete("users", this.id);
   }
 
   async add() {
     try {
-      const sql = await Db.insert("users", {
+      const sql = await db.insert("users", {
         email: `${this.email}`,
         googleid: `${this.googleid}`,
         nickname: `${this.nickname}`,
         firstName: `${this.firstName}`,
         lastName: `${this.lastName}`,
         profilePicture: `${this.profilePicture}`,
-        active: `${Db.toDateTime(Date.now())}`,
+        active: `${db.toDateTime(Date.now())}`,
       });
 
       this.id = sql[0].insertId;
@@ -44,16 +44,13 @@ export default class User {
 
   async getByNickname(nickname) {
     if (!nickname) throw new CustomError(400, "Nickname is required");
-
     try {
-      const [rows, _] = await db.execute(
-        "SELECT * FROM users WHERE nickname = ?",
-        [nickname] // The value of name is safely passed as a parameter
-      );
+      const users = await db.find("users", {
+        filter: { nickname },
+        opt: { limit: 20 },
+      });
 
-      if (rows.length === 0)
-        throw new CustomError(404, "No users found with the given nickname");
-      return rows;
+      return users;
     } catch (error) {
       console.error(`Error in getNameList: ${error.message}`);
       throw new CustomError(500, "Internal server error");
@@ -64,14 +61,11 @@ export default class User {
     if (!id) throw new CustomError(400, "Id is required");
 
     try {
-      const [rows, _] = await db.execute(
-        "SELECT * FROM users WHERE id = ?",
-        [id] // The value of name is safely passed as a parameter
-      );
+      const users = await db.find("users", {
+        filter: { id },
+      });
 
-      if (rows.length === 0)
-        throw new CustomError(404, "No users found with the given id");
-      return rows;
+      return users;
     } catch (error) {
       console.error(`Error in getNameList: ${error.message}`);
       throw new CustomError(500, "Internal server error");
@@ -82,22 +76,22 @@ export default class User {
     try {
       if (this.nickname !== undefined && this.nickname !== null) {
         console.log(`Updating nickname: ${this.nickname}`);
-        Db.update("users", { nickname: this.nickname }, this.id);
+        db.update("users", { nickname: this.nickname }, this.id);
       }
 
       if (this.firstName !== undefined && this.firstName !== null) {
         console.log(`Updating firstName: ${this.firstName}`);
-        Db.update("users", { firstName: this.firstName }, this.id);
+        db.update("users", { firstName: this.firstName }, this.id);
       }
 
       if (this.lastName !== undefined && this.lastName !== null) {
         console.log(`Updating lastName: ${this.lastName}`);
-        Db.update("users", { lastName: this.lastName }, this.id);
+        db.update("users", { lastName: this.lastName }, this.id);
       }
 
       if (this.email !== undefined && this.email !== null) {
         console.log(`Updating email: ${this.email}`);
-        Db.update("users", { email: this.email }, this.id);
+        db.update("users", { email: this.email }, this.id);
       }
       return this.get();
     } catch (error) {
@@ -109,13 +103,19 @@ export default class User {
   // TODO - Add pagination
   async getNameList() {
     try {
-      const [rows, _] = await db.execute("SELECT * FROM users ORDER BY active DESC LIMIT 20");
+      const users = await db.find("users", {
+        opt: {
+          order: {
+            active: -1,
+          },
+          limit: 20,
+        },
+      });
 
-      if (rows.length === 0) throw new CustomError(404, "No users were found");
-      return rows;
+      return users;
     } catch (error) {
       console.error(`Error in getNameList: ${error.message}`);
-      throw new CustomError(500, "Internal server error");
+      // throw new CustomError(500, "Internal server error");
     }
   }
 }
