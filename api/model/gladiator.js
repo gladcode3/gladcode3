@@ -43,7 +43,7 @@ export default class Gladiator {
     } catch (error) {
       throw new CustomError(
         error.code ?? 500,
-        error.message ?? "Internal server error"
+        error.message ?? "internal server error"
       );
     }
   }
@@ -60,7 +60,7 @@ export default class Gladiator {
     } catch (error) {
       throw new CustomError(
         error.code ?? 500,
-        error.message ?? "Internal server error"
+        error.message ?? "internal server error"
       );
     }
   }
@@ -77,7 +77,7 @@ export default class Gladiator {
     } catch (error) {
       throw new CustomError(
         error.code ?? 500,
-        error.message ?? "Internal server error"
+        error.message ?? "internal server error"
       );
     }
   }
@@ -93,7 +93,7 @@ export default class Gladiator {
     } catch (error) {
       throw new CustomError(
         error.code ?? 500,
-        error.message ?? "Internal server error"
+        error.message ?? "internal server error"
       );
     }
   }

@@ -49,7 +49,7 @@ export default class User {
     if (!nickname) throw new CustomError(400, "Nickname is required");
     try {
       const users = await db.find("users", {
-        filter: { nickname },
+        filter: { nickname: { like: nickname } },
         opt: { limit: 20 },
       });
 
@@ -63,7 +63,7 @@ export default class User {
   }
 
   async getById(id) {
-    if (!id) throw new CustomError(400, "Id is required");
+    if (!id) throw new CustomError(400, "id is required");
 
     try {
       const users = await db.find("users", {
@@ -74,7 +74,7 @@ export default class User {
     } catch (error) {
       throw new CustomError(
         error.code ?? 500,
-        error.message ?? "Internal server error"
+        error.message ?? "internal server error"
       );
     }
   }
