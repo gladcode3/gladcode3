@@ -41,8 +41,10 @@ export default class Gladiator {
 
       return gladiators;
     } catch (error) {
-      console.error(`Error in getByName: ${error.message}`);
-      throw new CustomError(500, "Internal server error");
+      throw new CustomError(
+        error.code ?? 500,
+        error.message ?? "Internal server error"
+      );
     }
   }
 
@@ -56,8 +58,10 @@ export default class Gladiator {
       
       return gladiators;
     } catch (error) {
-      console.error(`Error in getByName: ${error.message}`);
-      throw new CustomError(500, "Internal server error");
+      throw new CustomError(
+        error.code ?? 500,
+        error.message ?? "Internal server error"
+      );
     }
   }
 
@@ -71,8 +75,10 @@ export default class Gladiator {
 
       return gladiators;
     } catch (error) {
-      console.error(`Error in getByName: ${error.message}`);
-      throw new CustomError(500, "Internal server error");
+      throw new CustomError(
+        error.code ?? 500,
+        error.message ?? "Internal server error"
+      );
     }
   }
 
@@ -85,8 +91,10 @@ export default class Gladiator {
 
       return { count: gladiators.length };
     } catch (error) {
-      console.error(`Error in checkGladiatorNumbersByMaster: ${error.message}`);
-      throw new CustomError(500, "Internal server error");
+      throw new CustomError(
+        error.code ?? 500,
+        error.message ?? "Internal server error"
+      );
     }
   }
 }

@@ -38,7 +38,10 @@ export default class User {
       this.id = sql[0].insertId;
       return this.get();
     } catch (error) {
-      console.log(error);
+      throw new CustomError(
+        error.code ?? 500,
+        error.message ?? "Internal server error"
+      );
     }
   }
 
@@ -52,8 +55,10 @@ export default class User {
 
       return users;
     } catch (error) {
-      console.error(`Error in getNameList: ${error.message}`);
-      throw new CustomError(500, "Internal server error");
+      throw new CustomError(
+        error.code ?? 500,
+        error.message ?? "Internal server error"
+      );
     }
   }
 
@@ -67,8 +72,10 @@ export default class User {
 
       return users;
     } catch (error) {
-      console.error(`Error in getNameList: ${error.message}`);
-      throw new CustomError(500, "Internal server error");
+      throw new CustomError(
+        error.code ?? 500,
+        error.message ?? "Internal server error"
+      );
     }
   }
 
@@ -114,8 +121,10 @@ export default class User {
 
       return users;
     } catch (error) {
-      console.error(`Error in getNameList: ${error.message}`);
-      // throw new CustomError(500, "Internal server error");
+      throw new CustomError(
+        error.code ?? 500,
+        error.message ?? "Internal server error"
+      );
     }
   }
 }

@@ -102,14 +102,14 @@ router.get("/nickname/:nickname", async (req, res) => {
 // Busca por usuários
 router.get("/id/:id", async (req, res) => {
   const { id } = req.params;
-  const users = await user.getById(id);
+  const user = await user.getById(id);
 
-  if (!users) {
+  if (!user) {
     res.status(404).send({
       message: "user not found",
     });
   }
-  res.json(users);
+  res.json(user);
 });
 
 router.post("/login", async (req, res, next) => {
