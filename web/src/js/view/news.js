@@ -8,8 +8,8 @@ const newsAction = async () => {
 
     console.log(newsData);
 
-    newsData.posts.forEach(postInfo => {
-        const postInfo = new PostInfo(postInfo);
+    newsData.posts.forEach(post => {
+        const postInfo = new PostInfo(post);
         new Post(postInfo);
     });
 };

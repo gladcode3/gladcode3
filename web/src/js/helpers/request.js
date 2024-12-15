@@ -48,7 +48,7 @@ export default class Request {
             endpoint += '?' + queryString;
         }
 
-        console.log(`${this.url}/${endpoint}`);
+        // console.log(`${this.url}/${endpoint}`);
         const request = await fetch(`${this.url}/${endpoint}`, options);
 
         const text = await request.text();
