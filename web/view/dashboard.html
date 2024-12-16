@@ -18,7 +18,7 @@
 
         <div id="logotype">
             <a href="/" class="logotype__home-link">
-                <div class="home-link__gc-icon">
+                <div aria-hidden="true" class="home-link__gc-icon">
                     <img src="/img/gc-icon.png" alt="ícone da gladcode">
                 </div>
 
@@ -26,9 +26,9 @@
             </a>
         </div>
 
-        <nav id="header-navigator">
+        <nav role="navigation" id="header-navigator">
             <ul class="header-navigator__page-links">
-                <li class="page-links__link logout">
+                <li role="button" class="page-links__link logout">
                     <a href="#" title="Encerrar sessão na gladCode">Logout</a>
                 </li>
 
@@ -40,10 +40,10 @@
                     <a href="editor" title="Crie e programe seus gladiadores">Editor</a>
                 </li>
 
-                <li class="page-links__link page-links__link--drop">
+                <li role="menu" aria-expanded="false" class="page-links__link page-links__link--drop">
                     <a href="#">Sobre</a>
 
-                    <ul class="link--drop__sub-links">
+                    <ul aria-hidden="true" class="link--drop__sub-links">
                         <li class="page-links__link">
                             <a href="about" title="Saiba sobre a trajetória da gladCode">O Projeto</a>
                         </li>
@@ -63,47 +63,47 @@
                 </li>
             </ul>
             
-            <a href="#" class="header-navigator__user-settings">
-                <img src="/img/profile-photo-support.jpg" alt="configurações do usuário">
+            <a aria-label="configurações do usuário" href="#" class="header-navigator__user-settings">
+                <img src="/img/profile-photo-support.jpg" alt="">
             </a>
         </nav>
 
         <!-- Mobile -->
 
-        <div id="hamburguer-menu">
+        <div role="menu" aria-expanded="false" aria-label="menu" id="hamburguer-menu">
             <i class="fa-solid fa-bars fa-2xl"></i>
         </div>
     </header> <!-- Adicionar regras CSS para abrir e fechar os painéis que possuem ".drop-menu" -->
     
     <div id='page-container'>
-        <aside>
+        <aside role="region">
             <section id="user">
                 <div class="user__main-infos">
-                    <div class="main-infos__picture">
-                        <img src="/img/profile-photo-support.jpg" alt="foto de perfil do usuário">
+                    <div aria-label="foto de perfil" class="main-infos__picture">
+                        <img src="/img/profile-photo-support.jpg" alt="">
                     </div>
 
                     <span class="main-infos__nickname">Hex</span>
 
-                    <div class="main-infos__xp-lvl">
-                        <div class='xp-lvl__lvl'>
+                    <div aria-label="nível de experiência" class="main-infos__xp-lvl">
+                        <div title="Nível" aria-label="nível" class='xp-lvl__lvl'>
                             <img src='/img/star-icon.svg' alt="">
                             <span class="lvl__lvl">0</span>
                         </div>
 
-                        <progress class="xp-lvl__xp" value="50" max="100"></progress>
+                        <progress title="Pontos de XP" aria-label="pontos de xp" class="xp-lvl__xp" value="50" max="100"></progress>
                     </div>
                 </div>
 
-                <div class="user__money-infos" title="Pratas">
+                <div aria-label="quantidade de pratas" class="user__money-infos" title="Pratas">
                     <i class="fa-solid fa-coins"></i>
                     <span class='money-infos__coins'>0</span>
                 </div>
             </section>
 
-            <nav id='panel-selector'>
-                <ul class="panel-selector__panels">
-                    <li id="news" class='panels__panel news' tabindex="0">
+            <nav role="navigation" id='panel-selector'>
+                <ul role="tablist" class="panel-selector__panels">
+                    <li role="tab" id="news" class='panels__panel news' tabindex="0">
                         <span class='panel__notify panel__notify--empty'></span>
     
                         <div class='panel__frame'>
@@ -113,7 +113,7 @@
                         <span>Notícias</span>
                     </li>
     
-                    <li id="glads" class='panels__panel glads' tabindex="0">
+                    <li role="tab" id="glads" class='panels__panel glads' tabindex="0">
                         <span class='panel__notify panel__notify--empty'></span>
     
                         <div class='panel__frame'>
@@ -123,7 +123,7 @@
                         <span>Gladiadores</span>
                     </li>
     
-                    <li id="battle" class='panels__panel battle' tabindex="0">
+                    <li role="tab" id="battle" class='panels__panel battle' tabindex="0">
                         <span class='panel__notify panel__notify--empty'></span>
     
                         <div class='panel__frame'>
@@ -133,7 +133,7 @@
                         <span>Batalha</span>
                     </li>
 
-                    <li id="potions" class='panels__panel potions' tabindex="0">
+                    <li role="tab" id="potions" class='panels__panel potions' tabindex="0">
                         <span class='panel__notify panel__notify--empty'></span>
     
                         <div class='panel__frame'>
@@ -143,7 +143,7 @@
                         <span>Poções</span>
                     </li>
     
-                    <li id="rank" class='panels__panel rank' tabindex="0">
+                    <li role="tab" id="rank" class='panels__panel rank' tabindex="0">
                         <div class='panel__frame'>
                             <i class="fa-solid fa-ranking-star"></i>
                         </div>
@@ -151,7 +151,7 @@
                         <span>Ranking</span>
                     </li>
     
-                    <li id="messages" class='panels__panel messages' tabindex="0">
+                    <li role="tab" id="messages" class='panels__panel messages' tabindex="0">
                         <span class='panel__notify panel__notify--empty'></span>
     
                         <div class='panel__frame'>
@@ -163,33 +163,33 @@
                 </ul>
             </nav>
 
-            <footer>
+            <footer role="contentinfo">
                 <ul id="contacts">
-                    <li title="Enviar Email">
+                    <li aria-label="enviar um email" title="Enviar Email">
                         <a href="mailto:pswerlang@gmail.com" target="_blank">
                             <i class="fa-solid fa-envelope"></i>
                         </a>
                     </li>
 
-                    <li title="Página do Facebook">
+                    <li aria-label="página do facebook" title="Página do Facebook">
                         <a href="https://facebook.com/gladcode" target="_blank">
                             <i class="fa-brands fa-facebook"></i>
                         </a>
                     </li>
 
-                    <li title="Comunidade do Reddit">
+                    <li aria-label="página do reddit" title="Comunidade do Reddit">
                         <a href="https://www.reddit.com/r/gladcode" target="_blank">
                             <i class="fa-brands fa-reddit-alien"></i>
                         </a>
                     </li>
 
-                    <li title="Projetos do Github">
+                    <li aria-label="página do github" title="Projetos do Github">
                         <a href="https://github.com/werlang" target="_blank">
                             <i class="fa-brands fa-github"></i>
                         </a>
                     </li>
 
-                    <li title="Grupo do WhatsApp">
+                    <li aria-label="grupo do whatsapp" title="Grupo do WhatsApp">
                         <a href="https://forms.gle/BDbSmcLpPgwLe4Uc7" target="_blank">
                             <i class="fa-brands fa-whatsapp"></i>
                         </a>
@@ -200,13 +200,13 @@
             </footer>
         </aside>
         
-        <main>
+        <main role="main">
             <section id="selected-panel"></section>
         </main>
 
-        <article id='chat-bar'></article>
+        <article role="article" id='chat-bar'></article>
     </div>
 
-    <input id="template-vars" type="hidden" value="{{template-vars}}">
+    <input aria-hidden="true" id="template-vars" type="hidden" value="{{template-vars}}">
 </body>
 </html>
