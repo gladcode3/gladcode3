@@ -1,122 +1,102 @@
 import express from "express";
 import User from "../model/users.js";
 import CustomError from "../core/error.js";
-// import Auth from "../middleware/auth.js";
+import Auth from "../middleware/auth.js";
 const router = express.Router();
 
-// Registra usuários
-const user = new User({});
-// router.get("/", /* Auth.check, */ async (req, res) => {
-//   try {
-//     const jwt = req.user;
-//     const user = await new User({
-//       id: jwt.id,
-//     }).get();
-
-//     // Se o usuário for encontrado, retorna um status 200 OK
-//     res.status(200).json(user);
-
-//     // Tratar individualmente erro na query do banco, se o usuário não for encontrado, retorna um status 404 (Not Found)
-//     if (!user) {
-//       return res.status(404).send({
-//         message: "Usuário não encontrado",
-//       });
-//     }
-//   } catch (error) {
-//     // tratar erro interno para separar de um simples erro de query e enviar erro para o frontend para mostrar quando necessário, além de melhor debug, se quiser mandar com status enviar status 500 (internal server error)
-//     res.status(500).send(error);
-//   }
-// });
-
-//Atualiza usuários
-//Por algum motivo a função precisa de um email, mesmo se estiver vazio
-router.put(
-  "/",
-  /* Auth.check, */ async (req, res, next) => {
-    try {
-      if (!req.user) throw new CustomError(401, "Missing JWT");
-      const jwt = req.user;
-
-      const { email, nickname, firstName, lastName } = req.body;
-
-      if (email !== undefined && email !== null) updateData.email = email;
-      if (nickname !== undefined && nickname !== null)
-        updateData.nickname = nickname;
-      if (firstName !== undefined && firstName !== null)
-        updateData.firstName = firstName;
-      if (lastName !== undefined && lastName !== null)
-        updateData.lastName = lastName;
-
-      await new User({
-        id: jwt.id,
-        email,
-        nickname,
-        firstName,
-        lastName,
-      }).update();
-      res.send("User has been updated");
-    } catch (error) {
-      let code = error.code ?? 500;
-      let message = error.message ?? "Internal server error";
-      throw new CustomError(code, message);
-    }
-  }
-);
-
-router.delete(
-  "/",
-  /* Auth.check, */ async (req, res, next) => {
-    try {
-      const jwt = req.user;
-      await new User({ id: jwt.id }).delete();
-      res.send(`User ${jwt.id} has been deleted`);
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
-router.get("/", async (_, reply) => {
+// Retorna as próprias informações.
+router.get("/user", Auth.check, async (req, res) => {
   try {
-    const list = await user.getNameList();
-    reply.json(list);
+    const check = req.check;
+    if(!check.user) throw check;
+
+    const user = await check.user.get();
+    res.status(200).json(user);
+
   } catch (error) {
-    console.log(error);
+    const code = error.code ?? 500;
+    const msg = error.message ?? "Failed to retrieve user data.";
+    // console.log({ "Status" : code, "Message" : msg, "Data": error.data || "No Data"}, error);
+    res.status(code).json({ "message":msg });
   }
 });
 
 // Busca por usuários
-router.get("/nickname/:nickname", async (req, res) => {
-  const { nickname } = req.params;
-  const users = await user.getByNickname(nickname);
-
-  if (!users) {
-    res.status(404).send({
-      message: "user not found",
-    });
-  }
-
-  res.json(users);
-});
-
-// Busca por usuários
-router.get("/id/:id", async (req, res) => {
-  const { id } = req.params;
-  const userWithId = await user.getById(id);
-
-  if (!userWithId) {
-    res.status(404).send({
-      message: "user not found",
-    });
-  }
-  res.json(userWithId);
-});
-
-router.post("/login", async (req, res, next) => {
+router.get("/:name", async (req, res) => {
   try {
-    const login = await Auth.login(req, res, next);
+    const users = await User.getNameList(req.params.name);
+    res.status(200).json(users);
+
   } catch (error) {
-    next(error);
+    const code = error.code ?? 500;
+    const msg = error.message ?? "Failure to retrieve users.";
+    // console.log({ "Status" : code, "Message" : msg, "Data": error.data || "No Data"}, error);
+    res.status(code).json({ "message":msg });
+  }
+});
+
+router.put("/user", Auth.check, async (req, res) => {
+  try {
+    const check = req.check;
+    if(!check.user) throw check;
+
+    const updateData = {};
+    const isValid = (value, key) => {
+      if(key === 'pref_language'){
+        if(value === 'c' || value === 'python' || value === 'blocks') update[key] = value;
+      }
+      else if(value !== undefined && value !== null && value !== '') updateData[key] = value;
+    }
+    isValid(req.body.nickname, 'nickname');
+    isValid(req.body.profile_picture, 'profile_picture');
+    isValid(req.body.pref_language, 'pref_language');
+
+    const isEmpty = (obj) => JSON.stringify(obj) === '{}';
+    if(isEmpty(updateData)) throw new CustomError(400, "No data was sent");
+
+    const user = await new User({
+        id: check.user.id,
+        nickname: updateData.nickname || undefined,
+        profile_picture: updateData.pfp || undefined,
+        pref_language: updateData.pref_language || undefined
+    }).update();
+
+    res.status(200).json({ "message": "User has been updated", "user": user});
+    
+  } catch (error) {
+    const code = error.code ?? 500;
+    const msg = error.message ?? "Failed to update user.";
+    // console.log({ "Status" : code, "Message" : msg, "Data": error.data || "No Data"}, error);
+    res.status(code).json({ "message":msg });
+  }
+});
+
+router.delete("/user", Auth.check, async (req, res) => {
+  try {
+    const check = req.check;
+    if(!check.user) throw check;
+    
+    await check.user.delete();
+    res.status(200).json({"message": "User has been deleted."});
+
+  } catch (error) {
+    const code = error.code ?? 500;
+    const msg = error.message ?? "Failed to delete user.";
+    console.log({ "Status" : code, "Message" : msg, "Data": error.data || "No Data"}, error);
+    res.status(code).json({ "message":msg });
+  }
+});
+
+router.post("/login", async (req, res) => {
+  try {
+    const login = await Auth.login(req);
+    res.status(login.code).json( { "token":login.token, "message": login.message } );
+
+  } catch (error) {
+    const code = error.code ?? 500;
+    const msg = error.message ?? "Login failed";
+    // console.log({ "Status" : code, "Message" : msg, "Data": error.data || "No Data"});
+    res.status(code).json({ "message":msg });
   }
 });
 

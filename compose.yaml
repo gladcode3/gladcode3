@@ -8,19 +8,17 @@ services:
             - ./package.json:/app/package.json
             - node_modules:/app/node_modules
         restart: ${RESTART_POLICY}
-        ports:
-            - 127.0.0.1:9230:9229
         env_file:
             - .env
         command: npm run ${NODE_ENV}:webpack
+        networks:
+            - network
         # command: tail -f /dev/null #idle container
     api:
         build:
             context: .
             dockerfile: Dockerfile
         restart: ${RESTART_POLICY}
-        ports:
-            - 127.0.0.1:9229:9229
         env_file:
             - .env
         volumes:
@@ -31,6 +29,8 @@ services:
         # command: tail -f /dev/null #idle container
         depends_on:
             - mysql
+        networks:
+            - network
     mysql:
         image: mysql:8.0
         restart: ${RESTART_POLICY}
@@ -39,26 +39,15 @@ services:
             - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
         volumes:
             - mysql:/var/lib/mysql
+            - ./mysql/database.sql:/docker-entrypoint-initdb.d/database.sql
             # - .:/app
         ports:
             - 127.0.0.1:${MYSQL_PORT}:3306
-    # nginx:
-    #     image: pswerlang/nginx-auto-ssl
-    #     restart: ${RESTART_POLICY}
-    #     ports:
-    #         - "80:80"
-    #         - "443:443"
-    #     volumes:
-    #         - ./nginx:/etc/nginx/conf.d
-    #     environment:
-    #         SITES: |
-    #             ${URL}=web:3000
-    #             ${API}=api:3000
-    #         ALLOWED_DOMAINS: ${PRODUCTION_DOMAIN}
-    #         FORCE_HTTPS: true
-    #     depends_on:
-    #         - web
-    #         - api
+        networks:
+            - network
 volumes:
     node_modules:
     mysql:
+networks:
+    network:
+        name: ${COMPOSE_PROJECT_NAME}
