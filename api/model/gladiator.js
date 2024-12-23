@@ -98,8 +98,3 @@ export default class Gladiator {
     }
   }
 }
-      return this;
-  }
-}
-
-export default Gladiator;

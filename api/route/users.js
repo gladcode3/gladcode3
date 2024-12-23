@@ -5,8 +5,10 @@ import Auth from "../middleware/auth.js";
 const router = express.Router();
 
 // Retorna as próprias informações.
-router.get("/user", Auth.check, async (req, res) => {
+router.get("/user",  async (req, res) => {
   try {
+    await Auth.check(req);
+
     const check = req.check;
     if(!check.user) throw check;
 
@@ -16,7 +18,7 @@ router.get("/user", Auth.check, async (req, res) => {
   } catch (error) {
     const code = error.code ?? 500;
     const msg = error.message ?? "Failed to retrieve user data.";
-    // console.log({ "Status" : code, "Message" : msg, "Data": error.data || "No Data"}, error);
+    console.log({ "Status" : code, "Message" : msg, "Data": error.data || "No Data"}, error);
     res.status(code).json({ "message":msg });
   }
 });
@@ -24,7 +26,7 @@ router.get("/user", Auth.check, async (req, res) => {
 // Busca por usuários
 router.get("/:name", async (req, res) => {
   try {
-    const users = await User.getNameList(req.params.name);
+    const users = await User.getByNickname(req.params.name);
     res.status(200).json(users);
 
   } catch (error) {
@@ -35,44 +37,52 @@ router.get("/:name", async (req, res) => {
   }
 });
 
-router.put("/user", Auth.check, async (req, res) => {
+router.put("/user", async (req, res) => {
   try {
+    await Auth.check(req);
+
     const check = req.check;
-    if(!check.user) throw check;
+    if (!check.user) throw check;
 
     const updateData = {};
     const isValid = (value, key) => {
-      if(key === 'pref_language'){
-        if(value === 'c' || value === 'python' || value === 'blocks') update[key] = value;
+      if (key === 'pref_language') {
+        if (value === 'c' || value === 'python' || value === 'blocks') updateData[key] = value;
       }
-      else if(value !== undefined && value !== null && value !== '') updateData[key] = value;
-    }
-    isValid(req.body.nickname, 'nickname');
-    isValid(req.body.profile_picture, 'profile_picture');
-    isValid(req.body.pref_language, 'pref_language');
+      else if (value !== undefined && value !== null && value !== '') updateData[key] = value;
+    };
 
-    const isEmpty = (obj) => JSON.stringify(obj) === '{}';
-    if(isEmpty(updateData)) throw new CustomError(400, "No data was sent");
+    isValid(req.body.nickname, 'nickname');
+    isValid(req.body.pfp, 'pfp');
+    isValid(req.body.prefLanguage, 'prefLanguage');
+
+    const isEmpty = (obj) => Object.keys(obj).length === 0;
+    if (isEmpty(updateData)) throw new CustomError(400, "No data was sent");
+
+    console.log(updateData)
 
     const user = await new User({
-        id: check.user.id,
-        nickname: updateData.nickname || undefined,
-        profile_picture: updateData.pfp || undefined,
-        pref_language: updateData.pref_language || undefined
+      id: check.user.id,
+      nickname: updateData.nickname || undefined,
+      profilePicture: updateData.pfp || undefined,
+      prefLanguage: updateData.prefLanguage || undefined
     }).update();
 
-    res.status(200).json({ "message": "User has been updated", "user": user});
+    res.status(200).json({ "message": "User has been updated", "user": user });
     
   } catch (error) {
     const code = error.code ?? 500;
     const msg = error.message ?? "Failed to update user.";
-    // console.log({ "Status" : code, "Message" : msg, "Data": error.data || "No Data"}, error);
-    res.status(code).json({ "message":msg });
+    //console.log({ "Status": code, "Message": msg, "Data": error.data || "No Data" }, error);
+    res.status(code).json({ "message": msg });
   }
 });
 
-router.delete("/user", Auth.check, async (req, res) => {
+
+router.delete("/user", async (req, res) => {
   try {
+    await Auth.check(req);
+
     const check = req.check;
     if(!check.user) throw check;
     
@@ -82,7 +92,7 @@ router.delete("/user", Auth.check, async (req, res) => {
   } catch (error) {
     const code = error.code ?? 500;
     const msg = error.message ?? "Failed to delete user.";
-    console.log({ "Status" : code, "Message" : msg, "Data": error.data || "No Data"}, error);
+    //console.log({ "Status" : code, "Message" : msg, "Data": error.data || "No Data"}, error);
     res.status(code).json({ "message":msg });
   }
 });
@@ -95,7 +105,7 @@ router.post("/login", async (req, res) => {
   } catch (error) {
     const code = error.code ?? 500;
     const msg = error.message ?? "Login failed";
-    // console.log({ "Status" : code, "Message" : msg, "Data": error.data || "No Data"});
+    console.log({ "Status" : code, "Message" : msg, "Data": error.data || "No Data"});
     res.status(code).json({ "message":msg });
   }
 });

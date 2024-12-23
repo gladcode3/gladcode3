@@ -1,5 +1,11 @@
 import CustomError from "../core/error.js";
-import db from "../core/mysql.js";
+import Db from "../core/mysql.js";
+
+    // id, email, googleid, nickname, first_name, last_name, profile_picture, spoken_language, emoji
+    // pasta, lvl, xp, silver, credits, active, premium, show_tutorial, editor_theme, editor_font
+    // pref_message, pref_friend, pref_update, pref_duel, pref_tourn, email_update, read_news
+    // pref_language, apothecary
+    // Esse são os nomes das colunas no próprio BD
 
 export default class User {
   constructor({
@@ -10,6 +16,8 @@ export default class User {
     lastName,
     nickname,
     profilePicture,
+    prefLanguage,
+    pasta,
   }) {
     this.id = id;
     this.email = email;
@@ -17,23 +25,27 @@ export default class User {
     this.nickname = nickname;
     this.firstName = firstName;
     this.lastName = lastName;
-    this.profilePicture = profilePicture || null;
+    this.profilePicture = profilePicture;
+    this.prefLanguage = prefLanguage;
+    this.pasta = pasta;
   }
 
   async delete() {
-    return db.delete("users", this.id);
+    return Db.delete("users", this.id);
   }
 
   async add() {
     try {
-      const sql = await db.insert("users", {
+      console.log(this)
+      const sql = await Db.insert("users", {
         email: this.email,
         googleid: this.googleid,
         nickname: this.nickname,
-        firstName: this.firstName,
-        lastName: this.lastName,
-        profilePicture: this.profilePicture,
-        active: db.toDateTime(Date.now()),
+        first_name: this.firstName,
+        last_name: this.lastName,
+        profile_picture: this.profilePicture,
+        active: await utcFix(),
+        pasta: this.pasta,
       });
 
       this.id = sql[0].insertId;
@@ -46,11 +58,13 @@ export default class User {
     }
   }
 
-  async getByNickname(nickname) {
+  //TODO - Não devolver senha nesses gets
+  static async getByNickname(nickname) {
     if (!nickname) throw new CustomError(400, "Nickname is required");
     try {
-      const users = await db.find("users", {
+      const users = await Db.find("users", {
         filter: { nickname: { like: nickname } },
+        view: ['id', 'email', 'nickname', 'profile_picture', 'lvl', 'active'],
         opt: { limit: 20 },
       });
 
@@ -63,11 +77,11 @@ export default class User {
     }
   }
 
-  async getById(id) {
+  static async getById(id) {
     if (!id) throw new CustomError(400, "ID is required");
 
     try {
-      const users = await db.find("users", {
+      const users = await Db.find("users", {
         filter: { id },
       });
 
@@ -82,35 +96,21 @@ export default class User {
 
   async update() {
     try {
-      if (this.nickname !== undefined && this.nickname !== null) {
-        console.log(`Updating nickname: ${this.nickname}`);
-        await db.update("users", { nickname: this.nickname }, this.id);
-      }
-
-      if (this.firstName !== undefined && this.firstName !== null) {
-        console.log(`Updating firstName: ${this.firstName}`);
-        await db.update("users", { firstName: this.firstName }, this.id);
-      }
-
-      if (this.lastName !== undefined && this.lastName !== null) {
-        console.log(`Updating lastName: ${this.lastName}`);
-        await db.update("users", { lastName: this.lastName }, this.id);
-      }
-
-      if (this.email !== undefined && this.email !== null) {
-        console.log(`Updating email: ${this.email}`);
-        await db.update("users", { email: this.email }, this.id);
-      }
+      console.log(this);
+      if (this.nickname !== undefined) await Db.update('users', { nickname: this.nickname }, this.id);
+      if (this.profilePicture !== undefined) await Db.update('users', { profile_picture: this.profilePicture }, this.id);
+      if (this.prefLanguage !== undefined) await Db.update('users', { pref_language: this.prefLanguage }, this.id);
       return this.get();
+
     } catch (error) {
       console.error(`Error in update: ${error.message}`);
       throw new CustomError(500, "Internal server error");
     }
   }
 
-  async getNameList() {
+  static async getNameList() {
     try {
-      const users = await db.find("users", {
+      const users = await Db.find("users", {
         opt: {
           order: {
             active: -1,
@@ -130,13 +130,14 @@ export default class User {
 
   async get() {
     try {
-      const user = await db.find("users", {
+      const user = await Db.find("users", {
         filter: { id: this.id },
-        view: ["email", "nickname", "firstName", "lastName", "profilePicture"],
+        view: ["email", "nickname", "first_name", "last_name", "profile_picture"],
       });
 
       if (user.length === 0) throw new CustomError(404, "User does not exist");
       return user[0];
+      
     } catch (error) {
       throw new CustomError(
         error.code ?? 500,
@@ -147,18 +148,18 @@ export default class User {
 
   async updateReadNews() {
     const activeTime = await utcFix();
-    await db.update("users", { read_news: activeTime }, this.id);
+    await Db.update("users", { read_news: activeTime }, this.id);
   }
 
   async updateActive() {
     const activeTime = await utcFix();
-    await db.update("users", { active: activeTime }, this.id);
+    await Db.update("users", { active: activeTime }, this.id);
   }
 
   static async fetchData(filter, value) {
     if (filter === "email" && typeof value === "string") {
       try {
-        const id = await db.find("users", {
+        const id = await Db.find("users", {
           filter: { email: value },
           view: ["id"],
           opt: { limit: 1 },
@@ -175,7 +176,7 @@ export default class User {
       }
     } else if (filter === "id") {
       try {
-        const email = await db.find("users", {
+        const email = await Db.find("users", {
           filter: { id: value },
           view: ["email"],
           opt: { limit: 1 },
@@ -197,5 +198,5 @@ export default class User {
 async function utcFix() {
   const now = Date.now();
   const utcfix = now - 3 * 60 * 60 * 1000;
-  return db.toDateTime(utcfix);
+  return Db.toDateTime(utcfix);
 }
