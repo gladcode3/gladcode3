@@ -13,3 +13,5 @@ config.js
 web/public/css
 web/public/js
 web/public/img/generated
+compose.yaml
+my.cnf
