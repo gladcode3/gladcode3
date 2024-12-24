@@ -10,29 +10,24 @@ export default class News {
     }
 
     static async get(page, qnt){
-        if(!page) throw { "code": 400, "message": "Page was not sent." };
-        if(!qnt) throw { "code": 400, "message": "No limit was sent."};
-        if(isNaN(page) || isNaN(qnt)) throw { "code": 400, "message": "Query must be a number"};
 
-        try{
-            const offset = (page*qnt)-qnt
-            const news = await Db.find('news', 
-                {
-                    filter: {id: Db.like("%")}, 
-                    view: ['id', 'title', 'time', 'post'],
-                    opt: { limit: qnt, order: { id: -1}, skip: offset },
-                    skip: offset
-                }
-            );
-            if(news.length === 0) throw { "code": 404, "message": "Page contains no posts."};
+        if(!page) throw new CustomError(400, "Page was not sent.");
+        if(!qnt) throw new CustomError(400, "No limit was sent.");
+        if(isNaN(page) || isNaN(qnt)) throw new CustomError(400, "Query must be a number.");
 
-            return { "code": 200, "news": news };
-            
-        }catch(error){
-            const code = error.code ?? 500;
-            const msg = error.message ?? "Failed to retrieve news";
-            return new CustomError(code, msg);
-        };
+        const offset = (page*qnt)-qnt;
+
+        const news = await Db.find('news', 
+            {
+                filter: {id: Db.like("%")}, 
+                view: ['id', 'title', 'time', 'post'],
+                opt: { limit: qnt, order: { id: -1}, skip: offset },
+                skip: offset
+            }
+        );
+        if(news.length === 0) throw new CustomError(404, "Page contains no posts.");
+
+        return { "code": 200, "news": news };
     };
 
     static async getByHash(id){
@@ -48,7 +43,7 @@ export default class News {
                 opt: { limit: 1, }
             });
         
-        if(news.length === 0) throw { "code": 404, "message": `No posts were found: Id: ${id} `};
+        if(news.length === 0) throw new CustomError(404,  `No posts were found: Id: ${id} `);
         if(news.length === 1) posts.currentPost = news[0];
         
         const prevNews = await News.fetchPrevPost(news[0].time);
