@@ -35,7 +35,12 @@ app.use("/gladiators", gladiatorRouter);
 app.use('/rank', rankRouter);
 
 // error handling
-app.use(errors);
+app.use((err, req, res, next) => {
+  const code = err.code || 500;
+  const message = err.message || "Internal Server Error";
+  //console.log({ code: err.code, message: err.message,  data: err.data });
+  res.status(code).json({ "message": message });
+});
 
 app.use((req, res) => {
   res.status(404).send({ message: "Not found" });
