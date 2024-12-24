@@ -5,7 +5,7 @@ import Auth from "../middleware/auth.js";
 const router = express.Router();
 
 // Retorna as próprias informações.
-router.get("/user",  async (req, res) => {
+router.get("/user",  async (req, res, next) => {
   try {
     await Auth.check(req);
 
@@ -16,28 +16,22 @@ router.get("/user",  async (req, res) => {
     res.status(200).json(user);
 
   } catch (error) {
-    const code = error.code ?? 500;
-    const msg = error.message ?? "Failed to retrieve user data.";
-    console.log({ "Status" : code, "Message" : msg, "Data": error.data || "No Data"}, error);
-    res.status(code).json({ "message":msg });
+    next(error)
   }
 });
 
 // Busca por usuários
-router.get("/:name", async (req, res) => {
+router.get("/:name", async (req, res, next) => {
   try {
     const users = await User.getByNickname(req.params.name);
     res.status(200).json(users);
 
   } catch (error) {
-    const code = error.code ?? 500;
-    const msg = error.message ?? "Failure to retrieve users.";
-    // console.log({ "Status" : code, "Message" : msg, "Data": error.data || "No Data"}, error);
-    res.status(code).json({ "message":msg });
+    next(error);
   }
 });
 
-router.put("/user", async (req, res) => {
+router.put("/user", async (req, res, next) => {
   try {
     await Auth.check(req);
 
@@ -71,15 +65,12 @@ router.put("/user", async (req, res) => {
     res.status(200).json({ "message": "User has been updated", "user": user });
     
   } catch (error) {
-    const code = error.code ?? 500;
-    const msg = error.message ?? "Failed to update user.";
-    //console.log({ "Status": code, "Message": msg, "Data": error.data || "No Data" }, error);
-    res.status(code).json({ "message": msg });
+    next(error);
   }
 });
 
 
-router.delete("/user", async (req, res) => {
+router.delete("/user", async (req, res, next) => {
   try {
     await Auth.check(req);
 
@@ -90,23 +81,17 @@ router.delete("/user", async (req, res) => {
     res.status(200).json({"message": "User has been deleted."});
 
   } catch (error) {
-    const code = error.code ?? 500;
-    const msg = error.message ?? "Failed to delete user.";
-    //console.log({ "Status" : code, "Message" : msg, "Data": error.data || "No Data"}, error);
-    res.status(code).json({ "message":msg });
+    next(error);
   }
 });
 
-router.post("/login", async (req, res) => {
+router.post("/login", async (req, res, next) => {
   try {
     const login = await Auth.login(req);
     res.status(login.code).json( { "token":login.token, "message": login.message } );
 
   } catch (error) {
-    const code = error.code ?? 500;
-    const msg = error.message ?? "Login failed";
-    console.log({ "Status" : code, "Message" : msg, "Data": error.data || "No Data"});
-    res.status(code).json({ "message":msg });
+    next(error);
   }
 });
 
