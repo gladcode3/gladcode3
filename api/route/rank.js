@@ -8,9 +8,7 @@ router.get('/', async (req, res) => {
         res.json(query);
 
     } catch (error) {
-        const code = error.code ?? 500;
-        const msg = error.message ?? "Failed to retrieve news";
-        res.status(code).send( { "message": msg } );
+        next(error);
     }
 });
 
@@ -25,9 +23,7 @@ router.get('/fetch', async (req, res) => {
         res.json(query);
 
     } catch (error) {
-        const code = error.code ?? 500;
-        const msg = error.message ?? "Failed to retrieve news";
-        res.status(code).send( { "message": msg } );
+        next(error);    
     }
 });
 
