@@ -49,7 +49,7 @@ export default class Auth {
             const token = Auth.retrieveToken(req.headers['authorization']);
 
             const isOptional = req.optional ?? false;
-            if(!token && isOptional) return { "message": "User has access but not logged in." };
+            if(!token && isOptional) return req.check = { "message": "User has access but not logged in.", "user": false };
             if (!token) throw new CustomError(400, 'Token was not sent');
 
             const clientId = process.env.GOOGLE_CLIENT_ID;
