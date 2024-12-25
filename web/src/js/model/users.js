@@ -3,8 +3,17 @@ import LocalData from "../helpers/local-data.js";
 
 
 class Users {
-    static getUserData() {}
-    static getUserByName(name) {}
+    static async getUserData() {
+        const api = new Api();
+        const data = await api.get('users');
+        console.log(data);
+        return data;
+    }
+
+    static async getUserByName(name) {
+        const api = new Api();
+        return await api.get(`users/${name}`);;
+    }
 }
 
 export default Users;

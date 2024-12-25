@@ -44,13 +44,13 @@ export default class Auth {
         };
     };
 
-    static async check(req, res, next) {
+    static async check(req) {
         try {
             const token = Auth.retrieveToken(req.headers['authorization']);
 
             const isOptional = req.optional ?? false;
-            if(!token && isOptional) return { "message": "User has access but not logged in." };
-            if (!token) throw new CustomError(400, 'Token is null');
+            if(!token && isOptional) return req.check = { "message": "User has access but not logged in.", "user": false };
+            if (!token) throw new CustomError(400, 'Token was not sent');
 
             const clientId = process.env.GOOGLE_CLIENT_ID;
             const client = new OAuth2Client();
@@ -129,13 +129,14 @@ export default class Auth {
         });
 
         if (user.length === 0) {
+            
             await new User({
                 email: email,
                 googleid: googleid,
                 nickname:`${first_name}${Math.floor(Math.random() * 900) + 100}`,
-                first_name: first_name,
-                last_name: last_name,
-                profile_picture: `https://www.gravatar.com/avatar/${crypto.createHash('md5').update(email.toLowerCase().trim()).digest('hex')}?d=retro`,
+                firstName: first_name,
+                lastName: last_name,
+                profilePicture: `https://www.gravatar.com/avatar/${crypto.createHash('md5').update(email.toLowerCase().trim()).digest('hex')}?d=retro`,
                 pasta: crypto.createHash('md5').update(email).digest('hex'),
             }).add();
             return;

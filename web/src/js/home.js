@@ -11,14 +11,10 @@ loginBtn.addEventListener('click', async () => {
     await Session.googleAuth()
         .catch(e => console.error(e));
     
-    const loginRes = await Session.login()
+    await Session.login()
         .catch(e => console.error(e));
 
     // const { token } = loginRes; // Por hora o token usado é apenas o do OAuth
-
-    const api = new Api();
-    const data = await api.get('users');
-    console.log(data);
 });
 
 
