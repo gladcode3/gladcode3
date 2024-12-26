@@ -158,7 +158,6 @@ class HTMLLoaderMenu {
             // More about the optional chaining (?.) operator in:
             // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining
         } else if (itemPaths?.[HTMLStringKey]) {
-            console.log(itemPaths[HTMLStringKey]);
             fetch(itemPaths[HTMLStringKey])
             .then(res => res.text())
             .then(loadedHTMLString => {

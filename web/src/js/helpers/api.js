@@ -23,7 +23,7 @@ export default class Api {
             return requestInstance;
         }
 
-        const token = this.token || GoogleLogin.getCredential().token;
+        const token = this.token || GoogleLogin.getCredential()?.token;
 
         if (!token) {
             throw new Error('Credential not found');

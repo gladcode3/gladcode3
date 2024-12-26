@@ -1,5 +1,5 @@
 class PostInfo {
-    constructor({ id, post, time, title }) {
+    constructor({ id, title, time, post }) {
         this.id = id;
         this.title = title;
         this.body = post;
@@ -19,6 +19,7 @@ class PostInfo {
             month: time.getMonth(),
             day: time.getDate(),
             hours: time.getHours(),
+            minutes: time.getMinutes(),
             seconds: time.getSeconds(),
             milliseconds: time.getMilliseconds()
         };

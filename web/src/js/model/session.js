@@ -2,9 +2,11 @@ import Toast from "../components/toast.js";
 import Api from "../helpers/api.js";
 import GoogleLogin from "../helpers/google-login.js";
 import LocalData from "../helpers/local-data.js";
-import Users from "./users.js";
 
 const storageKey = 'api-token'; 
+
+// Obs.: Adicionar um sistema para salvar dados no LS para poupar requisições.
+// Tomar cuidado nessa parte e garantir que os dados salvos não sejam sensíveis.
 
 class Session {
     static async googleAuth() {
@@ -14,7 +16,7 @@ class Session {
 
         if (credential === 'expired') {
             GoogleLogin.removeCredential();
-            Users.removeToken();
+            Session.removeToken();
 
             new Toast(
                 'Sua sessão expirou. Por favor, faça login novamente.',
@@ -30,8 +32,8 @@ class Session {
         };
 
         const onSucessE = () => {
-            console.log('sucess', GoogleLogin.getCredential());
-            // location.href = '/dashboard';
+            // console.log('sucess');
+            location.href = '/dashboard'
         };
 
         GoogleLogin.onFail(onFailE);
@@ -49,15 +51,15 @@ class Session {
         const credential = GoogleLogin.getCredential();
 
         if (!credential) location.href = '/';
-
-        if (credential === 'expired') {
-            new Toast(
-                'Sua sessão expirou. Por favor, faça login novamente.',
-                { type: 'error' }
-            );
-            
-            location.href = '/';
-        }
+        if (credential !== 'expired') return;
+        
+        // Caso ela esteja expirada
+        new Toast(
+            'Sua sessão expirou. Por favor, faça login novamente.',
+            { type: 'error' }
+        );
+        
+        location.href = '/';
     }
     
     static async login(apiInstance) {
@@ -73,6 +75,8 @@ class Session {
 
         if (!loginResponse.token) return loginResponse;
         
+        // const userData = await Users.getUserData();
+
         this.setToken(loginResponse);
         return loginResponse;
     }
@@ -81,7 +85,7 @@ class Session {
         if (!loginRes.token) return;
 
         const localData = new LocalData({ id: storageKey });
-        localData.set({ data: loginRes });
+        localData.set(loginRes.token);
     }
 
     static getToken() {

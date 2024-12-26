@@ -1,28 +1,20 @@
+import Session from './model/session.js';
 import HTMLLoaderMenu from './components/html-loader-menu.js';
 import newsAction from './view/news.js';
 import GoogleLogin from './helpers/google-login.js';
-import Api from './helpers/api.js';
-import Session from './model/session.js';
 
 import '../less/dashboard.less';
 
-console.log('pre');
 Session.validate();
-console.log('pos');
-// const credential = GoogleLogin.getCredential();
-// console.log(credential);
-
-
-// const api = new Api();
-// const user = await api.post('back_login.php', { action: 'GET' });
-// console.log(user);
 
 // Logout
-const logout = async () => {
-    location.href = '/';
-
+// Criar um método Session.logout
+// Aqui não é lugar para se criar funções assim
+const logout = async () => {    
     GoogleLogin.removeCredential();
     sessionStorage.removeItem('lastSelectedPanel');
+    
+    location.href = '/';
 };
 
 const logoutButton = document.querySelector('.page-links__link.logout');

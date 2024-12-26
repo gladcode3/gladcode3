@@ -1,5 +1,7 @@
+import Session from "./session.js";
 import Api from "../helpers/api.js";
 
+Session.validate();
 const api = new Api();
 
 class News {
