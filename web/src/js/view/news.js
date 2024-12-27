@@ -16,8 +16,6 @@ const observeLastPost = observer => {
     }
 
     const lastPost = document.querySelector('.news-panel__news').lastChild;
-    console.log(typeof lastPost, lastPost);
-    
     observer.observe(lastPost);
 };
 
@@ -35,6 +33,7 @@ async function newsAction() {
 
             if (!posts.news) throw new Error('Page contains no posts.');
 
+            console.log(posts);
             renderPosts(posts.news);
             observeLastPost(observer);
         } catch (e) {
@@ -46,6 +45,7 @@ async function newsAction() {
 
     const posts = await news.getNews();
 
+    console.log(posts);
     renderPosts(posts.news);
     observeLastPost(postsObserver);
 }
