@@ -6,22 +6,8 @@ const api = new Api();
 
 class News {
     constructor({ limit = 10 } = {}) {
-        // if (!(target instanceof HTMLElement)) {
-        //     console.log('target is not a HTMLElement');
-        //     throw new TypeError('target is not a HTMLElement');
-        // }
-        
-        // Constants...
-        // this.target = target;
         this.limit = limit;
-        
-        // Variables...
         this.page = 1;
-        // this.lastPage = null;
-
-        // const newsObserver = new IntersectionObserver(([post]) => {
-        //     if (!post.isIntersecting) return;
-        // });
     }
 
     async getNews() {

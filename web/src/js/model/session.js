@@ -2,21 +2,34 @@ import Toast from "../components/toast.js";
 import Api from "../helpers/api.js";
 import GoogleLogin from "../helpers/google-login.js";
 import LocalData from "../helpers/local-data.js";
+import Users from "./users.js";
 
-const storageKey = 'api-token'; 
-
-// Obs.: Adicionar um sistema para salvar dados no LS para poupar requisições.
-// Tomar cuidado nessa parte e garantir que os dados salvos não sejam sensíveis.
 
 class Session {
+    static storageKey = 'api-token'; 
+    static api = null;
+
+    static #setApiInstance() {
+        if (!GoogleLogin.getCredential())
+            throw new Error('google credentials not founded');
+
+        if (!this.api) this.api = new Api();
+    }
+
+    static #removeLocalInfo() {
+        GoogleLogin.removeCredential();
+        Users.removeLocalUserData();
+    }
+
+    // Methods:
+
     static async googleAuth() {
         await GoogleLogin.init({ auto: false });
 
         let credential = GoogleLogin.getCredential();
 
         if (credential === 'expired') {
-            GoogleLogin.removeCredential();
-            Session.removeToken();
+            this.#removeLocalInfo();
 
             new Toast(
                 'Sua sessão expirou. Por favor, faça login novamente.',
@@ -32,8 +45,7 @@ class Session {
         };
 
         const onSucessE = () => {
-            // console.log('sucess');
-            location.href = '/dashboard'
+            console.log('sucess');
         };
 
         GoogleLogin.onFail(onFailE);
@@ -49,52 +61,55 @@ class Session {
 
     static validate() {
         const credential = GoogleLogin.getCredential();
-
-        if (!credential) location.href = '/';
+        if (!credential) this.logout();
+        
+        // have a credential, but it has not expired
         if (credential !== 'expired') return;
         
-        // Caso ela esteja expirada
+        // expired credential:
         new Toast(
             'Sua sessão expirou. Por favor, faça login novamente.',
             { type: 'error' }
         );
         
-        location.href = '/';
+        this.logout();
     }
     
-    static async login(apiInstance) {
-        const api = apiInstance || new Api();
+    static async login() {
+        this.#setApiInstance();
 
-        if (!(api instanceof Api)) {
-            console.error('api is not an instance of Api');
-            throw new TypeError('api is not an instance of Api');
-        }
-
-        const loginResponse = await api.post('users/login')
+        const loginResponse = await this.api.post('users/login')
             .catch(e => console.error(e));
 
         if (!loginResponse.token) return loginResponse;
         
-        // const userData = await Users.getUserData();
+        // Save local data
+        await Users.saveLocalUserData()
+            .catch(e => console.error(e));
 
-        this.setToken(loginResponse);
         return loginResponse;
     }
 
-    static setToken(loginRes) {
-        if (!loginRes.token) return;
-
-        const localData = new LocalData({ id: storageKey });
-        localData.set(loginRes.token);
+    static logout() {
+        this.#removeLocalInfo();
+        location.href = '/';
+    }
+    
+    // Token methods
+    static getToken() {
+        const data = new LocalData({ id: this.storageKey }).get();
+        return data;
     }
 
-    static getToken() {
-        const token = new LocalData({ id: storageKey }).get();
-        return token;
+    static saveToken(loginRes) {
+        if (!loginRes.token) return;
+
+        new LocalData({ id: this.storageKey })
+            .set({ data: loginRes.token });
     }
 
     static removeToken() {
-        new LocalData({ id: storageKey }).remove();
+        new LocalData({ id: this.storageKey }).remove();
     }
 }
 

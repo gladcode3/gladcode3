@@ -33,7 +33,6 @@ async function newsAction() {
 
             if (!posts.news) throw new Error('Page contains no posts.');
 
-            console.log(posts);
             renderPosts(posts.news);
             observeLastPost(observer);
         } catch (e) {
