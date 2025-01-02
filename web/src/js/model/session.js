@@ -74,6 +74,13 @@ class Session {
         
         this.logout();
     }
+
+    static userIsLogged() {
+        const credential = GoogleLogin.getCredential();
+        if (!credential) return false;
+
+        return credential !== 'expired';
+    }
     
     static async login() {
         this.#setApiInstance();

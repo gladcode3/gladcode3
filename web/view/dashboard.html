@@ -13,67 +13,7 @@
 </head>
 
 <body>
-    <header>
-        <!-- Desktop -->
-
-        <div id="logotype">
-            <a href="/" class="logotype__home-link">
-                <div aria-hidden="true" class="home-link__gc-icon">
-                    <img src="/img/gc-icon.png" alt="ícone da gladcode">
-                </div>
-
-                <h1><span lang="en">Gladcode</span></h1>
-            </a>
-        </div>
-
-        <nav role="navigation" id="header-navigator">
-            <ul class="header-navigator__page-links">
-                <li role="button" class="page-links__link logout">
-                    <a href="#" title="Encerrar sessão na gladCode">Logout</a>
-                </li>
-
-                <li class="page-links__link">
-                    <a href="manual" title="Entenda como funciona a gladCode">Aprender</a>
-                </li>
-
-                <li class="page-links__link">
-                    <a href="editor" title="Crie e programe seus gladiadores">Editor</a>
-                </li>
-
-                <li role="menu" aria-expanded="false" class="page-links__link page-links__link--drop">
-                    <a href="#">Sobre</a>
-
-                    <ul aria-hidden="true" class="link--drop__sub-links">
-                        <li class="page-links__link">
-                            <a href="about" title="Saiba sobre a trajetória da gladCode">O Projeto</a>
-                        </li>
-
-                        <li class="page-links__link">
-                            <a href="about#support" title="Maneiras de você apoiar o projeto">Apoie a GladCode</a>
-                        </li>
-
-                        <li class="page-links__link">
-                            <a href="creditos" title="Créditos aos criadores das artes e sons utilizadas na gladCode">Créditos</a>
-                        </li>
-
-                        <li class="page-links__link">
-                            <a href="stats" title="Estatísticas sobre as batalhas realizadas">Estatísticas</a>
-                        </li>
-                    </ul>
-                </li>
-            </ul>
-            
-            <a aria-label="configurações do usuário" href="#" class="header-navigator__user-settings">
-                <img src="/img/profile-photo-support.jpg" alt="">
-            </a>
-        </nav>
-
-        <!-- Mobile -->
-
-        <div role="menu" aria-expanded="false" aria-label="menu" id="hamburguer-menu">
-            <i class="fa-solid fa-bars fa-2xl"></i>
-        </div>
-    </header> <!-- Adicionar regras CSS para abrir e fechar os painéis que possuem ".drop-menu" -->
+    <gc-header></gc-header>
     
     <div id='page-container'>
         <aside role="region">

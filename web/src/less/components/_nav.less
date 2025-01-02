@@ -1,0 +1,26 @@
+@import '../mixins/all.less';
+@import '../setup/all.less';
+
+:host {
+    .flexbox(row, end, center);
+
+    ul#page-links {
+        .flexbox(row, end, center);
+
+        li.page-links__link {
+            & > a {
+                padding: @normal-pad;
+                text-align: center;
+                font-size: @large-font-size;
+                transition: all 0.3s;
+                
+                .auto-text-color(@primary-color);
+                .flexbox;
+
+                &:hover { background-color: @black-opacity-2 }
+            }
+
+            &.page-links__link--drop > ul.link--drop__sub-links { display: none }
+        }
+    }
+}

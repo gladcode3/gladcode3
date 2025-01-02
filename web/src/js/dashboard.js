@@ -3,6 +3,7 @@ import HTMLLoaderMenu from './components/html-loader-menu.js';
 import newsAction from './view/news.js';
 // import GoogleLogin from './helpers/google-login.js';
 import Users from './model/users.js';
+import _GladcodeHeader from './components/gc-header.js';
 
 import '../less/dashboard.less';
 
@@ -11,12 +12,6 @@ Session.validate();
 console.log(await Users.getUserData());
 console.log(await Users.getUserByName('GustavoRutkowski'));
 
-// Logout
-const logoutButton = document.querySelector('.page-links__link.logout');
-logoutButton.addEventListener('click', () => {
-    sessionStorage.clear();
-    Session.logout();
-});
 
 const userInfos = Users.getLocalUserData();
 

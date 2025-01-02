@@ -1,21 +1,15 @@
-header {
+@import '../mixins/all.less';
+@import '../setup/all.less';
+
+:host {
 	width: 100%;
 	text-transform: uppercase;
 	
 	.auto-contrast(@primary-color);
-	.flexbox(@justify: space-between);
-
-	#hamburguer-menu {
-		font-size: @litle-font-size;
-		display: none; // none / flex
-		justify-content: center;
-		align-items: center;
-		cursor: pointer;
-
-		.square(7rem);
-	}
+	.flexbox(@justify: right);
 
 	#logotype {
+		margin-right: auto;
 		overflow: hidden;
 		
 		& > a.logotype__home-link {
@@ -44,55 +38,62 @@ header {
 		}
 	}
 
-	nav#header-navigator {
-		.flexbox(row, end, center); // flex / none
-
-		ul.header-navigator__page-links {
-			.flexbox(row, end, center);
-
-			li.page-links__link {
-				& > a {
-					padding: @normal-pad;
-					text-align: center;
-					font-size: @large-font-size;
-					transition: all 0.3s;
+	button#login-button, button#logout-button {
+		border: none;
+		outline: none;
+		background-color: transparent;
+		text-transform: uppercase;
+		padding: @normal-pad;
+		text-align: center;
+		font-size: @large-font-size;
+		transition: all 0.3s;
+		cursor: pointer;
 					
-					.auto-text-color(@primary-color);
-					.flexbox;
+		.auto-text-color(@primary-color);
+		.flexbox;
 
-					&:hover { background-color: @black-opacity-2 }
-				}
+		&:hover { background-color: @black-opacity-2 }
+	}
+	
+	a#user-settings {
+		padding: @small-pad;
+		border-left: @default-border;
+		transition: all 0.3s;
 
-				&.page-links__link--drop > ul.link--drop__sub-links { display: none }
-			}
+		.flexbox;
+
+		img {
+			border-radius: 50%;
+			.square(4rem);
 		}
 
-		a.header-navigator__user-settings {
-			padding: @small-pad;
-			border-left: @default-border;
-			transition: all 0.3s;
+		&:hover { background-color: @black-opacity-2 }
+	}
 
-			.flexbox;
+	#hamburguer-menu {
+		font-size: @litle-font-size;
+		display: none;
+		justify-content: center;
+		align-items: center;
+		cursor: pointer;
 
-			img {
-				border-radius: 50%;
-				.square(4rem);
-			}
-
-			&:hover { background-color: @black-opacity-2 }
-		}
+		.square(7rem);
 	}
 }
 
 @media only screen and (max-width: 310px) {
-    header #logotype>.logotype__home-link .home-link__gc-icon {
+    :host #logotype > a.logotype__home-link .home-link__gc-icon {
         display: none;
     }
 }
 
 @media only screen and (max-width: 880px) {
-    header {
-        nav#header-navigator { display: none; }
+    :host {
+        button#login-button,
+		button#logout-button,
+		gc-nav, a#user-settings {
+			display: none;
+		}
         #hamburguer-menu { display: flex; }
     }
 }

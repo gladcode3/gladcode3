@@ -44,8 +44,10 @@ export default {
                 oneOf: [
                     {
                         resourceQuery: /raw/,
-                        use: 'raw-loader',
-                        
+                        use: [
+                            'raw-loader',
+                            'less-loader'
+                        ],
                     },
                     {
                         use: [
