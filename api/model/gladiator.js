@@ -37,6 +37,7 @@ export default class Gladiator {
     try {
       const gladiators = await db.find("gladiators", {
         filter: { name },
+        view: ['id', 'master', 'name', 'vstr', 'vagi', 'vint', 'lvl', 'xp', 'skin', 'mmr', 'version'],
       });
 
       return gladiators;
@@ -54,6 +55,7 @@ export default class Gladiator {
 
       const gladiators = await db.find("gladiators", {
         filter: { cod },
+        view: ['id', 'master', 'name', 'vstr', 'vagi', 'vint', 'lvl', 'xp', 'skin', 'code', 'mmr', 'version'],
       });
       
       return gladiators;
@@ -71,6 +73,7 @@ export default class Gladiator {
     try {
       const gladiators = await db.find("gladiators", {
         filter: { master: master },
+        view: ['id', 'master', 'name', 'vstr', 'vagi', 'vint', 'lvl', 'xp', 'skin', 'code', 'mmr', 'version'],
       });
 
       return gladiators;
