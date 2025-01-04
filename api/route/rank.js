@@ -2,9 +2,9 @@ import express from 'express'
 import Rank from '../model/rank.js';
 const router = express.Router();
 
-router.get('/', async (req, res) => {
+router.get('/get', async (req, res, next) => {
     try{
-        const query = await Rank.getRank(req.query.page, req.query.search, req.query.limit);
+        const query = await Rank.get(req.query.page, req.query.qnt, req.query.srch);
         res.json(query);
 
     } catch (error) {
