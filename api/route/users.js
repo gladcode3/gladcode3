@@ -16,7 +16,7 @@ router.get("/user",  async (req, res, next) => {
     res.status(200).json(user);
 
   } catch (error) {
-    next(error)
+    next(error);
   }
 });
 
@@ -52,8 +52,6 @@ router.put("/user", async (req, res, next) => {
 
     const isEmpty = (obj) => Object.keys(obj).length === 0;
     if (isEmpty(updateData)) throw new CustomError(400, "No data was sent");
-
-    console.log(updateData)
 
     const user = await new User({
       id: check.user.id,

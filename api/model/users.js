@@ -53,7 +53,7 @@ export default class User {
 
     const users = await Db.find("users", {
       filter: { nickname: { like: nickname } },
-      view: ['id', 'email', 'nickname', 'profile_picture', 'lvl', 'active'],
+      view: ['id', 'email', 'nickname', 'profile_picture', 'lvl', 'xp', 'silver', 'credits', 'active'],
       opt: { limit: 20 },
     });
 
@@ -65,6 +65,7 @@ export default class User {
 
     const users = await Db.find("users", {
       filter: { id },
+      view: ['id', 'email', 'nickname', 'profile_picture', 'lvl', 'xp', 'silver', 'credits', 'active']
     });
 
     return users;
@@ -79,6 +80,7 @@ export default class User {
 
   static async getNameList() {
     const users = await Db.find("users", {
+      view: ['id', 'email', 'nickname', 'profile_picture', 'lvl', 'xp', 'silver', 'credits', 'active'],
       opt: {
         order: {
           active: -1,
@@ -93,7 +95,7 @@ export default class User {
   async get() {
     const user = await Db.find("users", {
       filter: { id: this.id },
-      view: ["email", "nickname", "first_name", "last_name", "profile_picture"],
+      view: ["email", "nickname", "first_name", "last_name", "profile_picture", 'lvl', 'xp', 'silver', 'credits', 'active'],
     });
 
     if (user.length === 0) throw new CustomError(404, "User does not exist");

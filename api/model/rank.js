@@ -1,23 +1,99 @@
 import Db from '../core/mysql.js';
 import CustomError from '../core/error.js';
-import config from '../config.js'
 
 export default class Rank {
-  
-    static async rankFetch(tab, srch){
+
+    static async get(page, qnt, srch){
+        if(qnt > 30 || qnt === undefined || isNaN(qnt)) qnt = 30;
+        if(page === undefined || page < 0) page = 0;
+
+        let offset = (page*qnt)-qnt;
+        let search = "";
+        let searchQuery;
+
+        if(srch !== undefined || srch !== "") {
+            searchQuery = ` WHERE g.name LIKE '%${srch}%' OR u.nickname LIKE '%${srch}%'`;
+            search = srch;
+        }
+
+        const byGladiator = await Db.find('gladiators', {
+            filter: { name: { like: `${search}` } },
+            view: [ 'cod' ],
+        });
+        const total = byGladiator.length;
+
+        const sumreward = `
+        SELECT 
+            sum(r.reward) 
+        FROM 
+            reports r 
+        INNER JOIN 
+            logs l ON l.id = r.log 
+        WHERE 
+            g.cod = r.gladiator AND 
+            l.time > CURRENT_TIME() - INTERVAL 1 DAY`;
+
+        const position = `
+        SELECT 
+            count(*) 
+        FROM 
+            gladiators g2
+        WHERE 
+            g2.mmr >= g.mmr
+        `;
+
+        const sql = `
+        SELECT 
+            g.name, g.mmr, u.nickname, (${sumreward}) AS sumreward, (${position}) AS position 
+        FROM 
+            gladiators g 
+        INNER JOIN 
+            users u ON g.master = u.id
+        ${searchQuery}
+        ORDER BY g.mmr DESC 
+        LIMIT ${qnt} 
+        OFFSET ${offset}
+        `
+
+        const result = await Db.query(sql, []);
+        const ranking = [];
+
+        result.forEach(row => {
+            ranking.push({
+                'glad': row.name,
+                'mmr': row.mmr,
+                'master': row.nickname,
+                'change24': row.sumreward,
+                'position': row.position
+            });
+        });
+
+        return {
+            "code": 200,
+            "total": total,
+            ranking
+        }
+
+    }
+
+    static async fetch(tab, srch){
         
-        const search = srch.toLowerCase();
+        let search = "";
+        if(srch !== undefined) search = srch.toLowerCase();
+        
         const prize = [ 10, 6, 4, 3, 2];
         const ranking = []
-        let sql, result;
-        
-        sql = `SELECT t.id, t.name, t.weight FROM training t WHERE t.description LIKE ?`;
-        const training = await Db.query(sql, [`%#${tab}%`]);
+        let sql;
+
+        const training = await Db.find('training', {
+            filter: { description : { like: `#${tab}` } },
+            view: [ 'id', 'name', 'weight' ]
+        });
 
         for (const train of training) {
             const trainId = train.id;
             const weight = train.weight;
-        
+
             const manualtime = `
                 SELECT avg(IF(gt2.lasttime > 1000, gt2.lasttime - 1000, gt2.lasttime)) 
                 FROM gladiator_training gt2 
@@ -40,6 +116,7 @@ export default class Rank {
             `;
         
             const result = await Db.query(sql, [trainId]);
+            console.log(result)
         
             let i = 0;
             for (const row of result) {
@@ -66,14 +143,6 @@ export default class Rank {
             ranking[id].fights = null;
         };
 
-        const sortedRank = Object.values(ranking).sort((a, b) => {
-            if (a.score > b.score) return -1;
-            if (b.score > a.score) return 1;
-            if (a.time > b.time) return -1;
-            if (b.time > a.time) return 1;
-            return 0;
-        });
-
         let i = 1;
         const filtered = ranking.map((item) => {
             item.position = i++;
@@ -82,7 +151,6 @@ export default class Rank {
             (item) => search === "" || item.nickname.toLowerCase().includes(search)
         );
         
-        console.log(filtered)
         return {
             "ranking": filtered,
             "code": 200
