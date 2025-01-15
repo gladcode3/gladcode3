@@ -16,15 +16,22 @@ import DynamicScript from './dynamic-script.js';
 import Pledge from './pledge.js';
 import LocalData from './local-data.js';
 
+// Symbol é usado como uma "chave de acesso" a propriedades e métodos privados.
+const kLogged = Symbol('kLogged');
+const kLoaded = Symbol('kLoaded');
+const kStorageKey = Symbol('kStorageKey');
+const kOnFailCallback = Symbol('kOnFailCallback');
+const kOnSignInCallback = Symbol('kOnSignInCallback');
+const kGenerateInitConfig = Symbol('kGenerateInitConfig');
 
 export default class GoogleLogin {
-    static logged = false;
-    static loaded = false;
-    static storageKey = 'user-session';
-    static onFailCallback = null;
-    static onSignInCallback = null;
+    static [kLogged] = false;
+    static [kLoaded] = false;
+    static [kStorageKey] = 'user-session';
+    static [kOnFailCallback] = null;
+    static [kOnSignInCallback] = null;
 
-    static #generateInitConfig(auto, redirectUri, callback = _res => {}) {        
+    static [kGenerateInitConfig](auto, redirectUri, callback = _res => {}) {        
         const initConfig = {
             client_id: TemplateVar.get('googleClientId'),
             callback,
@@ -40,24 +47,24 @@ export default class GoogleLogin {
     }
 
     static async init({ redirectUri, auto=true } = {}) {
-        if (GoogleLogin.loaded) return GoogleLogin;
+        if (this[kLoaded]) return GoogleLogin;
 
         const pledge = new Pledge();
 
         new DynamicScript('https://accounts.google.com/gsi/client', () => {            
-            async function handleCredentialResponse(response) {
-                GoogleLogin.logged = true;
+            const handleCredentialResponse = async response => {
+                this[kLogged] = true;
                 GoogleLogin.saveCredential(response.credential);
             }
 
-            const initConfig = this.#generateInitConfig(
+            const initConfig = this[kGenerateInitConfig](
                 auto,
                 redirectUri,
                 handleCredentialResponse
             );
             google.accounts.id.initialize(initConfig);
 
-            GoogleLogin.loaded = true;
+            this[kLoaded] = true;
             pledge.resolve(GoogleLogin);
         });
 
@@ -65,11 +72,11 @@ export default class GoogleLogin {
     }
 
     static isLoaded() {
-        return GoogleLogin.loaded;
+        return this[kLoaded];
     }
 
     static renderButton(element) {
-        if (!GoogleLogin.loaded) {
+        if (!this[kLoaded]) {
             throw new Error('GoogleLogin not loaded');
         }
         // You can skip the next instruction if you don't want to show the "Sign-in" button
@@ -80,25 +87,25 @@ export default class GoogleLogin {
     }
 
     static async prompt() {
-        if (!GoogleLogin.loaded) {
+        if (!this[kLoaded]) {
             throw new Error('GoogleLogin not loaded');
         }
         
         google.accounts.id.prompt(notification => {
             if (!notification.isNotDisplayed()) return;
 
-            if (GoogleLogin.onFailCallback) {
-                GoogleLogin.onFailCallback(notification);
+            if (this[kOnFailCallback]) {
+                this[kOnFailCallback](notification);
             }
         });
 
-        await GoogleLogin.waitLogged();
+        await this.waitLogged();
     }
 
     static async waitLogged() {
         const pledge = new Pledge();
         let interval = setInterval(() => {
-            if (GoogleLogin.logged) {
+            if (this[kLogged]) {
                 clearInterval(interval);
                 pledge.resolve();
             }
@@ -107,29 +114,29 @@ export default class GoogleLogin {
     }
 
     static onFail(callback) {
-        GoogleLogin.onFailCallback = callback;
-        return GoogleLogin;
+        this[kOnFailCallback] = callback;
+        return this;
     }
 
     static saveCredential(credential) {
-        new LocalData({ id: GoogleLogin.storageKey })
+        new LocalData({ id: this[kStorageKey] })
             .set({ data: { token: credential } });
         
-        if (GoogleLogin.onSignInCallback) {
-            GoogleLogin.onSignInCallback(credential);
+        if (this[kOnSignInCallback]) {
+            this[kOnSignInCallback](credential);
         }
     }
 
     static getCredential() {
-        return new LocalData({ id: GoogleLogin.storageKey }).get();
+        return new LocalData({ id: this[kStorageKey] }).get();
     }
 
     static removeCredential() {
-        new LocalData({ id: GoogleLogin.storageKey }).remove();
+        new LocalData({ id: this[kStorageKey] }).remove();
     }
 
     static onSignIn(callback) {
-        GoogleLogin.onSignInCallback = callback;
-        return GoogleLogin;
+        this[kOnSignInCallback] = callback;
+        return this;
     }
 }

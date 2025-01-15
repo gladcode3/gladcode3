@@ -1,42 +1,49 @@
 import Api from "../helpers/api.js";
 import LocalData from "../helpers/local-data.js";
 
+// Symbol é usado como uma "chave de acesso" a propriedades e métodos privados.
+const kStorageKey = Symbol('kStorageKey');
+const kApi = Symbol('kApi');
+const kSetApiInstance = Symbol('kSetApiInstance');
 
 class Users {
-    static storageKey = 'user-infos';
-    static api = null;
+    static [kStorageKey] = 'user-infos';
+    static [kApi] = null;
 
-    static setApiInstance() {
-        if (!this.api) this.api = new Api();
+    static [kSetApiInstance]() {
+        try {
+            if (!this[kApi]) this[kApi] = new Api();
+        } catch(err) {
+            console.log(err);
+            throw err;
+        }
     }
 
     static async getUserData() {
-        this.setApiInstance();
-        return await this.api.get('users/user');
+        this[kSetApiInstance]();
+        return await this[kApi].get('users/user');
     }
 
     static async getUserByName(name) {
-        this.setApiInstance();
-
-        return await this.api.get(`users/${name}`);;
+        this[kSetApiInstance]();
+        return await this[kApi].get(`users/${name}`);
     }
 
     // Local user data methods
     static getLocalUserData() {
-        const data = new LocalData({ id: this.storageKey }).get();
+        const data = new LocalData({ id: this[kStorageKey] }).get();
         return data;
     }
 
     static async saveLocalUserData() {
         const userData = await this.getUserData();
 
-        new LocalData({ id: this.storageKey })
+        new LocalData({ id: this[kStorageKey] })
             .set({ data: userData });
     }
 
     static async removeLocalUserData() {
-        // console.log('Users.removeLocalUserData...');
-        new LocalData({ id: this.storageKey }).remove();
+        new LocalData({ id: this[kStorageKey] }).remove();
     }
 }
 
