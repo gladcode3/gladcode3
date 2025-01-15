@@ -2,6 +2,7 @@ import HTMLParser from '../helpers/html-parser.js';
 import stylesRaw from '../../less/components/_nav.less?raw';
 
 // <gc-nav></gc-nav>
+
 class GladcodeNavBar extends HTMLElement {
     constructor() {
         super();

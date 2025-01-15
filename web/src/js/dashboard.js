@@ -4,6 +4,7 @@ import newsAction from './view/news.js';
 // import GoogleLogin from './helpers/google-login.js';
 import Users from './model/users.js';
 import _GladcodeHeader from './components/gc-header.js';
+import _GladcodeUserInfos from './components/gc-user-infos.js';
 
 import '../less/dashboard.less';
 
@@ -13,10 +14,16 @@ console.log(await Users.getUserData());
 console.log(await Users.getUserByName('GustavoRutkowski'));
 
 
-const userInfos = Users.getLocalUserData();
+// const userInfos = Users.getLocalUserData();
 
-const nickname = document.querySelector('#user .main-infos__nickname');
-nickname.textContent = userInfos.nickname;
+// const nickname = document.querySelector('#user .main-infos__nickname');
+// nickname.textContent = userInfos.nickname;
+
+// const lvl = document.querySelector('#user .lvl__lvl');
+// lvl.textContent = userInfos.lvl;
+
+// const coins = document.querySelector('#user .money-infos__coins');
+// coins.textContent = userInfos.silver;
 
 // Panels
 const panelSelectorInfos = {

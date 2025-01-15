@@ -1,0 +1,99 @@
+@import '../mixins/all.less';
+@import '../setup/all.less';
+
+:host {
+    border-top: @default-border;
+    border-bottom: @default-border;
+    width: 100%;
+
+    .flexbox(column, center, center);
+
+    #main-infos {
+        padding: @small-pad @mid-pad;
+        width: 100%;
+
+        .flexbox(@direction: column, @align: center, @gap: 6px);
+        
+        .main-infos__picture {
+            outline: 3px solid #000;
+            border-radius: 50%;
+            user-select: none;
+
+            img {
+                border: 3px solid #fff;
+                border-radius: 50%;
+
+                .square(8.5rem);
+            }
+        }
+
+        .main-infos__nickname {
+            width: 100%;
+            text-align: center;
+            font-size: @normal-font-size;
+        }
+
+        .main-infos__xp-lvl {
+            width: 100%;
+            .flexbox(@align: center);
+
+            .xp-lvl__lvl {
+                position: relative;
+                transform: translateX(1.2rem);
+
+                .flexbox(row, center, center);
+
+                img {
+                    user-select: none;
+                    position: absolute;
+                    z-index: 0;
+
+                    .square(3.4rem);
+                }
+
+                .lvl__lvl {
+                    padding-top: 5px;
+                    text-shadow: 0 4px 4px rgba(#000, 0.25);
+                    font-size: 1.6rem;
+                    font-weight: bold;
+                    color: @primary-color;
+                    position: absolute;
+                    z-index: 1;
+                    user-select: none;
+                }
+            }
+
+            progress.xp-lvl__xp {
+                padding-left: @mid-small-pad;
+                border-radius: @xp-bar-border-radius;
+                width: 100%;
+                height: 2rem;
+                overflow: hidden;
+
+                &::-webkit-progress-bar {
+                    border-radius: @xp-bar-border-radius;
+                    height: 2rem;
+                    background-color: @xp-bar;
+                    border: @xp-bar-border;
+                }
+
+                &::-webkit-progress-value {
+                    background: @xp-gradient;
+                    outline: @xp-border;
+                }
+            }
+        }
+    }
+
+    #money-infos {
+        padding: 6px;
+        .flexbox(@align: center, @gap: 6px);
+
+        i.fa-coins { font-size: @large-font-size; }
+
+        .money-infos__coins {
+            text-align: left;
+            font-size: @normal-font-size;
+        }
+    }
+}

@@ -33,7 +33,7 @@ class GladcodeHeader extends HTMLElement {
         this.logoutBtn = null;
         this.shadowRoot.appendChild(this.#styles());
 
-        this.#header().forEach(html_element => {
+        this.#header(this.userInfos).forEach(html_element => {
             this.shadowRoot.appendChild(html_element);
         });
 
@@ -48,7 +48,9 @@ class GladcodeHeader extends HTMLElement {
     }
 
     #header({ profile_picture } = {}) {
-        const defaultPicturePath = './img/profile-photo-support.jpg';
+        const picture = profile_picture
+            ? `https://gladcode.dev/${profile_picture}`
+            : './img/profile-photo-support.jpg';
 
         return HTMLParser.parseAll(`
             <div id="logotype">
@@ -71,7 +73,7 @@ class GladcodeHeader extends HTMLElement {
             ${Session.userIsLogged()
                 ? `
                     <a href="#" id="user-settings" role="button" aria-label="configurações do usuário">
-                        <img src="${profile_picture || defaultPicturePath}" alt="">
+                        <img src="${picture}" alt="">
                     </a>
                 `
                 : ''

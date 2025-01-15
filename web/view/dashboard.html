@@ -16,30 +16,8 @@
     <gc-header></gc-header>
     
     <div id='page-container'>
-        <aside role="region">
-            <section id="user">
-                <div class="user__main-infos">
-                    <div aria-label="foto de perfil" class="main-infos__picture">
-                        <img src="/img/profile-photo-support.jpg" alt="">
-                    </div>
-
-                    <span class="main-infos__nickname">Hex</span>
-
-                    <div aria-label="nível de experiência" class="main-infos__xp-lvl">
-                        <div title="Nível" aria-label="nível" class='xp-lvl__lvl'>
-                            <img src='/img/star-icon.svg' alt="">
-                            <span class="lvl__lvl">0</span>
-                        </div>
-
-                        <progress title="Pontos de XP" aria-label="pontos de xp" class="xp-lvl__xp" value="50" max="100"></progress>
-                    </div>
-                </div>
-
-                <div aria-label="quantidade de pratas" class="user__money-infos" title="Pratas">
-                    <i class="fa-solid fa-coins"></i>
-                    <span class='money-infos__coins'>0</span>
-                </div>
-            </section>
+        <aside role="region" aria-label="barra lateral">
+            <gc-user-infos></gc-user-infos>
 
             <nav role="navigation" id='panel-selector'>
                 <ul role="tablist" class="panel-selector__panels">
