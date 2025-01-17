@@ -69,10 +69,12 @@
     const post = new Post(postData); // undefined targetSelector = '.news-panel__news'
 */
 
+import DateFormatter from "../helpers/date-formatter.js";
+
 class Post {
-    constructor({ title = 'Untitled', time, body='' }, targetSelector = '.news-panel__news') {
+    constructor({ title = 'Untitled', time, post: body='' }, targetSelector = '.news-panel__news') {
         this.title = title;
-        this.time = time;
+        this.time = new Date(time);
         this.body = body;
 
         this.element = this.generatePost();
@@ -82,18 +84,8 @@ class Post {
     }
 
     getTimestamp(withLabel = false) {
-        const { year, month, day, hours, minutes } = this.time;
-
-        const fMonth = `${month+1}`.padStart(2, '0');
-        const fDay = `${day}`.padStart(2, '0');
-        const fHours = `${hours}`.padStart(2, '0');
-        const fMinutes = `${minutes}`.padStart(2, '0');
-
-        const fTimestamp = `${fDay}/${fMonth}/${year} - ${fHours}:${fMinutes}`
-
-        if (withLabel) return `Publicado em ${fTimestamp}`;
-        
-        return fTimestamp;
+        const timestamp = DateFormatter.formatAs('%D/%M/%Y - %H:%m', this.time)
+        return withLabel ? `Publicado em ${timestamp}` : timestamp;
     }
 
     generatePost() {

@@ -47,10 +47,8 @@ class GladcodeHeader extends HTMLElement {
         }
     }
 
-    #header({ profile_picture } = {}) {
-        const picture = profile_picture
-            ? `https://gladcode.dev/${profile_picture}`
-            : './img/profile-photo-support.jpg';
+    #header(user_infos) {
+        const picture = (user_infos && user_infos.profile_picture) || './img/profile-photo-support.jpg';
 
         return HTMLParser.parseAll(`
             <div id="logotype">
@@ -73,7 +71,7 @@ class GladcodeHeader extends HTMLElement {
             ${Session.userIsLogged()
                 ? `
                     <a href="#" id="user-settings" role="button" aria-label="configurações do usuário">
-                        <img src="${picture}" alt="">
+                        <img src="https://gladcode.dev/${picture}" alt="">
                     </a>
                 `
                 : ''

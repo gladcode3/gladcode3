@@ -1,1 +1,0 @@
-// Implementar um formatter e usa-lo para substituir o post-info.

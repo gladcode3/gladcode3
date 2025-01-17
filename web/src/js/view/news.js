@@ -1,12 +1,8 @@
 import News from "../model/news.js";
-import PostInfo from "../model/post-info.js";
 import Post from "../components/post.js";
 
 const renderPosts = posts => {
-    posts.forEach(post => {
-        const postInfo = new PostInfo(post);
-        new Post(postInfo);
-    });
+    posts.forEach(post => new Post(post));
 };
 
 const observeLastPost = observer => {
