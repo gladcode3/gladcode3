@@ -1,6 +1,11 @@
 import HTMLParser from '../helpers/html-parser.js';
 import stylesRaw from '../../less/components/_nav.less?raw';
 
+const kGenerateItemRaw = Symbol('kGenerateItemRaw');
+const kNav = Symbol('kNav');
+const kStyles = Symbol('kStyles');
+const kObserveAriaAttributes = Symbol('kObserveAriaAttributes');
+
 // <gc-nav></gc-nav>
 
 class GladcodeNavBar extends HTMLElement {
@@ -12,26 +17,50 @@ class GladcodeNavBar extends HTMLElement {
     }
 
     connectedCallback() {
-        this.shadowRoot.appendChild(this.#styles());
-        this.shadowRoot.appendChild(this.#nav());
+        this.shadowRoot.appendChild(this[kStyles]());
+        this.shadowRoot.appendChild(this[kNav]());
+        this[kObserveAriaAttributes]();
     }
 
-    #generateItemRaw({ name, href='#', title }) {
+    [kObserveAriaAttributes]() {
+        const dropMenus = this.shadowRoot
+            .querySelectorAll('li.page-links__link--drop');
+
+        dropMenus.forEach(menu => {
+            const internalUL = menu.querySelector('.link--drop__sub-links');
+
+            menu.addEventListener('mouseenter', () => {
+                // aria-expanded="true"
+                // aria-hidden="false"
+                menu.setAttribute('aria-expanded', 'true');
+                internalUL.setAttribute('aria-hidden', 'false');
+            });
+
+            menu.addEventListener('mouseleave', () => {
+                // aria-expanded="false"
+                // aria-hidden="true"
+                menu.setAttribute('aria-expanded', 'false');
+                internalUL.setAttribute('aria-hidden', 'true');
+            });
+        });
+    }
+
+    [kGenerateItemRaw]({ name, href='#', title }) {
         return `
             <li class="page-links__link">
-                <a href="${href}" title="${title}">${name}</a>
+                <a target="_blank" href="${href}" title="${title}">${name}</a>
             </li>
         `;
     }
 
-    #nav() {
+    [kNav]() {
         return HTMLParser.parse(`
             <ul id="page-links">
-                ${this.#generateItemRaw({
+                ${this[kGenerateItemRaw]({
                     name: 'Aprender',
                     title: 'Entenda como funciona a gladCode',
                 })}
-                ${this.#generateItemRaw({
+                ${this[kGenerateItemRaw]({
                     name: 'Editor',
                     title: 'Crie e programe seus gladiadores',
                 })}
@@ -39,21 +68,25 @@ class GladcodeNavBar extends HTMLElement {
                     <a href="#">Sobre</a>
 
                     <ul aria-hidden="true" class="link--drop__sub-links">
-                        ${this.#generateItemRaw({
+                        ${this[kGenerateItemRaw]({
                             name: 'O Projeto',
                             title: 'Saiba sobre a trajetória da gladCode',
+                            href: 'https://gladcode.dev/about'
                         })}
-                        ${this.#generateItemRaw({
+                        ${this[kGenerateItemRaw]({
                             name: 'Apoie a GladCode',
                             title: 'Maneiras de você apoiar o projeto',
+                            href: 'https://gladcode.dev/about#support'
                         })}
-                        ${this.#generateItemRaw({
+                        ${this[kGenerateItemRaw]({
                             name: 'Créditos',
                             title: 'Créditos aos criadores das artes e sons utilizados na gladCode',
+                            href: 'https://gladcode.dev/creditos'
                         })}
-                        ${this.#generateItemRaw({
+                        ${this[kGenerateItemRaw]({
                             name: 'Estatísticas',
                             title: 'Estatísticas sobre as batalhas realizadas',
+                            href: 'https://gladcode.dev/stats'
                         })}
                     </ul>
                 </li>
@@ -61,7 +94,7 @@ class GladcodeNavBar extends HTMLElement {
         `);
     }
 
-    #styles() {
+    [kStyles]() {
         return HTMLParser.parse(`<style>${stylesRaw}</style>`);
     }
 }

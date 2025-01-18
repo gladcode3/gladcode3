@@ -7,7 +7,12 @@
     ul#page-links {
         .flexbox(row, end, center);
 
+        // page-links__link--drop
         li.page-links__link {
+            &:has(ul.link--drop__sub-links:hover) > a {
+                background-color: @black-opacity-2;
+            }
+
             & > a {
                 padding: @normal-pad;
                 text-align: center;
@@ -17,10 +22,32 @@
                 .auto-text-color(@primary-color);
                 .flexbox;
 
+
                 &:hover { background-color: @black-opacity-2 }
             }
 
-            &.page-links__link--drop > ul.link--drop__sub-links { display: none }
+            &.page-links__link--drop {
+                position: relative;
+
+                &:hover > ul.link--drop__sub-links { display: flex }
+
+                & > ul.link--drop__sub-links {
+                    display: none;
+                    position: absolute;
+                    // Ajusta os sublinks abaixo de quem os gerou
+                    top: 100%;
+                    right: 0;
+                    width: fit-content;
+                    background-color: @lines-color;
+                    flex-direction: column;
+                    z-index: 1;
+
+                    a { text-align: left }
+                }
+            }
+
+            
+
         }
     }
 }

@@ -5,6 +5,18 @@ import Users from '../model/users.js';
 
 import stylesRaw from '../../less/components/_header.less?raw';
 
+// Symbol é usado como uma "chave de acesso" a propriedades e métodos privados.
+const kLoginBtn = Symbol('kLoginBtn');
+const kLogoutBtn = Symbol('kLogoutBtn');
+const kUserLogged = Symbol('kUserLogged');
+const kUserInfos = Symbol('kUserInfos');
+const kRender = Symbol('kRender');
+const kHeader = Symbol('kHeader');
+const kStyles = Symbol('kStyles');
+const kLoadSessionInfos = Symbol('kLoadSessionInfos');
+const kLoginCallback = Symbol('kLoginCallback');
+const kLogoutCallback = Symbol('kLogoutCallback');
+
 // <gc-header></gc-header>
 
 class GladcodeHeader extends HTMLElement {
@@ -14,40 +26,40 @@ class GladcodeHeader extends HTMLElement {
         this.setAttribute('role', 'banner')
         this.attachShadow({ mode: 'open' });
 
-        this.loginBtn = null;
-        this.logoutBtn = null;
+        this[kLoginBtn] = null;
+        this[kLogoutBtn] = null;
 
-        this.userLogged = false;
-        this.userInfos = null;
+        this[kUserLogged] = false;
+        this[kUserInfos] = null;
     }
 
     connectedCallback() {
-        this.#loadSessionInfos();
-        this.#render();
+        this[kLoadSessionInfos]();
+        this[kRender]();
     }
 
     // Setup
-    #render() {
+    [kRender]() {
         this.shadowRoot.innerHTML = '';
-        this.loginBtn = null;
-        this.logoutBtn = null;
-        this.shadowRoot.appendChild(this.#styles());
+        this[kLoginBtn] = null;
+        this[kLogoutBtn] = null;
+        this.shadowRoot.appendChild(this[kStyles]());
 
-        this.#header(this.userInfos).forEach(html_element => {
+        this[kHeader](this[kUserInfos]).forEach(html_element => {
             this.shadowRoot.appendChild(html_element);
         });
 
-        if (!this.userLogged && !this.loginBtn) {
-            this.loginBtn = this.shadowRoot.querySelector('#login-button');
-            this.loginBtn.addEventListener('click', this.#login);
+        if (!this[kUserLogged] && !this[kLoginBtn]) {
+            this[kLoginBtn] = this.shadowRoot.querySelector('#login-button');
+            this[kLoginBtn].addEventListener('click', this[kLoginCallback]);
         }
-        if (this.userLogged && !this.logoutBtn) {
-            this.logoutBtn = this.shadowRoot.querySelector('#logout-button');
-            this.logoutBtn.addEventListener('click', this.#logout);
+        if (this[kUserLogged] && !this[kLogoutBtn]) {
+            this[kLogoutBtn] = this.shadowRoot.querySelector('#logout-button');
+            this[kLogoutBtn].addEventListener('click', this[kLogoutCallback]);
         }
     }
 
-    #header(user_infos) {
+    [kHeader](user_infos) {
         const picture = (user_infos && user_infos.profile_picture) || './img/profile-photo-support.jpg';
 
         return HTMLParser.parseAll(`
@@ -83,17 +95,16 @@ class GladcodeHeader extends HTMLElement {
         `);
     }
 
-    #styles() {
+    [kStyles]() {
         return HTMLParser.parse(`<style>${stylesRaw}</style>`);
     }
 
-    // Métodos privados
-    #loadSessionInfos() {
-        this.userLogged =  Session.userIsLogged();
-        this.userInfos = Users.getLocalUserData() || null;
+    [kLoadSessionInfos]() {
+        this[kUserLogged] = Session.userIsLogged();
+        this[kUserInfos] = Users.getLocalUserData() || null;
     }
 
-    async #login() {
+    async [kLoginCallback]() {
         const homeURL = `https://${location.hostname}/`;
         if (location.href !== homeURL) {
             console.error('only home page can login');
@@ -109,7 +120,7 @@ class GladcodeHeader extends HTMLElement {
         if (loginData.token) location.href = '/dashboard';
     }
 
-    #logout() {
+    [kLogoutCallback]() {
         sessionStorage.clear();
         Session.logout();
     }

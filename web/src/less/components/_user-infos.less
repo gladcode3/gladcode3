@@ -35,7 +35,7 @@
 
         .main-infos__xp-lvl {
             width: 100%;
-            .flexbox(@align: center);
+            .flexbox(row, center, center);
 
             .xp-lvl__lvl {
                 position: relative;
@@ -67,6 +67,7 @@
                 padding-left: @mid-small-pad;
                 border-radius: @xp-bar-border-radius;
                 width: 100%;
+                max-width: 40rem;
                 height: 2rem;
                 overflow: hidden;
 
