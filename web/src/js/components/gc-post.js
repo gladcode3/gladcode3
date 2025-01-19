@@ -89,8 +89,6 @@ const kFindElements = Symbol('kFindElements');
 class GladcodePost extends HTMLElement {
     constructor() {
         super();
-        this.role = 'article';
-        this.setAttribute('role', 'article');
         this.attachShadow({ mode: 'open' });
 
         this[kTitleElement] = null;
@@ -105,6 +103,9 @@ class GladcodePost extends HTMLElement {
     }
     
     connectedCallback() {
+        this.role = 'article';
+        this.setAttribute('role', 'article');
+        
         this.shadowRoot.appendChild(this[KStyles]());
         this[kPost]().forEach(html_elment => {
             this.shadowRoot.appendChild(html_elment);

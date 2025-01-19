@@ -1,19 +1,13 @@
 import Session from './model/session.js';
 import HTMLLoaderMenu from './components/html-loader-menu.js';
 import newsAction from './view/news.js';
-import GoogleLogin from './helpers/google-login.js';
-import Users from './model/users.js';
-import _GladcodeHeader from './components/gc-header.js';
-import _GladcodeUserInfos from './components/gc-user-infos.js';
-import _GladcodePost from './components/gc-post.js';
 
-
+import './components/gc-header.js';
+import './components/gc-user-infos.js';
+import './components/gc-post.js';
 import '../less/dashboard.less';
 
 Session.validate();
-
-console.log(GoogleLogin.getCredential());
-console.log(GoogleLogin.tokenIsExpired());
 
 // Panels
 const panelSelectorInfos = {

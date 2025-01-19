@@ -74,6 +74,11 @@ class Session {
             this.logout();
             return;
         }
+
+        if (!GoogleLogin.getCredential().token) {
+            this.logout();
+            return;
+        }
         
         // have a credential, but it has not expired
         if (!GoogleLogin.tokenIsExpired()) return;
@@ -90,8 +95,9 @@ class Session {
     static userIsLogged() {
         const credential = GoogleLogin.getCredential();
         if (!credential) return false;
+        if (!credential.token) return false;
 
-        return credential !== 'expired';
+        return !GoogleLogin.tokenIsExpired();
     }
     
     static async login() {

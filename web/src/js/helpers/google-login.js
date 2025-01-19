@@ -122,13 +122,8 @@ export default class GoogleLogin {
     static tokenIsExpired() {
         const jwt = this.getCredential();
 
-        if (!jwt) return true;
-        if (!jwt.token) return true;
-
         const { exp: expires } = JWTDecode(jwt.token);
         const now = Date.now() / 1000;
-
-        console.log(`exp: ${expires}, now: ${now}`);
 
         return expires <= now;
     }
