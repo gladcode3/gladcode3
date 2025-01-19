@@ -1,0 +1,71 @@
+@import '../mixins/all.less';
+@import '../setup/all.less';
+
+:host {
+    padding: @normal-pad;
+    width: 100%;
+    background-color: @items-color;
+    box-shadow: @news-box-shadow;
+    font-size: @normal-font-size;
+    position: relative;
+
+    .flexbox(@direction: column, @gap: @normal-pad);
+
+    header {
+        border-bottom: @large-border;
+        width: 100%;
+        background-color: transparent;
+        color: @primary-color;
+        text-transform: none;
+
+        .flexbox(row, space-between, center, nowrap, @normal-pad);
+
+        h3 {
+            font-size: @subtitles-font-size;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #timestamp {
+            text-align: right;
+            .auto-text-color(@items-color);
+        }
+    }
+
+    #post-body {
+        width: 100%;
+        text-align: justify;
+
+        * { font-weight: normal; }
+        * + * { margin-top: @normal-pad }
+        ul { list-style: disc; }
+        ul ul, li { margin-left: @normal-pad; }
+        strong, b, h1, h2, h3, h4, h5, h6 { font-weight: bold; }
+
+        img {
+            width: 100%;
+            height: fit-content;
+        }
+
+        *:has(img) {
+            display: block;
+            margin: @normal-pad auto;
+            width: 100%;
+
+            img {
+                margin: auto;
+                width: 65%;
+                height: fit-content;
+            }
+        }
+    }
+
+    button#share-btn {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        transform: translate(50%, 50%);
+        
+        .circle-btn(3.5rem);
+    }
+}

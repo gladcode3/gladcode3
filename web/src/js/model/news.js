@@ -15,12 +15,16 @@ class News {
     }
 
     async getNews() {
-        const data = await api.get('news', {
-            page: this[kPage],
-            limit: this[kLimit]
-        });
+        try {
+            const data = await api.get('news', {
+                page: this[kPage],
+                limit: this[kLimit]
+            });
 
-        return data;
+            return data;
+        } catch (error) {
+            return;
+        }
     }
 
     nextPage() {

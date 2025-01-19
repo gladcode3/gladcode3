@@ -15,6 +15,7 @@ import TemplateVar from './template-var.js';
 import DynamicScript from './dynamic-script.js';
 import Pledge from './pledge.js';
 import LocalData from './local-data.js';
+import JWTDecode from './jwt-decode.js';
 
 // Symbol é usado como uma "chave de acesso" a propriedades e métodos privados.
 const kLogged = Symbol('kLogged');
@@ -116,6 +117,20 @@ export default class GoogleLogin {
     static onFail(callback) {
         this[kOnFailCallback] = callback;
         return this;
+    }
+
+    static tokenIsExpired() {
+        const jwt = this.getCredential();
+
+        if (!jwt) return true;
+        if (!jwt.token) return true;
+
+        const { exp: expires } = JWTDecode(jwt.token);
+        const now = Date.now() / 1000;
+
+        console.log(`exp: ${expires}, now: ${now}`);
+
+        return expires <= now;
     }
 
     static saveCredential(credential) {

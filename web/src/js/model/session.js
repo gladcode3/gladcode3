@@ -70,11 +70,13 @@ class Session {
     }
 
     static validate() {
-        const credential = GoogleLogin.getCredential();
-        if (!credential) this.logout();
+        if (!GoogleLogin.getCredential()) {
+            this.logout();
+            return;
+        }
         
         // have a credential, but it has not expired
-        if (credential !== 'expired') return;
+        if (!GoogleLogin.tokenIsExpired()) return;
         
         // expired credential:
         new Toast(

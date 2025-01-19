@@ -1,8 +1,18 @@
 import News from "../model/news.js";
-import Post from "../components/post.js";
+// import GladcodePost from "../components/gc-post.js";
+
 
 const renderPosts = posts => {
-    posts.forEach(post => new Post(post));
+    const postsList = document.querySelector('.news-panel__news');
+
+    posts.forEach(post => {
+        const postElement = document.createElement('gc-post');
+        // console.log(postElement instanceof GladcodePost);
+        postsList.appendChild(postElement);
+        postElement.setup(post);
+
+
+    });
 };
 
 const observeLastPost = observer => {
@@ -40,7 +50,6 @@ async function newsAction() {
 
     const posts = await news.getNews();
 
-    console.log(posts);
     renderPosts(posts.news);
     observeLastPost(postsObserver);
 }

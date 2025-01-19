@@ -37,6 +37,9 @@
     });
 */
 
+// Transformar isso num web componente <loader-menu></loader-menu>
+// Devemos criar um método setup para passar as informações para o construtor do elemento.
+
 class HTMLLoaderMenu {
     constructor({ menu, items, target }) {
         this.menu = menu;
