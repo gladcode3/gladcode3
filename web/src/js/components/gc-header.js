@@ -1,8 +1,8 @@
-import _GladcodeNavBar from './gc-nav.js';
 import HTMLParser from '../helpers/html-parser.js';
 import Session from '../model/session.js';
 import Users from '../model/users.js';
 
+import './gc-nav.js';
 import stylesRaw from '../../less/components/_header.less?raw';
 
 // Symbol é usado como uma "chave de acesso" a propriedades e métodos privados.
@@ -10,6 +10,7 @@ const kLoginBtn = Symbol('kLoginBtn');
 const kLogoutBtn = Symbol('kLogoutBtn');
 const kUserLogged = Symbol('kUserLogged');
 const kUserInfos = Symbol('kUserInfos');
+const kSetRole = Symbol('kSetRole');
 const kRender = Symbol('kRender');
 const kHeader = Symbol('kHeader');
 const kStyles = Symbol('kStyles');
@@ -22,8 +23,6 @@ const kLogoutCallback = Symbol('kLogoutCallback');
 class GladcodeHeader extends HTMLElement {
     constructor() {
         super();
-        this.role = 'banner';
-        this.setAttribute('role', 'banner')
         this.attachShadow({ mode: 'open' });
 
         this[kLoginBtn] = null;
@@ -33,7 +32,14 @@ class GladcodeHeader extends HTMLElement {
         this[kUserInfos] = null;
     }
 
+    [kSetRole]() {
+        this.role = 'banner';
+        this.setAttribute('role', 'banner')
+    }
+
     connectedCallback() {
+        this[kSetRole]();
+
         this[kLoadSessionInfos]();
         this[kRender]();
     }

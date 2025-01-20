@@ -3,31 +3,70 @@ import HTMLParser from "../helpers/html-parser.js";
 
 import stylesRaw from '../../less/components/_user-infos.less?raw';
 
+const kUser = Symbol('kUser');
+const kPictureElement = Symbol('kPictureElement');
+const kNicknameElement = Symbol('kNicknameElement');
+const kLevelElement = Symbol('kLevelElement');
+const kCoinsElement = Symbol('kCoinsElement');
+const kFindElements = Symbol('kFindElements');
+const kSetRole = Symbol('kSetRole');
+const kUserInfos = Symbol('kUserInfos');
+const kStyles = Symbol('kStyles');
+
 // <gc-user-infos>
 
 class GladcodeUserInfos extends HTMLElement {
     constructor() {
         super();
-        this.role = 'region';
-        this.ariaLabel = 'informações do usuário';
-        this.setAttribute('role', 'region');
-        this.setAttribute('aria-label', 'informações do usuário')
         this.attachShadow({ mode: 'open' });
 
-        this.userInfos = null;
+        this[kUser] = null;
+        this[kPictureElement] = null;
+        this[kNicknameElement] = null;
+        this[kLevelElement] = null;
+        this[kCoinsElement] = null;
     }
 
     connectedCallback() {
-        this.shadowRoot.appendChild(this.#styles());
-        this.#userInfos().forEach(html_element => {
+        this[kSetRole]();
+
+        this.shadowRoot.appendChild(this[kStyles]());
+        this[kUserInfos]().forEach(html_element => {
             this.shadowRoot.appendChild(html_element);
         });
 
-        this.userInfos = Users.getLocalUserData() || null;
-        this.setup(this.userInfos);
+        this[kFindElements]();
+
+        this[kUser] = Users.getLocalUserData() || null;
+        this.setup(this[kUser]);
     }
 
-    #userInfos() {
+    setup({ profile_picture = null, nickname='USER', lvl=0, silver=0 } = {}) {
+        if (profile_picture) {
+            const pictureURL = `https://gladcode.dev/${profile_picture}`
+            this[kPictureElement].src = pictureURL;
+        }
+        
+        this[kNicknameElement].textContent = nickname;
+        this[kLevelElement].textContent = lvl;
+        this[kCoinsElement].textContent = silver;
+    }
+
+    [kFindElements]() {
+        this[kPictureElement] = this.shadowRoot.querySelector('#main-infos img');
+        this[kNicknameElement] = this.shadowRoot.querySelector('#main-infos .main-infos__nickname');
+        this[kLevelElement] = this.shadowRoot.querySelector('#main-infos .lvl__lvl');
+        this[kCoinsElement] = this.shadowRoot.querySelector('#money-infos .money-infos__coins');
+    }
+
+    [kSetRole]() {
+        this.role = 'region';
+        this.setAttribute('role', 'region');
+        this.ariaLabel = 'informações do usuário';
+        this.setAttribute('aria-label', 'informações do usuário')
+    }
+
+    [kUserInfos]() {
         return HTMLParser.parseAll(`
             <div id="main-infos">
                 <div aria-label="foto de perfil" class="main-infos__picture">
@@ -53,32 +92,8 @@ class GladcodeUserInfos extends HTMLElement {
         `);
     }
 
-    #styles() {
+    [kStyles]() {
         return HTMLParser.parse(`<style>${stylesRaw}</style>`);
-    }
-
-    setup({ profile_picture = null, nickname='user', lvl=0, silver=0 } = {}) {
-        if (profile_picture) {
-            const pictureField = this.shadowRoot
-                .querySelector('#main-infos img');
-
-            pictureField.src = `https://gladcode.dev/${profile_picture}`;
-        }
-
-        const nicknameField = this.shadowRoot
-            .querySelector('#main-infos .main-infos__nickname');
-        
-        nicknameField.textContent = nickname;
-
-        const levelField = this.shadowRoot
-            .querySelector('#main-infos .lvl__lvl');
-
-        levelField.textContent = lvl;
-
-        const coinsField = this.shadowRoot
-            .querySelector('#money-infos .money-infos__coins');
-
-        coinsField.textContent = silver;
     }
 }
 

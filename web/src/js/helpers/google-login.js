@@ -122,6 +122,10 @@ export default class GoogleLogin {
     static tokenIsExpired() {
         const jwt = this.getCredential();
 
+        // Tokens não existentes ou com algum erro não são considerados expirados.
+        if (!jwt) return false;
+        if (!jwt.token) return false;
+
         const { exp: expires } = JWTDecode(jwt.token);
         const now = Date.now() / 1000;
 

@@ -25,5 +25,3 @@ const panelSelectorInfos = {
 };
 
 new HTMLLoaderMenu(panelSelectorInfos);
-
-// Fazer com que o Dashboard apenas instancie uma classe header e a classe do menu

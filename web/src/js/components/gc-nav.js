@@ -1,6 +1,7 @@
 import HTMLParser from '../helpers/html-parser.js';
 import stylesRaw from '../../less/components/_nav.less?raw';
 
+const kSetRole = Symbol('kSetRole');
 const kGenerateItemRaw = Symbol('kGenerateItemRaw');
 const kNav = Symbol('kNav');
 const kStyles = Symbol('kStyles');
@@ -11,12 +12,17 @@ const kObserveAriaAttributes = Symbol('kObserveAriaAttributes');
 class GladcodeNavBar extends HTMLElement {
     constructor() {
         super();
+        this.attachShadow({ mode: 'open' });
+    }
+    
+    [kSetRole]() {
         this.role='navigation';
         this.setAttribute('role', 'navigation');
-        this.attachShadow({ mode: 'open' });
     }
 
     connectedCallback() {
+        this[kSetRole]();
+
         this.shadowRoot.appendChild(this[kStyles]());
         this.shadowRoot.appendChild(this[kNav]());
         this[kObserveAriaAttributes]();

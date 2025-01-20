@@ -7,11 +7,9 @@ const renderPosts = posts => {
 
     posts.forEach(post => {
         const postElement = document.createElement('gc-post');
-        // console.log(postElement instanceof GladcodePost);
-        postsList.appendChild(postElement);
         postElement.setup(post);
-
-
+        
+        postsList.appendChild(postElement);
     });
 };
 
