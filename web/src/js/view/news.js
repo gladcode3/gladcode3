@@ -1,6 +1,4 @@
 import News from "../model/news.js";
-// import GladcodePost from "../components/gc-post.js";
-
 
 const renderPosts = posts => {
     const postsList = document.querySelector('.news-panel__news');
@@ -44,7 +42,7 @@ async function newsAction() {
 
             console.error(e);
         }
-    });
+    }, { rootMargin: '3000px 0px' });
 
     const posts = await news.getNews();
 

@@ -70,7 +70,7 @@ class GladcodePost extends HTMLElement {
             this.shadowRoot.appendChild(html_elment);
         });
 
-        this[kHandleSourceErrors]();
+        // this[kHandleSourceErrors]();
     }
 
     setup({ title = 'Untitled', time, post: body='' } = {}) {
