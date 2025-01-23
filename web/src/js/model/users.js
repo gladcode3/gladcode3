@@ -45,6 +45,14 @@ class Users {
     static async removeLocalUserData() {
         new LocalData({ id: this[kStorageKey] }).remove();
     }
+
+    // Calculate xp for next lvl
+    static calcXpToNextLvl({ lvl }) {
+        const firstWeight = 1.9;
+        const secondWeight = 130;
+
+        return (parseInt(lvl) * firstWeight + 1) * secondWeight;
+    }
 }
 
 export default Users;

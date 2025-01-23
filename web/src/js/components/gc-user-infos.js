@@ -8,6 +8,7 @@ const kPictureElement = Symbol('kPictureElement');
 const kNicknameElement = Symbol('kNicknameElement');
 const kLevelElement = Symbol('kLevelElement');
 const kCoinsElement = Symbol('kCoinsElement');
+const kXpElement = Symbol('kXpElement');
 const kFindElements = Symbol('kFindElements');
 const kSetRole = Symbol('kSetRole');
 const kUserInfos = Symbol('kUserInfos');
@@ -25,6 +26,7 @@ class GladcodeUserInfos extends HTMLElement {
         this[kNicknameElement] = null;
         this[kLevelElement] = null;
         this[kCoinsElement] = null;
+        this[kXpElement] = null;
     }
 
     connectedCallback() {
@@ -41,7 +43,7 @@ class GladcodeUserInfos extends HTMLElement {
         this.setup(this[kUser]);
     }
 
-    setup({ profile_picture = null, nickname='USER', lvl=0, silver=0 } = {}) {
+    setup({ profile_picture = null, nickname='USER', lvl=0, silver=0, xp=0 } = {}) {
         if (profile_picture) {
             const pictureURL = `https://gladcode.dev/${profile_picture}`
             this[kPictureElement].src = pictureURL;
@@ -50,6 +52,10 @@ class GladcodeUserInfos extends HTMLElement {
         this[kNicknameElement].textContent = nickname;
         this[kLevelElement].textContent = lvl;
         this[kCoinsElement].textContent = silver;
+        // <progress ... class="xp-lvl__xp" value="50" max="100"></progress>
+        this[kXpElement].setAttribute('value', xp);
+        this[kXpElement].setAttribute('max', Users.calcXpToNextLvl({ lvl }));
+
     }
 
     [kFindElements]() {
@@ -57,6 +63,7 @@ class GladcodeUserInfos extends HTMLElement {
         this[kNicknameElement] = this.shadowRoot.querySelector('#main-infos .main-infos__nickname');
         this[kLevelElement] = this.shadowRoot.querySelector('#main-infos .lvl__lvl');
         this[kCoinsElement] = this.shadowRoot.querySelector('#money-infos .money-infos__coins');
+        this[kXpElement] = this.shadowRoot.querySelector('.xp-lvl__xp');
     }
 
     [kSetRole]() {

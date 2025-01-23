@@ -1,14 +1,14 @@
 /*
     GladcodePost class: Create a news-page post in HTML using the <gc-post> tag
     * @element gc-post
-    * @param {string} postTitle - Title of post
-    * @param {Date} postTitle - Date of post
-    * @param {string} postBody - Internal HTML content of the Post
-    * @param {string} datetime - Date of post in "YYYY-MM-DD" format
-    * @param {string} timestamp - Date of post in "DD/MM/YYYY - HH:mm" format
+    * @property {string} postTitle - Title of post
+    * @property {Date} postTitle - Date of post
+    * @property {string} postBody - Internal HTML content of the Post
+    * @property {string} datetime - Date of post in "YYYY-MM-DD" format
+    * @property {string} timestamp - Date of post in "DD/MM/YYYY - HH:mm" format
     
-
-    METHODS:
+    
+    METHOD:
 
     setup method: Defines the characteristics of the post, must be called before inserting the element into the DOM.
     * @param {Object} infos - Post infos

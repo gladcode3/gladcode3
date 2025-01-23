@@ -103,51 +103,6 @@ aside {
         }
     }
 
-    nav#panel-selector {
-        padding: 4px;
-        width: 100%;
-        font-size: @normal-font-size;
-        flex-grow: 1;
-        overflow-y: auto;
-        
-        ul.panel-selector__panels {
-            width: 100%;
-            .flexbox(column, start, center);
-
-            li.panels__panel {
-                padding: 6px @litle-pad;
-                width: 100%;
-                text-transform: uppercase;
-                cursor: pointer;
-                transition: all 0.3s;
-
-                .flexbox(@align: center, @gap: @small-pad);
-
-                &:hover,
-                &.panels__panel--selected {
-                    background-color: @black-opacity-1;
-                }
-
-                .panel__notify { display: none; }
-
-                .panel__frame {
-                    border: 2px solid #000;
-                    border-radius: 2px;
-
-                    .square(3.7rem);
-                    .flexbox(row, center, center);
-                }
-
-                &.news > .panel__frame { .auto-contrast(@panel-news) }
-                &.glads > .panel__frame { .auto-contrast(@panel-glads) }
-                &.battle > .panel__frame { .auto-contrast(@panel-battle) }
-                &.potions > .panel__frame { .auto-contrast(@panel-potions) }
-                &.rank > .panel__frame { .auto-contrast(@panel-rank) }
-                &.messages > .panel__frame { .auto-contrast(@panel-messages) }
-            }
-        }
-    }
-
     footer {
         padding: @tiny-pad @normal-pad;
         border-top: @default-border;

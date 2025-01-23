@@ -1,0 +1,47 @@
+@import '../mixins/all.less';
+@import '../setup/all.less';
+
+:host {
+    padding: 4px;
+    width: 100%;
+    font-size: @normal-font-size;
+    flex-grow: 1;
+    overflow-y: auto;
+    
+    ul#items-list {
+        width: 100%;
+        .flexbox(column, start, center);
+
+        li.items-list__item {
+            padding: 6px @litle-pad;
+            width: 100%;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+
+            .flexbox(@align: center, @gap: @small-pad);
+
+            &:hover,
+            &.items-list__item--selected {
+                background-color: @black-opacity-1;
+            }
+
+            .item__notify--empty { display: none; }
+
+            .item__frame {
+                border: 2px solid #000;
+                border-radius: 2px;
+
+                .square(3.7rem);
+                .flexbox(row, center, center);
+            }
+
+            &.news > .item__frame { .auto-contrast(@panel-news) }
+            &.glads > .item__frame { .auto-contrast(@panel-glads) }
+            &.battle > .item__frame { .auto-contrast(@panel-battle) }
+            &.potions > .item__frame { .auto-contrast(@panel-potions) }
+            &.rank > .item__frame { .auto-contrast(@panel-rank) }
+            &.messages > .item__frame { .auto-contrast(@panel-messages) }
+        }
+    }
+}
