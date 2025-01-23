@@ -52,7 +52,7 @@ class GladcodeUserInfos extends HTMLElement {
         this[kNicknameElement].textContent = nickname;
         this[kLevelElement].textContent = lvl;
         this[kCoinsElement].textContent = silver;
-        // <progress ... class="xp-lvl__xp" value="50" max="100"></progress>
+        
         this[kXpElement].setAttribute('value', xp);
         this[kXpElement].setAttribute('max', Users.calcXpToNextLvl({ lvl }));
 

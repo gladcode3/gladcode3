@@ -82,9 +82,7 @@ class LoaderMenu extends HTMLElement {
         this[kItemsActions] = {};
         this.displayTarget = null;
         this.defaultItem = null;
-        this.items = [
-            // { id, label, ?faIcon=null, ?path=null, ?action=null, ?notify=true }
-        ];
+        this.items = [];
         this.selectedItem = null;
     }
 
