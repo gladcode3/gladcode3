@@ -40,11 +40,11 @@ export default class Report {
         const offset = (page*qnt)-qnt;
         let sql;
 
-        sql = `SELECT id FROM reports r INNER JOIN gladiators g ON g.cod = r.gladiator WHERE gladiator IN (SELECT cod FROM gladiators WHERE master = '${user}') ${fav} ${unread}`;
+        sql = `SELECT id FROM reports r INNER JOIN gladiators g ON g.cod = r.gladiator WHERE gladiator IN (SELECT cod FROM gladiators WHERE master = '${user.id}') ${fav} ${unread}`;
         const reportid = await Db.query(sql, []);
         const total = reportid.length;
         
-        sql = `SELECT r.id, time, name, isread, hash, reward, favorite, comment, expired FROM reports r INNER JOIN gladiators g ON g.cod = r.gladiator INNER JOIN logs l ON l.id = r.log WHERE gladiator IN (SELECT cod FROM gladiators WHERE master = '${user}') ${fav} ${unread} ORDER BY time DESC LIMIT ${limit} OFFSET ${offset}`;
+        sql = `SELECT r.id, time, name, isread, hash, reward, favorite, comment, expired FROM reports r INNER JOIN gladiators g ON g.cod = r.gladiator INNER JOIN logs l ON l.id = r.log WHERE gladiator IN (SELECT cod FROM gladiators WHERE master = '${user.id}') ${fav} ${unread} ORDER BY time DESC LIMIT ${limit} OFFSET ${offset}`;
         const reportinfo = await Db.query (sql, []);
         const infos = [];
         const ids = [];
@@ -71,8 +71,28 @@ export default class Report {
         });
 
         if(read){
-            //todo
+            if(ids.length > 0){
+                const string = ids.join(", ");
+
+                sql = `UPDATE reports SET isread = '1' WHERE id IN (${string})`;
+                await Db.query(sql, []);
+                return { 'profile_notification': user };
+            }
         }
+    }
+    
+    static async delete(id, user){
+        let sql = `DELETE FROM reports WHERE id = ? AND gladiator in (SELECT cod FROM gladiators WHERE master = ?)`;
+        await Db.query(sql, [id, user.id]);
+        return {"code": 200};
+    }
+
+    static async favorite(favorite, id, comment){
         
+        if(favorite === "true" || favorite === "false"){
+            sql = `UPDATE reports SET favorite = ?, comment = ? WHERE id = ?`;
+            await Db.query(sql, [favorite, comment, id]);
+            return {"code": 200};
+        }
     }
 }
