@@ -33,66 +33,101 @@ export default class Report {
         this.started = started ? 1 : 0;
     }
 
-    static async get(page, favorites, unread_only, user, read){
-
-        const fav = favorites ? "AND favorite = 1" : '';
-        const unread = unread_only ? "AND isread = 0" : '';
-        const offset = (page*qnt)-qnt;
-        let sql;
-
-        sql = `SELECT id FROM reports r INNER JOIN gladiators g ON g.cod = r.gladiator WHERE gladiator IN (SELECT cod FROM gladiators WHERE master = '${user.id}') ${fav} ${unread}`;
-        const reportid = await Db.query(sql, []);
-        const total = reportid.length;
-        
-        sql = `SELECT r.id, time, name, isread, hash, reward, favorite, comment, expired FROM reports r INNER JOIN gladiators g ON g.cod = r.gladiator INNER JOIN logs l ON l.id = r.log WHERE gladiator IN (SELECT cod FROM gladiators WHERE master = '${user.id}') ${fav} ${unread} ORDER BY time DESC LIMIT ${limit} OFFSET ${offset}`;
-        const reportinfo = await Db.query (sql, []);
-        const infos = [];
-        const ids = [];
-
-        reportinfo.forEach(row => {
-            const info = {};
-            info.id = row.id;
-            info.time = row.time;
-            info.gladiator = row.name;
-            info.isread = row.isread;
-            info.reward = row.reward;
-            info.favorite = row.favorite;
-            info.comment = row.comment;
-
-            if(row.expired == 1){
-                info.expired = true;
-
-            } else{
-                info.hash = row.hash;
-            }
-
-            infos.push(info);
-            ids.push(row.id);
-        });
-
-        if(read){
-            if(ids.length > 0){
-                const string = ids.join(", ");
-
-                sql = `UPDATE reports SET isread = '1' WHERE id IN (${string})`;
-                await Db.query(sql, []);
-                return { 'profile_notification': user };
-            }
+    static async get(page, favorites, unread_only, user, read, limit) {
+        let qnt = 10;
+        if (limit && !isNaN(limit) && limit <= 30) qnt = limit;
+        const offset = (page * qnt) - qnt;
+    
+        const conditions = ["g.master = ?"];
+        const params = [String(user.id)];
+    
+        if (favorites) {
+            conditions.push("r.favorite = 1");
         }
+        if (unread_only) {
+            conditions.push("r.isread = 0");
+        }
+    
+        let sql = `SELECT COUNT(r.id) AS total 
+                   FROM reports r 
+                   INNER JOIN gladiators g ON g.cod = r.gladiator
+                   WHERE ${conditions.join(" AND ")}`;
+        const [{ total }] = await Db.query(sql, params);
+    
+        sql = `SELECT r.id, l.time, g.name AS gladiator, r.isread, l.hash, r.reward, 
+                      r.favorite, r.comment, l.expired 
+               FROM reports r 
+               INNER JOIN gladiators g ON g.cod = r.gladiator
+               INNER JOIN logs l ON l.id = r.log
+               WHERE ${conditions.join(" AND ")}
+               ORDER BY time DESC 
+               LIMIT ? OFFSET ?`;
+        const reportinfo = await Db.query(sql, [...params, String(qnt), String(offset)]);
+    
+        const infos = reportinfo.map(row => ({
+            id: row.id,
+            time: row.time,
+            gladiator: row.gladiator,
+            isread: row.isread,
+            reward: row.reward,
+            favorite: row.favorite,
+            comment: row.comment,
+            expired: row.expired === 1 ? true : undefined,
+            hash: row.expired !== 1 ? row.hash : undefined,
+        }));
+    
+        if (read && infos.length > 0) {
+            const ids = infos.map(row => row.id);
+            sql = `UPDATE reports SET isread = 1 WHERE id IN (${ids.join(", ")})`;
+            await Db.query(sql, []);
+        }
+        return { total, reports: infos, profile_notification: user, code: 200 };
     }
     
     static async delete(id, user){
-        let sql = `DELETE FROM reports WHERE id = ? AND gladiator in (SELECT cod FROM gladiators WHERE master = ?)`;
-        await Db.query(sql, [id, user.id]);
-        return {"code": 200};
+        if(!id || isNaN(id)) throw new CustomError(400, "Invalid ID value.");
+
+        const query = await Db.find('reports', {
+            filter: { id: id },
+            view: ['gladiator']
+        });
+        if(query.length <= 0) throw new CustomError(404, `Report #${id} not found.`);
+        
+        
+        const checkGladiator = await Db.find('gladiators', {
+            filter: { cod: query[0].gladiator },
+            view: [ 'master' ]
+        });
+
+        if(checkGladiator[0].master !== user.id) throw new CustomError(401, "Report does not belong to the user.");
+        await Db.delete('users', id);
+        return;
     }
 
-    static async favorite(favorite, id, comment){
+    static async favorite(id, comment){
+        const query = await Db.find('reports', {
+            filter: { id: id },
+            view: [ 'id', 'log', 'gladiator', 'isread', 'reward', 'favorite', 'started' ]
+        });
+        if(query.length <= 0) throw new CustomError(404, `Report #${id} does not exist.`);
+        const report = query[0];
         
-        if(favorite === "true" || favorite === "false"){
-            sql = `UPDATE reports SET favorite = ?, comment = ? WHERE id = ?`;
-            await Db.query(sql, [favorite, comment, id]);
-            return {"code": 200};
-        }
+        const comm = comment ? comment : '';
+        const fav = query[0].favorite === 1 ? 0 : 1;
+        
+
+        await Db.update('reports', { favorite: fav, comment: comm }, id);
+        return { report:
+            {
+                id,
+                log: report.log,
+                glad: report.gladiator,
+                isread: report.isread,
+                reward: report.reward,
+                favorite: fav,
+                comment: comm,
+                started: report.started
+            }
+         };
     }
 }
