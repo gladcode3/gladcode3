@@ -21,21 +21,17 @@
 				.flexbox(@align: center, @gap: @very-small-pad);
 		
 				.home-link__gc-icon {
-					flex-shrink: 0;
 					.square(5rem);
+					.non-reducible-item;
 					.flexbox(row, center, center);
 	
-					img {
-						width: 100%;
-						height: 100%;
-					}
+					img { .fill-container }
 				}
 		
 				h1.home-link__title {
 					font-size: @title-font-size;
 					line-height: @title-font-size + 1rem;
-					overflow: hidden;
-					text-overflow: ellipsis;
+					.adjust-ellipsis;
 				}
 			}
 		}
@@ -45,18 +41,12 @@
 
 			button.main-container__login-btn,
 			button.main-container__logout-btn {
-				border: none;
-				outline: none;
-				background-color: transparent;
-				text-transform: uppercase;
 				padding: @normal-pad;
-				text-align: center;
 				font-size: @large-font-size;
-				transition: all 0.3s;
-				cursor: pointer;
-							
-				.auto-text-color(@primary-color);
 				.flexbox;
+				.clickable(@transition: all 0.3s);
+				.auto-text-color(@primary-color);
+				.text(center, uppercase);
 		
 				&:hover { background-color: @black-opacity-2 }
 			}
@@ -65,13 +55,9 @@
 				padding: @small-pad;
 				border-left: @default-border;
 				transition: all 0.3s;
-		
 				.flexbox;
 		
-				img {
-					border-radius: 50%;
-					.square(4rem);
-				}
+				img { .circle(4rem) }
 		
 				&:hover { background-color: @black-opacity-2 }
 			}
@@ -79,12 +65,9 @@
 	
 		.header-ui-container__hamburguer-menu {
 			font-size: @litle-font-size;
-			display: none;
-			justify-content: center;
-			align-items: center;
-			cursor: pointer;
-			transition: all 0.3s;
 			.square(7rem);
+			.flexbox-hidden(row, center, center);
+			.clickable(@transition: all 0.3s;);
 	
 			&:hover { background-color: @black-opacity-2 }
 		}
@@ -100,68 +83,57 @@
 		.vertical-scroll;
 
 		section.menu-ui-container__user-session {
-			padding: 1rem 0;
+			padding: @mid-small-pad 0;
 			border-bottom: 2px solid @lines-color;
 			.flexbox(row, space-between, center, nowrap, 1rem);
 
 			.user-session__user {
-				flex-shrink: 1;
 				overflow: hidden;
+				.reducible-item;
 				.flexbox;
 
 				a.user__user-settings {
-					flex-shrink: 1;
 					overflow: hidden;
 					text-transform: none;
 					font-size: @large-font-size;
+					.reducible-item;
 					.auto-text-color(@primary-color);
 					.flexbox(@align: center, @gap: 1rem);
 
 					&:hover {
 						opacity: .75;
-						span { text-decoration: underline }
+						span { .underline }
 					}
 
 					.user-settings__picture {
-						border: 2px solid #000;
-						flex-shrink: 0;
+						border: 2px solid black;
 						user-select: none;
 						.circle(5rem);
+						.non-reducible-item;
 
 						img {
-							border: 2px solid #fff;
-							.circle(100%);
+							border: 2px solid white;
+							.circle;
+							.fill-container;
 						}
 					}
 
-					.user-settings__username {
-						overflow: hidden;
-						text-overflow: ellipsis;
-					}
+					.user-settings__username { .adjust-ellipsis }
 				}
 			}
 
-			button.user-session__logout-btn {
-				&:hover { color: rgb(255, 80, 80) }
-			}
-
-			button.user-session__login-btn {
-				&:hover { opacity: 0.75 }
-			}
+			button.user-session__login-btn:hover { opacity: .75 }
+			button.user-session__logout-btn:hover { color: @logout-btn }
 
 			button.user-session__login-btn,
 			button.user-session__logout-btn {
-				width: fit-content;
 				height: 5rem;
-				border: none;
-				outline: none;
-				color: #fff;
-				background-color: transparent;
 				font-size: @normal-font-size;
-				text-transform: uppercase;
-				flex-shrink: 0;
-				cursor: pointer;
-				transition: all 0.3s;
+				.fit-content-w;
+				.non-reducible-item;
+				.clickable(@transition: all 0.3s);
+				.auto-text-color(@menu-color);
+				.to-uppercase;
 				.flexbox(row, center, center, nowrap, 1rem);
 			}
 		}
