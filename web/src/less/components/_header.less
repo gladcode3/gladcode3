@@ -2,98 +2,203 @@
 @import '../setup/all.less';
 
 :host {
-	width: 100%;
-	text-transform: uppercase;
-	
+	.full-width;
+	.flexbox(column);	
+	.p-relative;
+	.to-uppercase;
 	.auto-contrast(@primary-color);
-	.flexbox(@justify: right);
 
-	#logotype {
-		margin-right: auto;
-		overflow: hidden;
+	.header-ui-container {
+		.flexbox(@justify: right);
+
+		.header-ui-container__logotype {
+			overflow: hidden;
+			.to-the-left;
+			
+			& > a.logotype__home-link {
+				padding: @mid-small-pad @very-small-pad;
+				.auto-text-color(@primary-color);
+				.flexbox(@align: center, @gap: @very-small-pad);
 		
-		& > a.logotype__home-link {
-			padding: @mid-small-pad @very-small-pad;
-
-			.auto-text-color(@primary-color);
-			.flexbox(@align: center, @gap: @very-small-pad);
+				.home-link__gc-icon {
+					flex-shrink: 0;
+					.square(5rem);
+					.flexbox(row, center, center);
 	
-			.home-link__gc-icon {
-				flex-shrink: 0;
-				.square(5rem);
-				.flexbox(row, center, center);
-
-				img {
-					width: 100%;
-					height: 100%;
+					img {
+						width: 100%;
+						height: 100%;
+					}
+				}
+		
+				h1.home-link__title {
+					font-size: @title-font-size;
+					line-height: @title-font-size + 1rem;
+					overflow: hidden;
+					text-overflow: ellipsis;
 				}
 			}
+		}
 	
-			h1 {
-				font-size: @title-font-size;
-				line-height: @title-font-size + 1rem;
-				overflow: hidden;
-				text-overflow: ellipsis;
+		.header-ui-container__main-container {
+			.flexbox;
+
+			button.main-container__login-btn,
+			button.main-container__logout-btn {
+				border: none;
+				outline: none;
+				background-color: transparent;
+				text-transform: uppercase;
+				padding: @normal-pad;
+				text-align: center;
+				font-size: @large-font-size;
+				transition: all 0.3s;
+				cursor: pointer;
+							
+				.auto-text-color(@primary-color);
+				.flexbox;
+		
+				&:hover { background-color: @black-opacity-2 }
+			}
+			
+			a.main-container__user-settings {
+				padding: @small-pad;
+				border-left: @default-border;
+				transition: all 0.3s;
+		
+				.flexbox;
+		
+				img {
+					border-radius: 50%;
+					.square(4rem);
+				}
+		
+				&:hover { background-color: @black-opacity-2 }
 			}
 		}
-	}
-
-	button#login-button, button#logout-button {
-		border: none;
-		outline: none;
-		background-color: transparent;
-		text-transform: uppercase;
-		padding: @normal-pad;
-		text-align: center;
-		font-size: @large-font-size;
-		transition: all 0.3s;
-		cursor: pointer;
-					
-		.auto-text-color(@primary-color);
-		.flexbox;
-
-		&:hover { background-color: @black-opacity-2 }
-	}
 	
-	a#user-settings {
-		padding: @small-pad;
-		border-left: @default-border;
-		transition: all 0.3s;
-
-		.flexbox;
-
-		img {
-			border-radius: 50%;
-			.square(4rem);
+		.header-ui-container__hamburguer-menu {
+			font-size: @litle-font-size;
+			display: none;
+			justify-content: center;
+			align-items: center;
+			cursor: pointer;
+			transition: all 0.3s;
+			.square(7rem);
+	
+			&:hover { background-color: @black-opacity-2 }
 		}
-
-		&:hover { background-color: @black-opacity-2 }
 	}
 
-	#hamburguer-menu {
-		font-size: @litle-font-size;
-		display: none;
-		justify-content: center;
-		align-items: center;
-		cursor: pointer;
+	article.menu-ui-container {
+		height: @hamburguer-menu-height;
+		padding: 5px @small-pad;
+		background-color: @menu-color;
+		.full-width;
+		.p-absolute(@top: 100%);
+		.to-layer(1);
+		.vertical-scroll;
 
-		.square(7rem);
+		section.menu-ui-container__user-session {
+			padding: 1rem 0;
+			border-bottom: 2px solid @lines-color;
+			.flexbox(row, space-between, center, nowrap, 1rem);
+
+			.user-session__user {
+				flex-shrink: 1;
+				overflow: hidden;
+				.flexbox;
+
+				a.user__user-settings {
+					flex-shrink: 1;
+					overflow: hidden;
+					text-transform: none;
+					font-size: @large-font-size;
+					.auto-text-color(@primary-color);
+					.flexbox(@align: center, @gap: 1rem);
+
+					&:hover {
+						opacity: .75;
+						span { text-decoration: underline }
+					}
+
+					.user-settings__picture {
+						border: 2px solid #000;
+						flex-shrink: 0;
+						user-select: none;
+						.circle(5rem);
+
+						img {
+							border: 2px solid #fff;
+							.circle(100%);
+						}
+					}
+
+					.user-settings__username {
+						overflow: hidden;
+						text-overflow: ellipsis;
+					}
+				}
+			}
+
+			button.user-session__logout-btn {
+				&:hover { color: rgb(255, 80, 80) }
+			}
+
+			button.user-session__login-btn {
+				&:hover { opacity: 0.75 }
+			}
+
+			button.user-session__login-btn,
+			button.user-session__logout-btn {
+				width: fit-content;
+				height: 5rem;
+				border: none;
+				outline: none;
+				color: #fff;
+				background-color: transparent;
+				font-size: @normal-font-size;
+				text-transform: uppercase;
+				flex-shrink: 0;
+				cursor: pointer;
+				transition: all 0.3s;
+				.flexbox(row, center, center, nowrap, 1rem);
+			}
+		}
 	}
 }
 
 @media only screen and (max-width: 310px) {
-    :host #logotype > a.logotype__home-link .home-link__gc-icon {
-        display: none;
+    :host > div.header-ui-container {
+		.header-ui-container__logotype > a.logotype__home-link {
+			& > .home-link__gc-icon { .square(4rem) }
+			
+			& > h1.home-link__title {
+				font-size: @title-font-size - 1rem;
+				line-height: @title-font-size;
+			}
+		}
+
+		.header-ui-container__hamburguer-menu { .square(6rem) }
     }
 }
 
+@media only screen and (max-width: 410px) {
+	:host
+	> article.menu-ui-container
+	> section.menu-ui-container__user-session
+	> button.user-session__logout-btn {
+		.square(5rem);
+		& > .logout-btn__label { display: none }
+	}
+}
+
 @media only screen and (max-width: 880px) {
-    :host {
-        button#login-button,
-		button#logout-button,
-		gc-nav, a#user-settings {
+    :host > .header-ui-container {
+        .header-ui-container__main-container,
+		.header-ui-container__main-container > a.main-container__user-settings {
 			display: none;
 		}
-        #hamburguer-menu { display: flex; }
+        .header-ui-container__hamburguer-menu { display: flex }
     }
 }

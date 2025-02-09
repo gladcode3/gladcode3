@@ -1,18 +1,29 @@
 import HTMLParser from '../helpers/html-parser.js';
 import stylesRaw from '../../less/components/_nav.less?raw';
 
+const kDirection = Symbol('kDirection');
+const kSyncDirection = Symbol('kSyncDirection');
+const kNavPointer = Symbol('kNavPointer');
+const kBuildNav = Symbol('kBuildNav');
 const kSetRole = Symbol('kSetRole');
 const kGenerateItemRaw = Symbol('kGenerateItemRaw');
 const kNav = Symbol('kNav');
 const kStyles = Symbol('kStyles');
 const kObserveAriaAttributes = Symbol('kObserveAriaAttributes');
+const kGenerateDropableItemRaw = Symbol('kGerenateDropableItemRaw');
 
 // <gc-nav></gc-nav>
 
 class GladcodeNavBar extends HTMLElement {
+    // Observed attributes for changes.
+    static observedAttributes = ['direction'];
+
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
+
+        this[kNavPointer] = null;
+        this[kDirection] = this[kSyncDirection]();
     }
     
     [kSetRole]() {
@@ -20,13 +31,24 @@ class GladcodeNavBar extends HTMLElement {
         this.setAttribute('role', 'navigation');
     }
 
+    // Inherited Methods:
+
     connectedCallback() {
         this[kSetRole]();
 
         this.shadowRoot.appendChild(this[kStyles]());
-        this.shadowRoot.appendChild(this[kNav]());
+
+        this[kBuildNav]();
         this[kObserveAriaAttributes]();
     }
+
+    attributeChangedCallback(name) {
+        if (name !== 'direction') return;
+        this[kDirection] = this[kSyncDirection]();
+        this[kBuildNav]();
+    }
+
+    // Building:
 
     [kObserveAriaAttributes]() {
         const dropMenus = this.shadowRoot
@@ -51,15 +73,37 @@ class GladcodeNavBar extends HTMLElement {
         });
     }
 
-    [kGenerateItemRaw]({ name, href='#', title }) {
-        return `
-            <li class="page-links__link">
-                <a target="_blank" href="${href}" title="${title}">${name}</a>
-            </li>
-        `;
+    [kBuildNav]() {
+        if (this[kNavPointer]) this[kNavPointer].remove();
+
+        this[kNavPointer] = this[kNav]();
+        this.shadowRoot.appendChild(this[kNavPointer]);
     }
 
     [kNav]() {
+        const aboutSublinks = [
+            {
+                name: 'O Projeto',
+                title: 'Saiba sobre a trajetória da gladCode',
+                href: 'https://gladcode.dev/about'
+            },
+            {
+                name: 'Apoie a GladCode',
+                title: 'Maneiras de você apoiar o projeto',
+                href: 'https://gladcode.dev/about#support'
+            },
+            {
+                name: 'Créditos',
+                title: 'Créditos aos criadores das artes e sons utilizados na gladCode',
+                href: 'https://gladcode.dev/creditos'
+            },
+            {
+                name: 'Estatísticas',
+                title: 'Estatísticas sobre as batalhas realizadas',
+                href: 'https://gladcode.dev/stats'
+            }
+        ];
+
         return HTMLParser.parse(`
             <ul id="page-links">
                 ${this[kGenerateItemRaw]({
@@ -70,38 +114,63 @@ class GladcodeNavBar extends HTMLElement {
                     name: 'Editor',
                     title: 'Crie e programe seus gladiadores',
                 })}
-                <li role="menu" aria-expanded="false" class="page-links__link page-links__link--drop">
-                    <a href="#">Sobre</a>
-
-                    <ul aria-hidden="true" class="link--drop__sub-links">
-                        ${this[kGenerateItemRaw]({
-                            name: 'O Projeto',
-                            title: 'Saiba sobre a trajetória da gladCode',
-                            href: 'https://gladcode.dev/about'
-                        })}
-                        ${this[kGenerateItemRaw]({
-                            name: 'Apoie a GladCode',
-                            title: 'Maneiras de você apoiar o projeto',
-                            href: 'https://gladcode.dev/about#support'
-                        })}
-                        ${this[kGenerateItemRaw]({
-                            name: 'Créditos',
-                            title: 'Créditos aos criadores das artes e sons utilizados na gladCode',
-                            href: 'https://gladcode.dev/creditos'
-                        })}
-                        ${this[kGenerateItemRaw]({
-                            name: 'Estatísticas',
-                            title: 'Estatísticas sobre as batalhas realizadas',
-                            href: 'https://gladcode.dev/stats'
-                        })}
-                    </ul>
-                </li>
+                ${this[kGenerateDropableItemRaw]('Sobre', aboutSublinks)}
             </ul>
         `);
     }
 
     [kStyles]() {
         return HTMLParser.parse(`<style>${stylesRaw}</style>`);
+    }
+
+    // Methods:
+
+    [kGenerateDropableItemRaw](name, sublinks_config = []) {
+        const sublinksRaw = sublinks_config
+            .map(sublink => this[kGenerateItemRaw](sublink))
+            .join('');
+        
+        const ulTag = `
+            <ul
+                aria-hidden='true'
+                class='link--drop__sub-links'
+            >${sublinksRaw}</ul>
+        `;
+
+        const direcionsMap = {
+            'row': `
+                <a href="#">${name}</a>
+                ${ulTag}
+            `,
+            'column': `
+                <details open>
+                    <summary>${name}</summary>
+                    ${ulTag}
+                </details>
+            `
+        };
+
+        console.warn('esperado: COLUMN, recebido: ', this[kDirection]);
+        return `
+            <li
+                role="menu"
+                aria-expanded="false"
+                class="page-links__link page-links__link--drop"
+            >${direcionsMap[this[kDirection]]}</li>
+        `;
+    }
+
+    [kGenerateItemRaw]({ name, href='#', title }) {
+        return `
+            <li class="page-links__link">
+                <a target="_blank" href="${href}" title="${title}">${name}</a>
+            </li>
+        `;
+    }
+
+    [kSyncDirection]() {
+        const direction = this.getAttribute('direction') || 'row';
+        return (['row', 'column'].includes(direction)) ? direction : 'row';
     }
 }
 

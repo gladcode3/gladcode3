@@ -50,4 +50,39 @@
 
         }
     }
+
+}
+
+:host([direction="column"]) {
+    padding: 2.5rem 0 3rem !important;
+    .flexbox(column, center, start);
+
+    ul#page-links {
+        .flexbox(column, center, start);
+
+        li.page-links__link {
+            &:has(ul.link--drop__sub-links:hover) > a {
+                background-color: @black-opacity-2;
+            }
+
+            & > a, summary {
+                padding: 0;
+                text-transform: none;
+                font-size: @large-font-size;
+                font-weight: @light-weight;
+            }
+
+            & > a:hover {
+                text-decoration: underline;
+                background-color: transparent;
+            }
+
+            &.page-links__link--drop {
+                ul.link--drop__sub-links {
+                    margin-left: 2rem;
+                    list-style: disc;
+                }
+            }
+        }
+    }
 }
