@@ -48,11 +48,19 @@ export default class Report {
             conditions.push("r.isread = 0");
         }
     
-        let sql = `SELECT COUNT(r.id) AS total 
-                   FROM reports r 
-                   INNER JOIN gladiators g ON g.cod = r.gladiator
-                   WHERE ${conditions.join(" AND ")}`;
-        const [{ total }] = await Db.query(sql, params);
+        const gladiator = await Db.find('gladiator', {
+            filter: { master: user.id },
+            view: [ 'cod' ]
+        });
+
+        let total;
+        gladiator.forEach(async cod => {
+            const reports = await Db.find('reports', {
+                filter: { gladiator: cod },
+                view: [ 'id' ]
+            });
+            total+=reports.length
+        });
     
         sql = `SELECT r.id, l.time, g.name AS gladiator, r.isread, l.hash, r.reward, 
                       r.favorite, r.comment, l.expired 
