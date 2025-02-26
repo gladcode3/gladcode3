@@ -64,7 +64,7 @@
 		}
 	
 		.header-ui-container__hamburguer-menu {
-			font-size: @litle-font-size;
+			font-size: @hamburguer-menu-font-size;
 			.square(7rem);
 			.flexbox-hidden(row, center, center);
 			.clickable(@transition: all 0.3s;);
@@ -83,7 +83,7 @@
 		.vertical-scroll;
 
 		section.menu-ui-container__user-session {
-			padding: @mid-small-pad 0;
+			padding: @mid-small-pad 2rem;
 			border-bottom: 2px solid @lines-color;
 			.flexbox(row, space-between, center, nowrap, 1rem);
 
@@ -96,6 +96,7 @@
 					overflow: hidden;
 					text-transform: none;
 					font-size: @large-font-size;
+					transition: all .2s;
 					.reducible-item;
 					.auto-text-color(@primary-color);
 					.flexbox(@align: center, @gap: 1rem);
@@ -131,12 +132,15 @@
 				font-size: @normal-font-size;
 				.fit-content-w;
 				.non-reducible-item;
-				.clickable(@transition: all 0.3s);
+				.clickable(@transition: all .3s);
 				.auto-text-color(@menu-color);
 				.to-uppercase;
 				.flexbox(row, center, center, nowrap, 1rem);
 			}
 		}
+
+		// Se não estiver aberto, esconde com um display: none
+		&:not(.open) { display: none }
 	}
 }
 

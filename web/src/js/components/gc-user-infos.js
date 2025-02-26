@@ -1,79 +1,52 @@
 import Users from "../model/users.js";
 import HTMLParser from "../helpers/html-parser.js";
+import Session from "../model/session.js";
 
 import stylesRaw from '../../less/components/_user-infos.less?raw';
 
-const kUser = Symbol('kUser');
-const kPictureElement = Symbol('kPictureElement');
-const kNicknameElement = Symbol('kNicknameElement');
-const kLevelElement = Symbol('kLevelElement');
-const kCoinsElement = Symbol('kCoinsElement');
-const kXpElement = Symbol('kXpElement');
-const kFindElements = Symbol('kFindElements');
-const kSetRole = Symbol('kSetRole');
-const kUserInfos = Symbol('kUserInfos');
-const kStyles = Symbol('kStyles');
 
 // <gc-user-infos>
 
-class GladcodeUserInfos extends HTMLElement {
+class GCUserInfos extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
 
-        this[kUser] = null;
-        this[kPictureElement] = null;
-        this[kNicknameElement] = null;
-        this[kLevelElement] = null;
-        this[kCoinsElement] = null;
-        this[kXpElement] = null;
+        this._userInfos = null;
+
+        this._pictureElement = null;
+        this._nicknameElement = null;
+        this._lvlElement = null;
+        this._coinsElement = null;
+        this._xpElement = null;
     }
+
+    // Inherited
 
     connectedCallback() {
-        this[kSetRole]();
+        // Compartilha as userInfos com a essa instância
+        Session.shareSessionData(this, 'user-infos');
 
-        this.shadowRoot.appendChild(this[kStyles]());
-        this[kUserInfos]().forEach(html_element => {
-            this.shadowRoot.appendChild(html_element);
-        });
+        this._setAttributes();
 
-        this[kFindElements]();
+        this.shadowRoot.appendChild(this._styles);
+        this._html.forEach(tag => this.shadowRoot.appendChild(tag));
 
-        this[kUser] = Users.getLocalUserData() || null;
-        this.setup(this[kUser]);
+        this.setup(this._userInfos);
     }
 
-    setup({ profile_picture = null, nickname='USER', lvl=0, silver=0, xp=0 } = {}) {
-        if (profile_picture) {
-            const pictureURL = `https://gladcode.dev/${profile_picture}`
-            this[kPictureElement].src = pictureURL;
-        }
-        
-        this[kNicknameElement].textContent = nickname;
-        this[kLevelElement].textContent = lvl;
-        this[kCoinsElement].textContent = silver;
-        
-        this[kXpElement].setAttribute('value', xp);
-        this[kXpElement].setAttribute('max', Users.calcXpToNextLvl({ lvl }));
+    // Build
 
-    }
-
-    [kFindElements]() {
-        this[kPictureElement] = this.shadowRoot.querySelector('#main-infos img');
-        this[kNicknameElement] = this.shadowRoot.querySelector('#main-infos .main-infos__nickname');
-        this[kLevelElement] = this.shadowRoot.querySelector('#main-infos .lvl__lvl');
-        this[kCoinsElement] = this.shadowRoot.querySelector('#money-infos .money-infos__coins');
-        this[kXpElement] = this.shadowRoot.querySelector('.xp-lvl__xp');
-    }
-
-    [kSetRole]() {
-        this.role = 'region';
+    _setAttributes() {
         this.setAttribute('role', 'region');
-        this.ariaLabel = 'informações do usuário';
         this.setAttribute('aria-label', 'informações do usuário')
     }
 
-    [kUserInfos]() {
+    get _styles() {
+        return HTMLParser.parse(`<style>${stylesRaw}</style>`);
+    }
+
+    get _html() {
         return HTMLParser.parseAll(`
             <div id="main-infos">
                 <div aria-label="foto de perfil" class="main-infos__picture">
@@ -99,11 +72,33 @@ class GladcodeUserInfos extends HTMLElement {
         `);
     }
 
-    [kStyles]() {
-        return HTMLParser.parse(`<style>${stylesRaw}</style>`);
+    // Methods
+
+    setup({ profile_picture = null, nickname='USER', lvl=0, silver=0, xp=0 } = {}) {
+        this._findElements();
+
+        if (profile_picture) {
+            const pictureURL = `https://gladcode.dev/${profile_picture}`
+            this._pictureElement.src = pictureURL;
+        }
+        
+        this._nicknameElement.textContent = nickname;
+        this._lvlElement.textContent = lvl;
+        this._coinsElement.textContent = silver;
+        
+        this._xpElement.setAttribute('value', xp);
+        this._xpElement.setAttribute('max', Users.calcXpToNextLvl({ lvl }));
+
+    }
+
+    _findElements() {
+        this._pictureElement = this.shadowRoot.querySelector('#main-infos img');
+        this._nicknameElement = this.shadowRoot.querySelector('#main-infos .main-infos__nickname');
+        this._lvlElement = this.shadowRoot.querySelector('#main-infos .lvl__lvl');
+        this._coinsElement = this.shadowRoot.querySelector('#money-infos .money-infos__coins');
+        this._xpElement = this.shadowRoot.querySelector('.xp-lvl__xp');
     }
 }
 
-customElements.define('gc-user-infos', GladcodeUserInfos);
-
-export default GladcodeUserInfos;
+customElements.define('gc-user-infos', GCUserInfos);
+export default GCUserInfos;

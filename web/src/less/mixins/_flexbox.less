@@ -6,7 +6,7 @@
     @gap: 0,
     @display: flex
 ) {
-    @is-hidden: @display = 'hidden';
+    @is-hidden: boolean(@display = 'hidden');
     
     display: if(@is-hidden, none, flex);
     flex-direction: @direction;

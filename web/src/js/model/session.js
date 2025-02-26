@@ -136,6 +136,44 @@ class Session {
     static removeToken() {
         new LocalData({ id: this[kStorageKey] }).remove();
     }
+
+    // Share
+
+    static shareSessionData(objectInstance = {}, info='all') {
+        const infosMap = {
+            'user-logged': () => objectInstance._userLogged = Session.userIsLogged(),
+            'user-infos': () => objectInstance._userInfos = Users.getLocalUserData() || null,
+            'all': function() {
+                this['user-logged']();
+                this['user-infos']();
+            }
+        };
+
+        infosMap[info]();
+    }
+
+    // Interface LOGIN/LOGOUT
+
+    static async userLogin() {
+        const homeURL = `https://${location.hostname}/`;
+        if (location.href !== homeURL) {
+            console.error('only home page can login');
+            throw new Error('only home page can login');
+        }
+
+        await Session.googleAuth()
+            .catch(e => console.error(e));
+        
+        const loginData = await Session.login()
+            .catch(e => console.error(e));
+
+        if (loginData.token) location.href = '/dashboard';
+    }
+
+    static userLogout() {
+        sessionStorage.clear();
+        Session.logout();
+    }
 }
 
 export default Session;

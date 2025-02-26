@@ -1,20 +1,10 @@
 import HTMLParser from '../helpers/html-parser.js';
 import stylesRaw from '../../less/components/_nav.less?raw';
 
-const kDirection = Symbol('kDirection');
-const kSyncDirection = Symbol('kSyncDirection');
-const kNavPointer = Symbol('kNavPointer');
-const kBuildNav = Symbol('kBuildNav');
-const kSetRole = Symbol('kSetRole');
-const kGenerateItemRaw = Symbol('kGenerateItemRaw');
-const kNav = Symbol('kNav');
-const kStyles = Symbol('kStyles');
-const kObserveAriaAttributes = Symbol('kObserveAriaAttributes');
-const kGenerateDropableItemRaw = Symbol('kGerenateDropableItemRaw');
 
 // <gc-nav></gc-nav>
 
-class GladcodeNavBar extends HTMLElement {
+class GCNavBar extends HTMLElement {
     // Observed attributes for changes.
     static observedAttributes = ['direction'];
 
@@ -22,65 +12,42 @@ class GladcodeNavBar extends HTMLElement {
         super();
         this.attachShadow({ mode: 'open' });
 
-        this[kNavPointer] = null;
-        this[kDirection] = this[kSyncDirection]();
-    }
-    
-    [kSetRole]() {
-        this.role='navigation';
-        this.setAttribute('role', 'navigation');
+        this._navPointer = null;
+        this._direction = this._syncDirection;
     }
 
     // Inherited Methods:
 
     connectedCallback() {
-        this[kSetRole]();
+        this._setAttributes();
 
-        this.shadowRoot.appendChild(this[kStyles]());
+        this.shadowRoot.appendChild(this._styles);
 
-        this[kBuildNav]();
-        this[kObserveAriaAttributes]();
+        const nav = this._html;
+        this.shadowRoot.appendChild(nav);
+
+        this._addEvents();
+
+        this._navPointer = nav;
     }
 
     attributeChangedCallback(name) {
         if (name !== 'direction') return;
-        this[kDirection] = this[kSyncDirection]();
-        this[kBuildNav]();
+        this._direction = this._syncDirection;
+        this._rebuild();
     }
 
-    // Building:
+    // Build
 
-    [kObserveAriaAttributes]() {
-        const dropMenus = this.shadowRoot
-            .querySelectorAll('li.page-links__link--drop');
-
-        dropMenus.forEach(menu => {
-            const internalUL = menu.querySelector('.link--drop__sub-links');
-
-            menu.addEventListener('mouseenter', () => {
-                // aria-expanded="true"
-                // aria-hidden="false"
-                menu.setAttribute('aria-expanded', 'true');
-                internalUL.setAttribute('aria-hidden', 'false');
-            });
-
-            menu.addEventListener('mouseleave', () => {
-                // aria-expanded="false"
-                // aria-hidden="true"
-                menu.setAttribute('aria-expanded', 'false');
-                internalUL.setAttribute('aria-hidden', 'true');
-            });
-        });
+    _setAttributes() {
+        this.setAttribute('role', 'navigation');
     }
 
-    [kBuildNav]() {
-        if (this[kNavPointer]) this[kNavPointer].remove();
-
-        this[kNavPointer] = this[kNav]();
-        this.shadowRoot.appendChild(this[kNavPointer]);
+    get _styles() {
+        return HTMLParser.parse(`<style>${stylesRaw}</style>`);
     }
 
-    [kNav]() {
+    get _html() {
         const aboutSublinks = [
             {
                 name: 'O Projeto',
@@ -106,28 +73,69 @@ class GladcodeNavBar extends HTMLElement {
 
         return HTMLParser.parse(`
             <ul id="page-links">
-                ${this[kGenerateItemRaw]({
+                ${this._generateItemRaw({
                     name: 'Aprender',
                     title: 'Entenda como funciona a gladCode',
                 })}
-                ${this[kGenerateItemRaw]({
+                ${this._generateItemRaw({
                     name: 'Editor',
                     title: 'Crie e programe seus gladiadores',
                 })}
-                ${this[kGenerateDropableItemRaw]('Sobre', aboutSublinks)}
+                ${this._generateDropableItemRaw('Sobre', aboutSublinks)}
             </ul>
         `);
     }
 
-    [kStyles]() {
-        return HTMLParser.parse(`<style>${stylesRaw}</style>`);
+    _addEvents() {
+        const dropMenus = this.shadowRoot
+            .querySelectorAll('li.page-links__link--drop');
+
+        dropMenus.forEach(menu => {
+            const internalUL = menu.querySelector('.link--drop__sub-links');
+
+            menu.addEventListener('mouseenter', () => {
+                // aria-expanded="true"
+                // aria-hidden="false"
+                menu.setAttribute('aria-expanded', 'true');
+                internalUL.setAttribute('aria-hidden', 'false');
+            });
+
+            menu.addEventListener('mouseleave', () => {
+                // aria-expanded="false"
+                // aria-hidden="true"
+                menu.setAttribute('aria-expanded', 'false');
+                internalUL.setAttribute('aria-hidden', 'true');
+            });
+        });
     }
 
     // Methods:
 
-    [kGenerateDropableItemRaw](name, sublinks_config = []) {
+    get _syncDirection() {
+        const direction = this.getAttribute('direction') || 'row';
+        return (['row', 'column'].includes(direction)) ? direction : 'row';
+    }
+
+    _rebuild() {
+        if (this._navPointer) this._navPointer.remove();
+
+        const content = this._html;
+        this.shadowRoot.appendChild(content);
+
+        this._navPointer = content;
+    }
+
+    _generateItemRaw({ name, href='#', title }) {
+        return `
+            <li class="page-links__link">
+                <a target="_blank" href="${href}" title="${title}">${name}</a>
+            </li>
+        `;
+    }
+
+    _generateDropableItemRaw(name, sublinks_config = []) {
         const sublinksRaw = sublinks_config
-            .map(sublink => this[kGenerateItemRaw](sublink))
+            .map(sublink => this._generateItemRaw(sublink))
             .join('');
         
         const ulTag = `
@@ -150,29 +158,15 @@ class GladcodeNavBar extends HTMLElement {
             `
         };
 
-        console.warn('esperado: COLUMN, recebido: ', this[kDirection]);
         return `
             <li
                 role="menu"
                 aria-expanded="false"
                 class="page-links__link page-links__link--drop"
-            >${direcionsMap[this[kDirection]]}</li>
+            >${direcionsMap[this._direction]}</li>
         `;
-    }
-
-    [kGenerateItemRaw]({ name, href='#', title }) {
-        return `
-            <li class="page-links__link">
-                <a target="_blank" href="${href}" title="${title}">${name}</a>
-            </li>
-        `;
-    }
-
-    [kSyncDirection]() {
-        const direction = this.getAttribute('direction') || 'row';
-        return (['row', 'column'].includes(direction)) ? direction : 'row';
     }
 }
 
-customElements.define('gc-nav', GladcodeNavBar);
-export default GladcodeNavBar;
+customElements.define('gc-nav', GCNavBar);
+export default GCNavBar;

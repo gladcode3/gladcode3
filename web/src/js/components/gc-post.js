@@ -36,20 +36,16 @@ import HTMLParser from "../helpers/html-parser.js";
 
 import stylesRaw from '../../less/components/_post.less?raw';
 
-const kSetuped = Symbol('kSetuped');
-const kSetRole = Symbol('kSetRole');
-const kPost = Symbol('kPost');
-const KStyles = Symbol('kStyles');
-const kHandleSourceErrors = Symbol('kHandleSourceErrors');
 
 // <gc-post></gc-post>
 
-class GladcodePost extends HTMLElement {
+class GCPost extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
 
-        this[kSetuped] = false;
+        this._setuped = false;
+
         this.postTitle = null;
         this.postTime = null;
         this.postBody = null;
@@ -57,53 +53,34 @@ class GladcodePost extends HTMLElement {
         this.timestamp = null;
     }
 
+    // Inherited
+
     connectedCallback() {
-        if (!this[kSetuped]) {
+        if (!this._setuped) {
             console.error('post is not setuped');
             throw new Error('post is not setuped');
         }
 
-        this[kSetRole]();
+        this._setAttributes();
 
-        this.shadowRoot.appendChild(this[KStyles]());
-        this[kPost]().forEach(html_elment => {
-            this.shadowRoot.appendChild(html_elment);
-        });
+        this.shadowRoot.appendChild(this._styles);
+        this._html.forEach(tag => this.shadowRoot.appendChild(tag));
 
-        // this[kHandleSourceErrors]();
+        // this._handleSourceErrors();
     }
 
-    setup({ title = 'Untitled', time, post: body='' } = {}) {
-        this[kSetuped] = true;
+    // Build
 
-        this.postTitle = title;
-        this.postTime = new Date(time);
-        this.postBody = body;
-        this.datetime = DateFormatter.formatAs('%Y-%M-%D', this.postTime);
-        this.timestamp = DateFormatter.formatAs('%D/%M/%Y - %H:%m', this.postTime);
-    }
-    
-    [kSetRole]() {
+    _setAttributes() {
         this.role = 'article';
         this.setAttribute('role', 'article');
     }
 
-    [kHandleSourceErrors]() {
-        const elementsWithSource = this.shadowRoot.querySelectorAll('[src]');
-        
-        elementsWithSource.forEach(async element => {
-            const { src } = element;
-            
-            try {
-                const sourceHeaders = await fetch(src, { method: 'HEAD' });
-                return sourceHeaders.ok;
-            } catch(error) {
-                element.src = '';
-            }
-        });
+    get _styles() {
+        return HTMLParser.parse(`<style>${stylesRaw}</style>`);
     }
 
-    [kPost]() {
+    get _html() {
         return HTMLParser.parseAll(`
             <header>
                 <h3>${this.postTitle}</h3>
@@ -119,11 +96,33 @@ class GladcodePost extends HTMLElement {
         `);
     }
 
-    [KStyles]() {
-        return HTMLParser.parse(`<style>${stylesRaw}</style>`);
+    // Methods
+
+    setup({ title = 'Untitled', time, post: body='' } = {}) {
+        this._setuped = true;
+
+        this.postTitle = title;
+        this.postTime = new Date(time);
+        this.postBody = body;
+        this.datetime = DateFormatter.formatAs('%Y-%M-%D', this.postTime);
+        this.timestamp = DateFormatter.formatAs('%D/%M/%Y - %H:%m', this.postTime);
+    }
+
+    _handleSourceErrors() {
+        const elementsWithSource = this.shadowRoot.querySelectorAll('[src]');
+        
+        elementsWithSource.forEach(async element => {
+            const { src } = element;
+            
+            try {
+                const sourceHeaders = await fetch(src, { method: 'HEAD' });
+                return sourceHeaders.ok;
+            } catch(error) {
+                element.src = '';
+            }
+        });
     }
 }
 
-customElements.define('gc-post', GladcodePost);
-
-export default GladcodePost;
+customElements.define('gc-post', GCPost);
+export default GCPost;
