@@ -1,3 +1,5 @@
+import db from "../core/mysql.js";
+import CustomError from "../core/error.js";
 /*
 cod INT
 user1 INT
@@ -22,6 +24,71 @@ export default class Friends {
     }
 
     static async get(){
-        //todo
+        let id = 550;
+        const [user1] = await db.find('friendship', {
+            filter: { user2: id, pending: 1 },
+            view: [ 'cod', 'user1' ]
+        });
+
+        const pending = [];
+        user1.forEach(async row => {
+            let user = await db.find('users', {
+                filter: { id: row.user1 },
+                view: [ 'nickname', 'profile_picture', 'lvl' ]
+            });
+
+            pending.push({
+                'id': row.cod,
+                'nickname': user.nickname,
+                'profile_picture': user.profile_picture,
+                'lvl': user.lvl
+            });
+        });
+
+        const [friends1] = await db.find('friendship', {
+            filter: { user2: id, pending: 0 },
+            view: [ 'cod', 'user1']
+        });
+
+        const [friends2] = await db.find('friendship', {
+            filter: { user1: id, pending: 0 },
+            view: [ 'cod', 'user2' ]
+        });
+
+        const confirmed = [];
+        friends1.forEach(async row => {
+            let user = await db.find('users', {
+                filter: { id: row.user1 },
+                view: [ 'id', 'nickname', 'lvl', 'TIMESTAMPDIFF( MINUTE, ativo, now() ) AS last_active', 'profile_picture' ]
+            });
+            console.log(friends1);
+
+            confirmed.push({
+                'id': row.cod,
+                'user': user.id,
+                'nickname': user.nickname,
+                'lvl': user.lvl,
+                'active': user.last_active,
+                'picture': user.profile_picture
+            });
+        });
+
+        friends2.forEach(async row => {
+            let user = await db.find('users', {
+                filter: { id: row.user2 },
+                view: [ 'id', 'nickname', 'lvl', 'TIMESTAMPDIFF( MINUTE, ativo, now() ) AS last_active', 'profile_picture' ]
+            });
+
+            confirmed.push({
+                'id': row.cod,
+                'user': user.id,
+                'nickname': user.nickname,
+                'lvl': user.lvl,
+                'active': user.last_active,
+                'picture': user.profile_picture
+            });
+        })
+
+        return { 'code': 200, pending, confirmed };
     }
 }
