@@ -4,7 +4,7 @@ import Friends from '../model/friends.js';
 
 const router = express.Router();
 
-router.get('/', async (req, res, next) => {
+router.get('/get', async (req, res, next) => {
     try {
         await Auth.check(req);
         const check = req.check
@@ -16,3 +16,30 @@ router.get('/', async (req, res, next) => {
         next(error);
     }
 })
+
+router.put('/request', async (req, res, next) => {
+    try {
+        await Auth.check(req);
+        const check = req.check;
+
+        const query = await Friends.request(req.body.id, req.body.answer);
+        res.status(200).send(query);
+        
+    } catch (error) {
+        next(error);
+    }
+
+router.get('/filter', async (req, res, next) => {
+    try {
+        await Auth.check(req);
+        const check = req.check;
+
+        const query = await Friends.filter(req.params.search, check.user.id);
+        res.status(200).send(query);
+        
+    } catch (error) {
+        next(error);
+    }
+});
+
+});
