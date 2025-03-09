@@ -6,6 +6,7 @@ import './components/gc-header.js';
 import './components/gc-user-infos.js';
 import './components/gc-post.js';
 import '../less/dashboard.less';
+import Users from './model/users.js';
 
 Session.validate();
 
@@ -44,3 +45,41 @@ loaderMenu.setup({
 });
 
 lateralBar.insertBefore(loaderMenu, footer);
+
+// Prototype
+
+const userData = Users.getLocalUserData();
+console.log(userData);
+
+const dialog = document.querySelector('dialog');
+
+// Pre-setando o modal:
+
+const updateNicknameInput = document.querySelector('input#update-nickname');
+const updatePrefLanguageSelect = document.querySelector('select#update-pref-language');
+const preferenceCheckboxes = document.querySelectorAll('input[id^="update-pref"]');
+
+console.log(
+    updateNicknameInput,
+    updatePrefLanguageSelect,
+    preferenceCheckboxes
+);
+
+updateNicknameInput.value = userData.nickname;
+
+const settings1 = document
+.querySelector('gc-header')
+.shadowRoot
+.querySelector('.main-container__user-settings');
+
+console.warn(settings1);
+
+const settings2 = document
+.querySelector('gc-header')
+.shadowRoot
+.querySelector('.user__user-settings');
+
+console.warn(settings2);
+
+settings1?.addEventListener('click', () => dialog.showModal());
+settings2?.addEventListener('click', () => dialog.showModal());

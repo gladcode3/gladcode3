@@ -90,7 +90,7 @@ class GCPost extends HTMLElement {
 
             <div id="post-body">${this.postBody}</div>
 
-            <button id="share-btn">
+            <button title="Compartilhar Notícia" aria-label="compartilhar notícia" id="share-btn">
                 <i class="fas fa-share-alt"></i>
             </button>
         `);

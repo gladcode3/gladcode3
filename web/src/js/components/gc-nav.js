@@ -72,7 +72,7 @@ class GCNavBar extends HTMLElement {
         ];
 
         return HTMLParser.parse(`
-            <ul id="page-links">
+            <ul role="menu" id="page-links">
                 ${this._generateItemRaw({
                     name: 'Aprender',
                     title: 'Entenda como funciona a gladCode',
@@ -127,7 +127,7 @@ class GCNavBar extends HTMLElement {
 
     _generateItemRaw({ name, href='#', title }) {
         return `
-            <li class="page-links__link">
+            <li role="menuitem" class="page-links__link">
                 <a target="_blank" href="${href}" title="${title}">${name}</a>
             </li>
         `;
@@ -140,6 +140,7 @@ class GCNavBar extends HTMLElement {
         
         const ulTag = `
             <ul
+                role="menu"
                 aria-hidden='true'
                 class='link--drop__sub-links'
             >${sublinksRaw}</ul>
@@ -160,7 +161,7 @@ class GCNavBar extends HTMLElement {
 
         return `
             <li
-                role="menu"
+                role="menuitem"
                 aria-expanded="false"
                 class="page-links__link page-links__link--drop"
             >${direcionsMap[this._direction]}</li>

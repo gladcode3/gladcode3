@@ -49,8 +49,8 @@ class GCUserInfos extends HTMLElement {
     get _html() {
         return HTMLParser.parseAll(`
             <div id="main-infos">
-                <div aria-label="foto de perfil" class="main-infos__picture">
-                    <img src="/img/profile-photo-support.jpg" alt="">
+                <div class="main-infos__picture">
+                    <img aria-label="foto de perfil" src="/img/profile-photo-support.jpg" alt="">
                 </div>
 
                 <span class="main-infos__nickname">USER</span>
