@@ -1,7 +1,7 @@
 import express from 'express'
-import News from '../model/news.js'
-import User from '../model/users.js';
 import Auth from '../middleware/auth.js';
+import News from '../model/news.js'
+
 const router = express.Router();
 
 router.get('/', async (req, res, next) => {
