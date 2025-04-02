@@ -52,6 +52,9 @@ const userData = Users.getLocalUserData();
 console.log(userData);
 
 const dialog = document.querySelector('dialog');
+const dialogForm = dialog.querySelector('form');
+
+console.log(dialogForm);
 
 // Pre-setando o modal:
 
@@ -59,13 +62,26 @@ const updateNicknameInput = document.querySelector('input#update-nickname');
 const updatePrefLanguageSelect = document.querySelector('select#update-pref-language');
 const preferenceCheckboxes = document.querySelectorAll('input[id^="update-pref"]');
 
-console.log(
-    updateNicknameInput,
-    updatePrefLanguageSelect,
-    preferenceCheckboxes
-);
-
 updateNicknameInput.value = userData.nickname;
+
+dialogForm.addEventListener('submit', async e => {
+    e.preventDefault();
+
+    const newNickname = updateNicknameInput.value;
+    const newPrefLanguage = updatePrefLanguageSelect.value;
+
+    try {
+        await Users.update({
+            nickname: newNickname,
+            prefLanguage: newPrefLanguage
+        });
+
+        alert('Dados enviados com sucesso!');
+    } catch(e) {
+        alert(e);
+    }
+});
+
 
 const settings1 = document
 .querySelector('gc-header')

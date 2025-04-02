@@ -29,6 +29,26 @@ class Users {
         return await this[kApi].get(`users/${name}`);
     }
 
+    // Prototype:
+    static async update({ nickname, prefLanguage }) {
+        this[kSetApiInstance]();
+
+        const { nickname: oldNickname, profile_picture: pfp } = Users.getLocalUserData();
+
+        const newNickname = nickname || oldNickname;
+        
+        // Update:
+        const updatedUser = await this[kApi].put('users/user', {
+            nickname: newNickname,
+            pfp,
+            prefLanguage
+        });
+
+        if (!updatedUser.user) throw new Error('failed to update!');
+
+        this.saveLocalUserData()
+    }
+
     // Local user data methods
     static getLocalUserData() {
         const data = new LocalData({ id: this[kStorageKey] }).get();
