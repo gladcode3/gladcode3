@@ -1,30 +1,91 @@
 import express from 'express'
 import Rank from '../model/rank.js';
+import CustomError from '../core/error.js';
+import Auth from '../middleware/auth.js';
+
 const router = express.Router();
 
-router.get('/get', async (req, res, next) => {
-    try{
-        const query = await Rank.get(req.query.page, req.query.qnt, req.query.srch);
-        res.json(query);
+router.get("/rank", async(req, res, next) => {
+    try {
+        
+        const offset = req.body.offset !== undefined ? parseInt(req.body.offset) : undefined;
+        const search = req.body.search || "";
+
+        const query = await ranking.get({ offset, search });
+        res.status(200).json(query);
 
     } catch (error) {
         next(error);
     }
 });
 
-router.get('/watch', async (req, res) => {
-    // const query = await Rank.getWatchTab();
-    res.status(200).json( { "message": "Hello from /watch" });
-});
+router.put("/watch-tab", async (req, res, next) => {
+    try {
+        await Auth.check(req);
+        const check = req.check;
+        if(!check.user) throw check;
 
-router.get('/fetch', async (req, res) => {
-    try{
-        const query = await Rank.rankFetch(req.query.tab, req.query.search);
-        res.json(query);
+        const name = req.body.name?.trim();
+        if(!name){
+            throw new CustomError(400, "Tab name is required.");
+        }
+
+        let watch = null;
+        if(req.body.add !== undefined){
+            watch = true;
+        } else if(req.body.remove !== undefined){
+            watch = false;
+        }
+
+        if(watch === null) throw new CustomError(400, "No action.");
+
+        const query = await Rank.toggleWatchTab(check.user.id, name, watch);
+        res.status(200).json(query);
 
     } catch (error) {
-        next(error);    
+        next(error);
     }
 });
 
-export default router
+router.get("/tabs", async (req, res, next) => {
+    try {
+        await Auth.check(req);
+        const check = req.check;
+        if(!check.user) throw check;
+
+        const query = await Rank.getTabs(check.user.id);
+        res.status(200).json(query);
+
+    } catch (error) {
+        next(error);
+    }
+});
+
+router.get("/fetch-tab", async (req, res, next) => {
+    try {
+        const tab = req.body.tab;
+        const search = req.body.search?.toLowerCase() || "";
+
+        if(!tab) throw new CustomError(400, "Tab name is required");
+        const query = await Rank.fetchTabRanking(tab, search);
+
+    } catch (error) {
+        next();
+    }
+});
+
+router.get("/max-mine", async (req, res, next) => {
+    try {
+        await Auth.check(req);
+        const check = req.check;
+        if(!check.user) throw check;
+
+        const result = await Rank.getMaxMineOffset(check.user.id);
+        res.status(200).json(result);
+
+    } catch (error) {
+        next(error);
+    }
+});
+
+export default router;
