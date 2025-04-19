@@ -24,29 +24,38 @@ export default class Rank {
         let limit = 10;
         if(offset === undefined) {
             offset = 0;
-            limit = total;
+            limit = 30;
         }
         if(offset < 0){
             offset = 0;
         }
 
-        const rankingData = await Db.query(
-
-            `SELECT
+        const rawRankingData = `
+            SELECT
             g.name,
             g.mmr,
             u.nickname,
-            (SELECT SUM(r.reward) FROM reports r
-             INNER JOIN logs l ON l.id = r.log
-             WHERE g.cod = r.gladiator AND l.time > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 DAY)) AS sumreward,
-             (SELECT COUNT(*) FROM gladiators g2 WHERE g2.mmr >= g.mmr) AS position
+            (
+                SELECT SUM(r.reward)
+                FROM reports r
+                INNER JOIN logs l ON l.id = r.log
+                WHERE g.cod = r.gladiator
+                AND l.time > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 DAY)
+            ) AS sumreward,
+            (
+                SELECT COUNT(*) 
+                FROM gladiators g2 
+                WHERE g2.mmr >= g.mmr
+            ) AS position
             FROM gladiators g
             INNER JOIN users u ON g.master = u.id
-            ${search ? `WHERE g.name LIKE ? OR u.nickname LIKE ?` : '' }
+            ${search ? `WHERE g.name LIKE ? OR u.nickname LIKE ?` : ''}
             ORDER BY g.mmr DESC
-            LIMIT ? OFFSET ?`,
-            search ? [`%${search}%`, `%${search}%`, limit, offset] : [limit, offset]
-        );
+            LIMIT ${limit} OFFSET ${offset}
+        `;
+
+        const params = search ? [ `%${search}%`, `%${search}%` ] : [];
+        const rankingData = await Db.query(rawRankingData, params);
 
         const ranking = rankingData.map(row => ({
             glad: row.name,

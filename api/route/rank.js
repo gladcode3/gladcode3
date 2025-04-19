@@ -11,7 +11,7 @@ router.get("/rank", async(req, res, next) => {
         const offset = req.body.offset !== undefined ? parseInt(req.body.offset) : undefined;
         const search = req.body.search || "";
 
-        const query = await ranking.get({ offset, search });
+        const query = await Rank.get({ offset, search });
         res.status(200).json(query);
 
     } catch (error) {
