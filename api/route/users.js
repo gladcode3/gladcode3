@@ -24,7 +24,7 @@ router.get("/user",  async (req, res, next) => {
 router.get("/:name", async (req, res, next) => {
   try {
     const users = await User.getByNickname(req.params.name);
-    res.status(200).json(users);
+    res.status(200).json(users );
 
   } catch (error) {
     next(error);
@@ -34,39 +34,16 @@ router.get("/:name", async (req, res, next) => {
 router.put("/user", async (req, res, next) => {
   try {
     await Auth.check(req);
-
     const check = req.check;
     if (!check.user) throw check;
 
-    const updateData = {};
-    const isValid = (value, key) => {
-      if (key === 'pref_language') {
-        if (value === 'c' || value === 'python' || value === 'blocks') updateData[key] = value;
-      }
-      else if (value !== undefined && value !== null && value !== '') updateData[key] = value;
-    };
+    const user = await new User({ id: check.user.id }).update(req.body);
+    res.status(200).json({ message: "User has been updated", user });
 
-    isValid(req.body.nickname, 'nickname');
-    isValid(req.body.pfp, 'pfp');
-    isValid(req.body.prefLanguage, 'prefLanguage');
-
-    const isEmpty = (obj) => Object.keys(obj).length === 0;
-    if (isEmpty(updateData)) throw new CustomError(400, "No data was sent");
-
-    const user = await new User({
-      id: check.user.id,
-      nickname: updateData.nickname || undefined,
-      profilePicture: updateData.pfp || undefined,
-      prefLanguage: updateData.prefLanguage || undefined
-    }).update();
-
-    res.status(200).json({ "message": "User has been updated", "user": user });
-    
   } catch (error) {
     next(error);
   }
 });
-
 
 router.delete("/user", async (req, res, next) => {
   try {

@@ -1,62 +1,77 @@
-/*
-get
-request (adicionar amigos)
-search
-delete
-add
-filter
+import express from 'express';
+import Auth from '../middleware/auth.js';
+import Friends from '../model/friends.js';
+import CustomError from '../core/error.js';
 
-cod INT
-user1 INT
-user2 INT
-pending TINYINT(1) [0, 1] 
+const router = express.Router();
 
-=====
-$sql = "
-SELECT 
-    a.cod, u.apelido, u.foto, u.lvl 
-FROM 
-    amizade a 
-INNER JOIN 
-    usuarios u ON u.id = a.usuario1 
-WHERE 
-    a.usuario2 = '$user' AND pendente = 1";
+router.get('/', Auth.check, async (req, res, next) => {
+    try {
+        const friends = await Friends.getAll(req.user.id);
+        res.status(200).json(friends);
+    } catch (error) {
+        next(error);
+    }
+});
 
+router.put('/request/:id', Auth.check, async (req, res, next) => {
+    try {
+        if (!req.params.id) throw new CustomError(400, "Friend request ID is required");
+        if (!req.body.answer) throw new CustomError(400, "Answer is required");
+        
+        const answer = req.body.answer.toUpperCase();
+        if (answer !== 'YES' && answer !== 'NO') 
+            throw new CustomError(400, "Answer must be YES or NO");
 
-pending = []
-where...
+        const result = await Friends.handleRequest(req.params.id, req.user.id, answer);
+        res.status(200).json({ code: 200, message: "OK" });
+    } catch (error) {
+        next(error);
+    }
+});
 
-above takes the pending requests and groups the basic info on the pending array
-/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/
+router.get('/search', Auth.check, async (req, res, next) => {
+    try {
+        if (!req.query.text) throw new CustomError(400, "Search text is required");
+        
+        const users = await Friends.searchUsers(req.query.text, req.user.id);
+        res.status(200).json(users);
+    } catch (error) {
+        next(error);
+    }
+});
 
-$fields = "
-a.cod, u.id, u.apelido, u.lvl, u.foto, TIMESTAMPDIFF(MINUTE,ativo,now()) as ultimoativo";
-=these are select fields
+router.delete('/:id', Auth.check, async (req, res, next) => {
+    try {
+        if (!req.params.id) throw new CustomError(400, "Friend ID is required");
+        
+        await Friends.delete(req.params.id, req.user.id);
+        res.status(200).json({ code: 200, message: "OK" });
+    } catch (error) {
+        next(error);
+    }
+});
 
-$sql = "
-SELECT 
-    $fields 
-FROM 
-    amizade a 
-INNER JOIN 
-    usuarios u ON u.id = a.usuario1 
-WHERE 
-    a.usuario2 = '$user' AND 
-    pendente = 0 
-UNION SELECT 
-    $fields 
-FROM 
-    amizade a 
-INNER JOIN 
-    usuarios u ON u.id = a.usuario2 
-WHERE 
-    a.usuario1 = '$user' AND
-    pendente = 0";
+router.post('/', Auth.check, async (req, res, next) => {
+    try {
+        if (!req.body.user) throw new CustomError(400, "User ID is required");
+        
+        const result = await Friends.add(req.user.id, req.body.user);
+        res.status(200).json(result);
+    } catch (error) {
+        next(error);
+    }
+});
 
-=user2 é o próprio cara que tá vendo
-=union select faz a mesma query mas trocando a perspectiva
+router.get('/filter', Auth.check, async (req, res, next) => {
+    try {
+        if (!req.query.text) throw new CustomError(400, "Filter text is required");
+        
+        const friends = await Friends.filter(req.user.id, req.query.text);
+        res.status(200).json(friends);
+    } catch (error) {
+        next(error);
+    }
+});
 
-confirmed = []
-=essa query só se aplica se pendente é 0, que no caso é a lista de amigos do usuário
-
-*/
+export default router;
