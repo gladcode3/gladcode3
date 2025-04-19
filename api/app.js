@@ -45,7 +45,7 @@ app.use((err, req, res, next) => {
 });
 
 app.use((req, res) => {
-  res.status(404).send({ message: "Not found" });
+  res.status(404).send({ message: "Page not found." });
 });
 
 app.listen(port, host, () => {
