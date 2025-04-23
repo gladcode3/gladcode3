@@ -72,7 +72,11 @@ export default class User {
   async update(body) {
 
     const validLanguages = new Set(["c", "python", "blocks"]);
+<<<<<<< HEAD
     const emailPref = body.emailPref ?? {};
+=======
+    const userPref = body.userPref ?? {};
+>>>>>>> ee92cda44b95804c4d4cfb07e1311ea9104b57a4
     const isValid = (value) => value !== undefined && value !== null && value !== '';
     const toInt = (value) => { if (typeof value === 'boolean') return value ? 1 : 0; else return undefined };
     
@@ -81,6 +85,7 @@ export default class User {
         nickname: body.nickname,
         profile_picture: body.pfp,
 
+<<<<<<< HEAD
         pref_message: toInt(emailPref.pref_message),
         pref_friend: toInt(emailPref.pref_friend),
         pref_update: toInt(emailPref.pref_update),
@@ -88,6 +93,15 @@ export default class User {
         pref_tourn: toInt(emailPref.pref_tourn),
 
         pref_language: validLanguages.has(emailPref.pref_language) ? emailPref.pref_language : undefined
+=======
+        pref_message: toInt(userPref.pref_message),
+        pref_friend: toInt(userPref.pref_friend),
+        pref_update: toInt(userPref.pref_update),
+        pref_duel: toInt(userPref.pref_duel),
+        pref_tourn: toInt(userPref.pref_tourn),
+
+        pref_language: validLanguages.has(userPref.pref_language) ? userPref.pref_language : undefined
+>>>>>>> ee92cda44b95804c4d4cfb07e1311ea9104b57a4
       }).filter(([_, value]) => isValid(value))
     );
     
