@@ -72,7 +72,7 @@ export default class User {
   async update(body) {
 
     const validLanguages = new Set(["c", "python", "blocks"]);
-    const emailPref = body.emailPref ?? {};
+    const userPref = body.userPref ?? {};
     const isValid = (value) => value !== undefined && value !== null && value !== '';
     const toInt = (value) => { if (typeof value === 'boolean') return value ? 1 : 0; else return undefined };
     
@@ -81,13 +81,13 @@ export default class User {
         nickname: body.nickname,
         profile_picture: body.pfp,
 
-        pref_message: toInt(emailPref.pref_message),
-        pref_friend: toInt(emailPref.pref_friend),
-        pref_update: toInt(emailPref.pref_update),
-        pref_duel: toInt(emailPref.pref_duel),
-        pref_tourn: toInt(emailPref.pref_tourn),
+        pref_message: toInt(userPref.pref_message),
+        pref_friend: toInt(userPref.pref_friend),
+        pref_update: toInt(userPref.pref_update),
+        pref_duel: toInt(userPref.pref_duel),
+        pref_tourn: toInt(userPref.pref_tourn),
 
-        pref_language: validLanguages.has(emailPref.pref_language) ? emailPref.pref_language : undefined
+        pref_language: validLanguages.has(userPref.pref_language) ? userPref.pref_language : undefined
       }).filter(([_, value]) => isValid(value))
     );
     

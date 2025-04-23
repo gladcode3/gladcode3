@@ -1,132 +1,149 @@
-import Db from "../core/mysql.js";
-import CustomError from "../core/error.js";
-/*
-cod INT
-user1 INT
-user2 INT
-pending TINYINT(1) [0, 1] 
-
-get
-*/
+import Db from '../core/mysql.js';
+import CustomError from '../core/error.js';
 
 export default class Friends {
-
-    constructor({
-        cod,
-        user1,
-        user2,
-        pending
-    }) {
-        this.cod = cod,
-        this.user1 = user1,
-        this.user2 = user2,
-        this.pending = pending
+    constructor({ id, nick, picture, lvl, active, user }) {
+        this.id = id;
+        this.nick = nick;
+        this.picture = picture;
+        this.lvl = lvl;
+        this.active = active;
+        this.user = user;
     }
 
-    static async get(){
-        let id = 550;
-        const [user1] = await Db.find('friendship', {
-            filter: { user2: id, pending: 1 },
-            view: [ 'cod', 'user1' ]
-        });
+    static async getAll(userId) {
 
-        const pending = [];
-        user1.forEach(async row => {
-            let user = await Db.find('users', {
-                filter: { id: row.user1 },
-                view: [ 'nickname', 'profile_picture', 'lvl' ]
-            });
+        const pendingQuery = `
+            SELECT a.cod as id, u.apelido as nick, u.foto as picture, u.lvl 
+            FROM amizade a 
+            INNER JOIN usuarios u ON u.id = a.usuario1 
+            WHERE a.usuario2 = ? AND pendente = 1
+        `;
+        
+        const pending = await Db.query(pendingQuery, [userId]);
 
-            pending.push({
-                'id': row.cod,
-                'nickname': user.nickname,
-                'profile_picture': user.profile_picture,
-                'lvl': user.lvl
-            });
-        });
-
-        const [friends1] = await Db.find('friendship', {
-            filter: { user2: id, pending: 0 },
-            view: [ 'cod', 'user1']
-        });
-
-        const [friends2] = await Db.find('friendship', {
-            filter: { user1: id, pending: 0 },
-            view: [ 'cod', 'user2' ]
-        });
-
-        const confirmed = [];
-        friends1.forEach(async row => {
-            let user = await Db.find('users', {
-                filter: { id: row.user1 },
-                view: [ 'id', 'nickname', 'lvl', 'TIMESTAMPDIFF( MINUTE, ativo, now() ) AS last_active', 'profile_picture' ]
-            });
-            console.log(friends1);
-
-            confirmed.push({
-                'id': row.cod,
-                'user': user.id,
-                'nickname': user.nickname,
-                'lvl': user.lvl,
-                'active': user.last_active,
-                'picture': user.profile_picture
-            });
-        });
-
-        friends2.forEach(async row => {
-            let user = await Db.find('users', {
-                filter: { id: row.user2 },
-                view: [ 'id', 'nickname', 'lvl', 'TIMESTAMPDIFF( MINUTE, ativo, now() ) AS last_active', 'profile_picture' ]
-            });
-
-            confirmed.push({
-                'id': row.cod,
-                'user': user.id,
-                'nickname': user.nickname,
-                'lvl': user.lvl,
-                'active': user.last_active,
-                'picture': user.profile_picture
-            });
-        })
-
-        return { 'code': 200, pending, confirmed };
+        const fields = "a.cod as id, u.id as user, u.apelido as nick, u.lvl, u.foto as picture, TIMESTAMPDIFF(MINUTE, ativo, NOW()) as active";
+        const confirmedQuery = `
+            SELECT ${fields} 
+            FROM amizade a 
+            INNER JOIN usuarios u ON u.id = a.usuario1 
+            WHERE a.usuario2 = ? AND pendente = 0 
+            UNION 
+            SELECT ${fields} 
+            FROM amizade a 
+            INNER JOIN usuarios u ON u.id = a.usuario2 
+            WHERE a.usuario1 = ? AND pendente = 0
+        `;
+        
+        const confirmed = await Db.query(confirmedQuery, [userId, userId]);
+        
+        return {
+            code: 200,
+            pending,
+            confirmed
+        };
     }
 
-    static async request(id, answer){
-        const cod = { 'cod': id }
-        if(answer == "YES"){
-            await Db.update('friendship', { pending: '0' }, cod);
-            return { 'msg': "Friendship accepted." }
+    static async handleRequest(requestId, userId, answer) {
+        if (answer === 'YES') {
+            const result = await Db.update('amizade', { pendente: 0 }, { cod: requestId });
+            
+            if (result.affectedRows === 0) {
+                throw new CustomError(404, "Friend request not found or you don't have permission");
+            }
+        } else {
+            const result = await Db.delete('amizade', { cod: requestId });
+            
+            if (result.affectedRows === 0) {
+                throw new CustomError(404, "Friend request not found or you don't have permission");
+            }
         }
-        else{
-            await Db.delete('friendship', cod);
-            return { 'msg': "Friendship denied" };
+        return { ok: true };
+    }
+
+    static async searchUsers(searchText, userId) {
+        if (!searchText) {
+            throw new CustomError(400, "Search text is required");
         }
-    };
-
-    static async filter(search, id){
-        const friends = [];
-        const friends1 = await Db.find('friendship', {
-            filter: { user2: id, pending: 0 },
-            view: [ 'user1 AS id' ]
+        
+        const users = await Db.find('usuarios', {
+            filter: {
+                apelido: Db.like(searchText),
+                id: { '!=': userId }
+            },
+            view: ['apelido as nick', 'id as user', 'email'],
+            opt: { limit: 10 }
         });
+        
+        return users;
+    }
 
-        const friends2 = await Db.find('friendship', {
-            filter: { user1: id, pending: 0 },
-            view: [ 'user2 AS id' ]
+    static async delete(friendshipId, userId) {
+        const friendship = await Db.find('amizade', {
+            filter: {
+                cod: friendshipId,
+                usuario1: [userId, Db.raw('usuario2')],
+                usuario2: [userId, Db.raw('usuario1')]
+            },
+            view: ['cod']
         });
-        friends.push(...friends1, ...friends2);
+        
+        if (friendship.length === 0) {
+            throw new CustomError(404, "Friendship not found or you don't have permission");
+        }
+        
+        await Db.delete('amizade', { cod: friendshipId });
+        
+        return { ok: true };
+    }
 
-        const results = [];
-        friends.forEach(async usr => {
-            let id = usr.id;
-            let query = await Db.find('users', {
-                filter: { id: id, nickname: { like: `%${search}%` } },
-                view: ['id', 'nickname', 'lvl', 'profile_picture']
-            });
-
-            results.push(...query);
+    static async add(userId, friendId) {
+        if (userId === friendId) {
+            throw new CustomError(400, "You cannot add yourself as a friend");
+        }
+        
+        const existing = await Db.find('amizade', {
+            filter: {
+                usuario1: [userId, friendId],
+                usuario2: [userId, friendId]
+            },
+            view: ['cod']
         });
-        return { total: results.length, results };
+        
+        if (existing.length > 0) {
+            return { code: 200, message: "EXISTS" };
+        }
+        
+        await Db.insert('amizade', {
+            usuario1: userId,
+            usuario2: friendId,
+            pendente: 1
+        });
+        
+        return { code: 200, message: "OK" };
+    }
+
+    static async filter(userId, searchText) {
+        if (!searchText) {
+            throw new CustomError(400, "Filter text is required");
+        }
+        
+        const fields = "a.cod as id, u.id as user, u.apelido as nick, u.lvl, u.foto as picture";
+        
+        const query = `
+            SELECT ${fields} 
+            FROM amizade a 
+            INNER JOIN usuarios u ON u.id = a.usuario1 
+            WHERE a.usuario2 = ? AND pendente = 0 AND apelido LIKE ? 
+            UNION 
+            SELECT ${fields} 
+            FROM amizade a 
+            INNER JOIN usuarios u ON u.id = a.usuario2 
+            WHERE a.usuario1 = ? AND pendente = 0 AND apelido LIKE ?
+        `;
+        
+        const friends = await Db.query(query, [userId, `%${searchText}%`, userId, `%${searchText}%`]);
+        
+        return friends;
     }
 }
