@@ -12,6 +12,12 @@ class GCHamburguer extends HTMLElement {
 
     static _closedIcon = '☰';
     static _openIcon = '✕';
+    static _onUserUpdated = () => {
+        Session.shareSessionData(this);
+
+        this._setupTarget();
+        this._addEvents();
+    };
 
     constructor() {
         super();
@@ -19,9 +25,7 @@ class GCHamburguer extends HTMLElement {
 
         this._root = this._findParentShadowRoot() || document;
 
-        this._open = false;
-        this._target = null;
-        this._targetStarted = false;
+        this.open = false;
 
         this._userLogged = null;
         this._userInfos = null;
@@ -30,54 +34,51 @@ class GCHamburguer extends HTMLElement {
     // Inherited
 
     async connectedCallback() {
-        addEventListener('user-updated', () => {
-            Session.shareSessionData(this);
-
-            this._setupTarget();
-            this._addEvents();
-        });
-
         Session.shareSessionData(this);
+        addEventListener('user-updated', GCHamburguer._onUserUpdated);
 
-        // Sincroniza o target
+        // Sim, é acho meio gambiárrico usar uma promise de espera para dar tempo de renderizar todo o documento.
+        // Essa foi uma solução rápida que encontrei e que deve ser corrigida no futuro.
+        await timeout(250);
 
-        // Sim, também acho meio gambiárrico usar uma promise de espera para dar tempo dele renderizar os outros elementos no documento.
-        // Essa foi uma solução rápida que encontrei e que deve ser corrigida no futuro
-        await timeout(250); 
-        
-        this._target = this._syncTarget;
-    
         this._setAttributes();
-    
-        this.shadowRoot.appendChild(this._styles);
-        this.shadowRoot.appendChild(this._html);
-        
-        this._setupTarget();
-        
-        this._addEvents();
+        this.build();
+    }
+
+    async disconnectedCallback() {
+        removeEventListener('user-updated', GCHamburguer._onUserUpdated);
     }
 
     attributeChangedCallback(name) {
         if (name !== 'target') return;
         if (this._target) this._target.innerHTML = '';
 
-        this._target = this._syncTarget;
         this.setAttribute('aria-controls', this._target?.id);
         this._setupTarget();
     }
-
+    
     // Build
+
+    async build() {
+        this.shadowRoot.innerHTML = '';
+
+        this.shadowRoot.appendChild(this._styles);
+        this.shadowRoot.appendChild(this._html);
+        
+        this._setupTarget();
+        this._addEvents();
+    }
 
     _setAttributes() {
         this.setAttribute('title', 'Abrir menu');
         this.setAttribute('role', 'button');
-        this.setAttribute('aria-expanded', this._open);
+        this.setAttribute('aria-expanded', this.open);
         this.setAttribute('aria-controls', this._target?.id);
         this.setAttribute('aria-label', 'Abrir menu');
     }
 
     get _html() {
-        const icon = this._open ? GCHamburguer._openIcon : GCHamburguer._closedIcon;
+        const icon = this.open ? GCHamburguer._openIcon : GCHamburguer._closedIcon;
         return HTMLParser.parse(`<span id="hamburguer-icon">${icon}<span>`);
     }
 
@@ -89,13 +90,13 @@ class GCHamburguer extends HTMLElement {
         if (!this._target) throw new Error('target is not defined');
 
         this.addEventListener('click', () => {
-            this._open = !this._open;
-
-            // console.warn('GCHamburguer._target', this._target);
+            this.open = !this.open;
             this._target.classList.toggle('open');
 
+            // Aqui eu poderia transformar hamburguer icon em um getter que sempre retorna o hamburguer icon
+            // como padrão de projeto eu poderia sempre criar getters para sub-elementos que são chave no componente.
             const hamburguerIcon = this.shadowRoot.querySelector('#hamburguer-icon');
-            hamburguerIcon.textContent = this._open ? GCHamburguer._openIcon : GCHamburguer._closedIcon;
+            hamburguerIcon.textContent = this.open ? GCHamburguer._openIcon : GCHamburguer._closedIcon;
 
             this._setAttributes();
             this._setTargetAttributes();
@@ -113,7 +114,7 @@ class GCHamburguer extends HTMLElement {
 
     _setTargetAttributes() {
         this._target?.setAttribute?.('role', 'menu');
-        this._target?.setAttribute?.('aria-hidden', !this._open);
+        this._target?.setAttribute?.('aria-hidden', !this.open);
     }
 
     get _targetHTML() {
@@ -155,13 +156,17 @@ class GCHamburguer extends HTMLElement {
     }
 
     _addButtonsEvents() {
-        const loginBtn = this._target?.querySelector?.('.login-button');
-        const logoutBtn = this._target?.querySelector?.('.logout-button');
+        const loginBtn = this._target?.querySelector?.('.login-button') ?? null;
+        const logoutBtn = this._target?.querySelector?.('.logout-button') ?? null;
+
+        loginBtn.removeEventListener('click', Session.userLogin);
+        logoutBtn.removeEventListener('click', Session.userLogout);
 
         if (!this._userLogged && loginBtn) {
             loginBtn.addEventListener('click', Session.userLogin);
             return;
         }
+
         if (this._userLogged && logoutBtn) {
             logoutBtn.addEventListener('click', Session.userLogout);
             return;
@@ -170,25 +175,18 @@ class GCHamburguer extends HTMLElement {
 
     // Methods
     
-    get _syncTarget() {
-        this._targetStarted = false;
+    get _target() {
+        let targetStarted = false;
 
         const targetId = this.getAttribute('target');
-
-        // console.log('targetId: ', targetId);
         const target = this._root.getElementById(targetId);
-        // console.log('_root: ', this._root.childNodes.length);
-        // console.log('target: ', target);
 
-        // if (!target) throw new Error('target not founded');
         if (!target) return null;
 
-        
-        // console.log(target.childNodes.length);
-        if (this._targetStarted && target.childNodes.length <= 0)
+        if (targetStarted && target.childNodes.length <= 0)
             throw new Error('target must be an empty tag element');
         
-        this._targetStarted = true;
+        targetStarted = true;
         return target;
     }
 
