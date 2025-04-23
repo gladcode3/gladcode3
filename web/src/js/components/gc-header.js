@@ -24,7 +24,11 @@ class GCHeader extends HTMLElement {
     // Inherited
 
     connectedCallback() {
-        // Compartilha as informações da sessão com a instância
+        // Compartilha as informações da sessão com a instância e observa modificações
+        addEventListener('user-updated', () => {
+            Session.shareSessionData(this);
+        });
+
         Session.shareSessionData(this);
 
         this._setAttributes();

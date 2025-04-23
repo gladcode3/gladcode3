@@ -68,23 +68,27 @@
     </div>
 
     <!-- Prototype -->
+    
+
     <dialog>
         <p>Editar Perfil</p>
 
         <form>
             <fieldset>
                 <label for="update-nickname">Apelido: </label>
-                <input id="update-nickname" placeholder="Digite seu apelido..." type="text">
+                <input name="nickname" id="update-nickname" placeholder="Digite seu apelido..." type="text">
 
                 <br>
 
+                <!--
                 <label for="update-picture">Foto de Perfil: </label>
-                <input type="file" accept="image/png, image/jpeg" name="" id="update-picture">
+                <input type="file" accept="image/png, image/jpeg" name="profile_picture" id="update-picture">
+                -->
             </fieldset>
 
             <fieldset>
                 <label for="update-pref-language">Linguagem Preferida: </label>
-                <select name="" id="update-pref-language">
+                <select name="pref_language" id="update-pref_language">
                     <option value="c">C</option>
                     <option value="python">Python</option>
                     <option value="blocks">Linguagem Visual</option>
@@ -94,27 +98,27 @@
             <fieldset>
                 <p>Preerências de Email: </p>
 
-                <input type="checkbox" name="" id="update-pref1">
+                <input type="checkbox" name="pref_friend" id="update-pref_friend">
                 <label for="update-pref1">Ser notificado ao receber uma solicitação de amizade</label>
                 
                 <br>
 
-                <input type="checkbox" name="" id="update-pref2">
+                <input type="checkbox" name="pref_message" id="update-pref_message">
                 <label for="update-pref2">Ser notificado quando me enviarem mensagens</label>
                 
                 <br>
 
-                <input type="checkbox" name="" id="update-pref3">
+                <input type="checkbox" name="pref_update" id="update-pref_update">
                 <label for="update-pref3">Ser notificado sobre novas atualizações</label>
                 
                 <br>
 
-                <input type="checkbox" name="" id="update-pref4">
+                <input type="checkbox" name="pref_duel" id="update-pref_duel">
                 <label for="update-pref4">Ser notificado caso me desafiem para um duelo</label>
                 
                 <br>
 
-                <input type="checkbox" name="" id="update-pref5">
+                <input type="checkbox" name="pref_tourn" id="update-pref_tourn">
                 <label for="update-pref5">Ser notificado a respeito de torneios que eu participo</label>
             </fieldset>
 
