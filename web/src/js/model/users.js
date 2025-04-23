@@ -29,6 +29,52 @@ class Users {
         return await this[kApi].get(`users/${name}`);
     }
 
+    // Prototype:
+    static async update({
+        nickname,
+        emailPref: {
+            pref_language,
+            pref_message,
+            pref_friend,
+            pref_update,
+            pref_duel,
+            pref_tourn
+        }
+    }) {
+        this[kSetApiInstance]();
+
+        const {
+            nickname       : oldNickname,
+            pref_language  : oldPrefLanguage,
+            pref_tourn     : oldPrefTourn,
+            pref_duel      : oldPrefDuel,
+            pref_update    : oldPrefUpdate,
+            pref_friend    : oldPrefFriend,
+            pref_message   : oldPrefMessage
+        } = Users.getLocalUserData();
+        
+        // const a = !pref_language && pref_language !== false ? oldPrefLanguage : pref_language;
+
+        // Update:
+        const updatedUser = await this[kApi].put('users/user', {
+            nickname: nickname || oldNickname,
+            emailPref: {
+                pref_language: pref_language || oldPrefLanguage,
+                pref_message : pref_message ?? oldPrefMessage,
+                pref_friend  : pref_friend ?? oldPrefFriend,
+                pref_update  : pref_update ?? oldPrefUpdate,
+                pref_duel    : pref_duel ?? oldPrefDuel,
+                pref_tourn   : pref_tourn ?? oldPrefTourn
+            }
+        });
+
+        if (!updatedUser.user) throw new Error('failed to update!');
+
+        await this.saveLocalUserData();
+        
+        dispatchEvent(new CustomEvent('user-updated'));
+    }
+
     // Local user data methods
     static getLocalUserData() {
         const data = new LocalData({ id: this[kStorageKey] }).get();

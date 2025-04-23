@@ -1,62 +1,45 @@
-/*
-get
-request (adicionar amigos)
-search
-delete
-add
-filter
+import express from 'express'
+import Auth from '../middleware/auth.js';
+import Friends from '../model/friends.js';
 
-cod INT
-user1 INT
-user2 INT
-pending TINYINT(1) [0, 1] 
+const router = express.Router();
 
-=====
-$sql = "
-SELECT 
-    a.cod, u.apelido, u.foto, u.lvl 
-FROM 
-    amizade a 
-INNER JOIN 
-    usuarios u ON u.id = a.usuario1 
-WHERE 
-    a.usuario2 = '$user' AND pendente = 1";
+router.get('/get', async (req, res, next) => {
+    try {
+        await Auth.check(req);
+        const check = req.check
 
+        const query = await Friends.get(check.user.id);
+        res.status(query.code).json(query)
 
-pending = []
-where...
+    } catch (error) {
+        next(error);
+    }
+})
 
-above takes the pending requests and groups the basic info on the pending array
-/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/
+router.put('/request', async (req, res, next) => {
+    try {
+        await Auth.check(req);
+        const check = req.check;
 
-$fields = "
-a.cod, u.id, u.apelido, u.lvl, u.foto, TIMESTAMPDIFF(MINUTE,ativo,now()) as ultimoativo";
-=these are select fields
+        const query = await Friends.request(req.body.id, req.body.answer);
+        res.status(200).send(query);
+        
+    } catch (error) {
+        next(error);
+    }
 
-$sql = "
-SELECT 
-    $fields 
-FROM 
-    amizade a 
-INNER JOIN 
-    usuarios u ON u.id = a.usuario1 
-WHERE 
-    a.usuario2 = '$user' AND 
-    pendente = 0 
-UNION SELECT 
-    $fields 
-FROM 
-    amizade a 
-INNER JOIN 
-    usuarios u ON u.id = a.usuario2 
-WHERE 
-    a.usuario1 = '$user' AND
-    pendente = 0";
+router.get('/filter', async (req, res, next) => {
+    try {
+        await Auth.check(req);
+        const check = req.check;
 
-=user2 é o próprio cara que tá vendo
-=union select faz a mesma query mas trocando a perspectiva
+        const query = await Friends.filter(req.params.search, check.user.id);
+        res.status(200).send(query);
+        
+    } catch (error) {
+        next(error);
+    }
+});
 
-confirmed = []
-=essa query só se aplica se pendente é 0, que no caso é a lista de amigos do usuário
-
-*/
+});

@@ -4,29 +4,25 @@ import GoogleLogin from "../helpers/google-login.js";
 import LocalData from "../helpers/local-data.js";
 import Users from "./users.js";
 
-// Symbol é usado como uma "chave de acesso" a propriedades e métodos privados.
-const kStorageKey = Symbol('kStorageKey');
-const kApi = Symbol('kApi');
-const kSetApiInstance = Symbol('kSetApiInstance');
-const kRemoveLocalInfo = Symbol('kRemoveLocalInfo');
 
 class Session {
-    static [kStorageKey] = 'api-token'; 
-    static [kApi] = null;
+    static _storageKey = 'api-token'; 
+    static _api = null;
+    
 
-    static [kSetApiInstance]() {
+    static _setApiInstance() {
         if (!GoogleLogin.getCredential())
             throw new Error('google credentials not founded');
 
         try {
-            if (!this[kApi]) this[kApi] = new Api();
+            if (!this._api) this._api = new Api();
         } catch (err) {
             console.log(err);
             throw err;
         }
     }
 
-    static [kRemoveLocalInfo]() {
+    static _removeLocalInfo() {
         GoogleLogin.removeCredential();
         Users.removeLocalUserData();
     }
@@ -39,7 +35,7 @@ class Session {
         let credential = GoogleLogin.getCredential();
 
         if (credential === 'expired') {
-            this[kRemoveLocalInfo]();
+            this._removeLocalInfo();
 
             new Toast(
                 'Sua sessão expirou. Por favor, faça login novamente.',
@@ -101,9 +97,9 @@ class Session {
     }
     
     static async login() {
-        this[kSetApiInstance]();
+        this._setApiInstance();
 
-        const loginResponse = await this[kApi].post('users/login')
+        const loginResponse = await this._api.post('users/login')
             .catch(e => console.error(e));
 
         if (!loginResponse?.token) return loginResponse;
@@ -116,25 +112,25 @@ class Session {
     }
 
     static logout() {
-        this[kRemoveLocalInfo]();
+        this._removeLocalInfo();
         location.href = '/';
     }
     
     // Token methods
     static getToken() {
-        const data = new LocalData({ id: this[kStorageKey] }).get();
+        const data = new LocalData({ id: this._storageKey }).get();
         return data;
     }
 
     static saveToken(loginRes) {
         if (!loginRes?.token) return;
 
-        new LocalData({ id: this[kStorageKey] })
+        new LocalData({ id: this._storageKey })
             .set({ data: loginRes.token });
     }
 
     static removeToken() {
-        new LocalData({ id: this[kStorageKey] }).remove();
+        new LocalData({ id: this._storageKey }).remove();
     }
 
     // Share

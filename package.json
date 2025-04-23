@@ -17,7 +17,7 @@
   "dependencies": {
     "cors": "^2.8.5",
     "css-loader": "^7.1.2",
-    "css-minimizer-webpack-plugin": "^7.0.0",
+    "css-minimizer-webpack-plugin": "^7 .0.0",
     "express": "^4.19.2",
     "google-auth-library": "^9.13.0",
     "jsonwebtoken": "^9.0.2",

@@ -7,6 +7,9 @@ import './components/gc-user-infos.js';
 import './components/gc-post.js';
 import '../less/dashboard.less';
 
+import FormUtil from './helpers/form-util.js';
+import Users from './model/users.js';
+
 Session.validate();
 
 const lateralBar = document.querySelector('#page-container > aside');
@@ -44,3 +47,65 @@ loaderMenu.setup({
 });
 
 lateralBar.insertBefore(loaderMenu, footer);
+
+// Prototype
+// -> Criar os disparadores de evento do Dialog dentro do componente de header (onde há os elementos que de fato disparam o dialog)
+
+const userData = Users.getLocalUserData();
+console.log(userData);
+
+const header = document.querySelector('gc-header');
+const aside = document.querySelector('gc-user-infos');
+
+const dialog = document.querySelector('dialog');
+const dialogForm = dialog.querySelector('form');
+
+console.log(dialogForm);
+
+// Renderizando as informações pre-existentes no formulário:
+new FormUtil(dialogForm).fillWithValues(userData);
+
+// Fazendo o formulário funcionar
+
+dialogForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    
+    try {
+        // substituir por um toast nativo
+        alert('Atualizações salvas com sucesso!');
+
+        const formValues = new FormUtil(dialogForm).getValuesMap();
+    
+        await Users.update({
+            nickname: formValues['nickname'],
+            emailPref: {
+                pref_language: formValues['pref_language'],
+                pref_message : formValues['pref_message'],
+                pref_friend  : formValues['pref_friend'],
+                pref_update  : formValues['pref_update'],
+                pref_duel    : formValues['pref_duel'],
+                pref_tourn   : formValues['pref_tourn']
+            }
+        });
+
+        const userInfos = Users.getLocalUserData();
+        aside.setup(userInfos);
+    } catch (e) {
+        alert('Houve um erro ao atualizar o perfil. Tente novamente mais tarde!');
+    }
+});
+
+
+const settings1 = document
+.querySelector('gc-header')
+.shadowRoot
+.querySelector('.main-container__user-settings');
+
+
+const settings2 = document
+.querySelector('gc-header')
+.shadowRoot
+.querySelector('.user__user-settings');
+
+settings1?.addEventListener('click', () => dialog.showModal());
+settings2?.addEventListener('click', () => dialog.showModal());

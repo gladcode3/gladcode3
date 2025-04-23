@@ -30,7 +30,13 @@ class GCHamburguer extends HTMLElement {
     // Inherited
 
     async connectedCallback() {
-        // Compartilha as informações da sessão com a instância
+        addEventListener('user-updated', () => {
+            Session.shareSessionData(this);
+
+            this._setupTarget();
+            this._addEvents();
+        });
+
         Session.shareSessionData(this);
 
         // Sincroniza o target
@@ -98,6 +104,9 @@ class GCHamburguer extends HTMLElement {
 
     _setupTarget() {
         this._setTargetAttributes();
+
+        if (this._target?.innerHTML) this._target.innerHTML = '';
+
         this._targetHTML.forEach(tag => this._target?.appendChild?.(tag));
         this._addButtonsEvents();
     }

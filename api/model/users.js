@@ -6,11 +6,10 @@ export default class User {
     id,
     email,
     googleid,
+    nickname,
     firstName,
     lastName,
-    nickname,
     profilePicture,
-    prefLanguage,
     pasta,
   }) {
     this.id = id;
@@ -20,7 +19,6 @@ export default class User {
     this.firstName = firstName;
     this.lastName = lastName;
     this.profilePicture = profilePicture;
-    this.prefLanguage = prefLanguage;
     this.pasta = pasta;
   }
 
@@ -71,10 +69,33 @@ export default class User {
     return users;
   }
 
-  async update() {
-    if (this.nickname !== undefined) await Db.update('users', { nickname: this.nickname }, this.id);
-    if (this.profilePicture !== undefined) await Db.update('users', { profile_picture: this.profilePicture }, this.id);
-    if (this.prefLanguage !== undefined) await Db.update('users', { pref_language: this.prefLanguage }, this.id);
+  async update(body) {
+
+    const validLanguages = new Set(["c", "python", "blocks"]);
+    const emailPref = body.emailPref ?? {};
+    const isValid = (value) => value !== undefined && value !== null && value !== '';
+    const toInt = (value) => { if (typeof value === 'boolean') return value ? 1 : 0; else return undefined };
+    
+    const updateData = Object.fromEntries(
+      Object.entries({
+        nickname: body.nickname,
+        profile_picture: body.pfp,
+
+        pref_message: toInt(emailPref.pref_message),
+        pref_friend: toInt(emailPref.pref_friend),
+        pref_update: toInt(emailPref.pref_update),
+        pref_duel: toInt(emailPref.pref_duel),
+        pref_tourn: toInt(emailPref.pref_tourn),
+
+        pref_language: validLanguages.has(emailPref.pref_language) ? emailPref.pref_language : undefined
+      }).filter(([_, value]) => isValid(value))
+    );
+    
+    if (Object.keys(updateData).length === 0) {
+      throw new CustomError(400, "No valid data sent");
+    }
+
+    await Db.update('users', updateData, this.id);
     return this.get();
   }
 
@@ -95,7 +116,7 @@ export default class User {
   async get() {
     const user = await Db.find("users", {
       filter: { id: this.id },
-      view: ["email", "nickname", "first_name", "last_name", "profile_picture", 'lvl', 'xp', 'silver', 'credits', 'active'],
+      view: ["id", "email", "nickname", "first_name", "last_name", "profile_picture", "spoken_language", 'lvl', 'xp', 'silver', 'credits', 'active', 'pref_message', 'pref_friend', 'pref_update', 'pref_duel', 'pref_tourn', 'pref_language'],
     });
 
     if (user.length === 0) throw new CustomError(404, "User does not exist");
