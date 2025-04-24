@@ -1,5 +1,6 @@
 import Session from './model/session.js';
 import newsAction from './view/news.js';
+import rankAction from './view/rank.js';
 
 import './components/loader-menu.js'
 import './components/gc-header.js';
@@ -38,7 +39,7 @@ loaderMenu.setup({
         },
         {
             id: 'rank', label: 'ranking', faIcon: 'fa-ranking-star', notify: false,
-            path: '../panels/rank.html', action: () => console.log('rank')},
+            path: '../panels/rank.html', action: rankAction},
         {
             id: 'messages', label: 'mensagens', faIcon: 'fa-message',
             path: '../panels/messages.html', action: () => console.log('messages')
