@@ -49,6 +49,9 @@ async function rankAction() {
 
     renderRank(rankList);
 
+    const [start, end] = getOffsetRankInterval(offset);
+    pageLabel.innerHTML = `<span>${start}</span> - <span>${end}</span> de <span>${total}</span>`;
+
     const changePageCallback = async increment => {
         const newOffset = offset + increment;
 
@@ -76,12 +79,13 @@ async function rankAction() {
         }
 
         const rankData = await Rank.get({ offset, search });
+        const searchTotal = rankData.total;
         rankList = rankData.ranking;
 
         renderRank(rankList);
 
         const [start, end] = getOffsetRankInterval(offset);
-        pageLabel.innerHTML = `<span>${start}</span> - <span>${end}</span> de <span>${total}</span>`;
+        pageLabel.innerHTML = `<span>${start}</span> - <span>${end}</span> de <span>${searchTotal}</span>`;
     });
 }
 
