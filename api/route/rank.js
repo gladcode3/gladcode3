@@ -8,10 +8,20 @@ const router = express.Router();
 router.get("/rank", async(req, res, next) => {
     try {
         
-        const offset = req.body.offset !== undefined ? parseInt(req.body.offset) : undefined;
-        const search = req.body.search || "";
+        let page;
+        if (req.query.page !== undefined) {
+          const p = parseInt(req.query.page, 10);
+          page = Number.isNaN(p) ? undefined : p;
+        }
+        
+        let limit;
+        if (req.query.limit !== undefined) {
+          const l = parseInt(req.query.limit, 10);
+          limit = Number.isNaN(l) ? undefined : l;
+        }
+        const search = req.query.search || "";
 
-        const query = await Rank.get({ offset, search });
+        const query = await Rank.get(page, search, limit);
         res.status(200).json(query);
 
     } catch (error) {
@@ -83,6 +93,20 @@ router.get("/max-mine", async (req, res, next) => {
         const result = await Rank.getMaxMineOffset(check.user.id);
         res.status(200).json(result);
 
+    } catch (error) {
+        next(error);
+    }
+});
+
+router.get("/highest-mmr", async (req, res, next) => {
+    try {
+        await Auth.check(req);
+        const check = req.check;
+
+        if (!check.user) throw check;
+        
+        const result = await Rank.getHighestMMRGladiator(check.user.id);
+        res.status(200).json(result);
     } catch (error) {
         next(error);
     }
