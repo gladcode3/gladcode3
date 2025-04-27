@@ -1,8 +1,8 @@
-import HTMLParser from '../helpers/html-parser.js';
-import Session from '../model/session.js';
+import HTMLParser from '../helpers/HTMLParser.js';
+import Session from '../model/Session.js';
 
-import './gc-nav.js';
-import './gc-hamburguer.js'
+import './GCNavBar.js';
+import './GCHamburguer.js'
 
 import stylesRaw from '../../less/components/_header.less?raw';
 

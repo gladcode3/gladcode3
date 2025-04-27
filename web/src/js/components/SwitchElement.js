@@ -64,7 +64,7 @@
     // SwitchInput.value and SwitchInput.checked are the same thing
 */
 
-import HTMLParser from '../helpers/html-parser.js';
+import HTMLParser from '../helpers/HTMLParser.js';
 
 import raw from '../../less/components/_switchs.less?raw';
 

@@ -1,5 +1,5 @@
-import Debounce from "../helpers/debounce.js";
-import Rank from "../model/rank.js";
+import Debounce from "../helpers/Debounce.js";
+import Rank from "../model/Rank.js";
 
 
 function renderRank(rank = []) {

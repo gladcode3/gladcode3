@@ -1,8 +1,8 @@
-import Toast from "../components/toast.js";
-import Api from "../helpers/api.js";
-import GoogleLogin from "../helpers/google-login.js";
-import LocalData from "../helpers/local-data.js";
-import Users from "./users.js";
+import Toast from "../components/Toast.js";
+import Api from "../helpers/Api.js";
+import GoogleLogin from "../helpers/GoogleLogin.js";
+import LocalData from "../helpers/LocalData.js";
+import Users from "./Users.js";
 
 
 class Session {

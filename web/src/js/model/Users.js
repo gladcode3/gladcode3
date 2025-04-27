@@ -1,18 +1,14 @@
-import Api from "../helpers/api.js";
-import LocalData from "../helpers/local-data.js";
+import Api from "../helpers/Api.js";
+import LocalData from "../helpers/LocalData.js";
 
-// Symbol é usado como uma "chave de acesso" a propriedades e métodos privados.
-const kStorageKey = Symbol('kStorageKey');
-const kApi = Symbol('kApi');
-const kSetApiInstance = Symbol('kSetApiInstance');
 
 class Users {
-    static [kStorageKey] = 'user-infos';
-    static [kApi] = null;
+    static _storageKey = 'user-infos';
+    static _api = null;
 
-    static [kSetApiInstance]() {
+    static _setApiInstance() {
         try {
-            if (!this[kApi]) this[kApi] = new Api();
+            if (!this._api) this._api = new Api();
         } catch(err) {
             console.log(err);
             throw err;
@@ -20,18 +16,18 @@ class Users {
     }
 
     static async getUserData() {
-        this[kSetApiInstance]();
-        return await this[kApi].get('users/user');
+        this._setApiInstance();
+        return await this._api.get('users/user');
     }
 
     static async getGladiators() {
-        this[kSetApiInstance]();
-        return await this[kApi].get('gladiators/master');
+        this._setApiInstance();
+        return await this._api.get('gladiators/master');
     }
 
     static async getUserByName(name) {
-        this[kSetApiInstance]();
-        return await this[kApi].get(`users/${name}`);
+        this._setApiInstance();
+        return await this._api.get(`users/${name}`);
     }
 
     // Prototype:
@@ -46,7 +42,7 @@ class Users {
             pref_tourn
         }
     }) {
-        this[kSetApiInstance]();
+        this._setApiInstance();
 
         const {
             nickname       : oldNickname,
@@ -61,7 +57,7 @@ class Users {
         // const a = !pref_language && pref_language !== false ? oldPrefLanguage : pref_language;
 
         // Update:
-        const updatedUser = await this[kApi].put('users/user', {
+        const updatedUser = await this._api.put('users/user', {
             nickname: nickname || oldNickname,
             emailPref: {
                 pref_language: pref_language || oldPrefLanguage,
@@ -82,19 +78,19 @@ class Users {
 
     // Local user data methods
     static getLocalUserData() {
-        const data = new LocalData({ id: this[kStorageKey] }).get();
+        const data = new LocalData({ id: this._storageKey }).get();
         return data;
     }
 
     static async saveLocalUserData() {
         const userData = await this.getUserData();
 
-        new LocalData({ id: this[kStorageKey] })
+        new LocalData({ id: this._storageKey })
             .set({ data: userData });
     }
 
     static async removeLocalUserData() {
-        new LocalData({ id: this[kStorageKey] }).remove();
+        new LocalData({ id: this._storageKey }).remove();
     }
 
     // Calculate xp for next lvl

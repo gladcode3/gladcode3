@@ -1,4 +1,4 @@
-function wait(ms) {
+function asyncTimeout(ms) {
     let cancel;
     const promise = new Promise((resolve, reject) => {
         const timeout = setTimeout(resolve, ms);
@@ -11,4 +11,4 @@ function wait(ms) {
     return promise;
 }
 
-export default wait;
+export default asyncTimeout;
