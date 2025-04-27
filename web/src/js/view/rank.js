@@ -26,7 +26,19 @@ function renderRank(rank = []) {
     });
 }
 
-function getOffsetRankInterval(limit, page) {
+async function showRank({ limit, page, search }) {
+    const { total, ranking: rankList } = await Rank.get({ limit, page, search });
+    renderRank(rankList);
+
+    const [start, end] = getRankPageInterval(limit, page);
+
+    const pageLabel = document.querySelector('.page-label');
+    pageLabel.innerHTML = `<span>${start}</span> - <span>${end > total ? total : end}</span> de <span>${total}</span>`;
+
+    return { total, rankList };
+}
+
+function getRankPageInterval(limit, page) {
     const start = (limit * (page - 1)) + 1;
     const end = limit * page;
 
@@ -42,37 +54,25 @@ async function getBestGladPage(limit) {
 
 async function rankAction() {
     const LIMIT = 10;
+    const START_PAGE = await getBestGladPage(LIMIT) || 1;
 
-    let page = await getBestGladPage(LIMIT) || 1;
+    let page = START_PAGE;
     let search = '';
 
     const prevButton = document.querySelector('button.back-button');
     const nextButton = document.querySelector('button.next-button');
     const rankSearch = document.querySelector('input.ranking-search'); // input type="search"
-    const pageLabel = document.querySelector('.page-label');
 
-    const rankData = await Rank.get({ limit: LIMIT, page, search });
-
-    const { total } = rankData;
-    let { ranking: rankList } = rankData;
-
-    renderRank(rankList);
-
-    const [start, end] = getOffsetRankInterval(LIMIT, page);
-    pageLabel.innerHTML = `<span>${start}</span> - <span>${end}</span> de <span>${total}</span>`;
+    let { total, rankList } = await showRank({ limit: LIMIT, page, search }); 
 
     const changePageCallback = async increment => {
-        const newOffset = page + increment;
+        const newPage = page + increment;
 
-        if (newOffset >= 0 && newOffset < total && rankList.length > 0) page = newOffset;
+        const [,newPageEnd] = getRankPageInterval(LIMIT, newPage);
 
-        const rankData = await Rank.get({ limit: LIMIT, page, search });
-        rankList = rankData.ranking;
+        if (newPage >= 1 && newPageEnd < total && rankList.length > 0) page = newPage;
 
-        renderRank(rankList);
-
-        const [start, end] = getOffsetRankInterval(LIMIT, page);
-        pageLabel.innerHTML = `<span>${start}</span> - <span>${end}</span> de <span>${total}</span>`;
+        rankList = (await showRank({ limit: LIMIT, page, search })).rankList;
     }
 
     prevButton.addEventListener('click', async () => await changePageCallback(-1));
@@ -83,18 +83,13 @@ async function rankAction() {
 
         search = rankSearch.value;
 
-        if (search && search !== "") {
-            page = 0;
-        }
+        if (search) page = 1;
+        if (search === '') page = START_PAGE; 
 
-        const rankData = await Rank.get({ limit: LIMIT, page, search });
-        const searchTotal = rankData.total;
-        rankList = rankData.ranking;
+        const rank = await showRank({ limit: LIMIT, page, search });
 
-        renderRank(rankList);
-
-        const [start, end] = getOffsetRankInterval(LIMIT, page);
-        pageLabel.innerHTML = `<span>${start}</span> - <span>${end}</span> de <span>${searchTotal}</span>`;
+        total = rank.total;
+        rankList = rank.rankList;
     });
 }
 
