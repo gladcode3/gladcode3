@@ -1,6 +1,6 @@
-import HTMLParser from "../helpers/html-parser.js";
-import asyncTimeout from "../helpers/async-timeout.js";
-import Session from "../model/session.js";
+import HTMLParser from "../helpers/HTMLParser.js";
+import asyncTimeout from "../helpers/asyncTimeout.js";
+import Session from "../model/Session.js";
 
 import stylesRaw from '../../less/components/_hamburguer.less?raw';
 

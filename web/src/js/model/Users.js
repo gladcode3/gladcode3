@@ -1,5 +1,5 @@
-import Api from "../helpers/api.js";
-import LocalData from "../helpers/local-data.js";
+import Api from "../helpers/Api.js";
+import LocalData from "../helpers/LocalData.js";
 
 
 class Users {

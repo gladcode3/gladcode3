@@ -1,4 +1,4 @@
-import News from "../model/news.js";
+import News from "../model/News.js";
 
 const renderPosts = posts => {
     const postsList = document.querySelector('.news-panel__news');

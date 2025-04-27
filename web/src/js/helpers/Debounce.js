@@ -1,4 +1,4 @@
-import asyncTimeout from './async-timeout.js';
+import asyncTimeout from './asyncTimeout.js';
 
 class Debounce {
     constructor(callback = () => {}, delayMS) {

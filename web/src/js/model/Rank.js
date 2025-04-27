@@ -1,5 +1,5 @@
-import Api from "../helpers/api.js";
-import Users from "./users.js";
+import Api from "../helpers/Api.js";
+import Users from "./Users.js";
 
 class Rank {
     static LIMIT = 10;

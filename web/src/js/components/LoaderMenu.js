@@ -1,4 +1,4 @@
-import HTMLParser from "../helpers/html-parser.js";
+import HTMLParser from "../helpers/HTMLParser.js";
 import stylesRaw from '../../less/components/_loader-menu.less?raw';
 
 

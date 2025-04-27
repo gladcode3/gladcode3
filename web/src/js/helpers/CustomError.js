@@ -1,6 +1,6 @@
 // No documentation...
 
-import Toast from '../components/toast.js';
+import Toast from '../components/Toast.js';
 
 export default class CustomError extends Error {
     

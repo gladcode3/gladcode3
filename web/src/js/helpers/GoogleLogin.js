@@ -11,11 +11,11 @@
 // GoogleLogin.renderButton(element); // render the google login button in the element
 
 
-import TemplateVar from './template-var.js';
-import DynamicScript from './dynamic-script.js';
-import Pledge from './pledge.js';
-import LocalData from './local-data.js';
-import JWTDecode from './jwt-decode.js';
+import TemplateVar from './TemplateVar.js';
+import DynamicScript from './DynamicScript.js';
+import Pledge from './Pledge.js';
+import LocalData from './LocalData.js';
+import decodeJWT from './decodeJWT.js';
 
 export default class GoogleLogin {
     static _logged = false;
@@ -116,7 +116,7 @@ export default class GoogleLogin {
         if (!jwt) return false;
         if (!jwt.token) return false;
 
-        const { exp: expires } = JWTDecode(jwt.token);
+        const { exp: expires } = decodeJWT(jwt.token);
         const now = Date.now() / 1000;
 
         return expires <= now;

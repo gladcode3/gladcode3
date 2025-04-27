@@ -1,5 +1,5 @@
-import Session from "./session.js";
-import Api from "../helpers/api.js";
+import Session from "./Session.js";
+import Api from "../helpers/Api.js";
 
 Session.validate();
 const api = new Api();

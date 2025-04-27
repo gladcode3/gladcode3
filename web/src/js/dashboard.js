@@ -1,15 +1,15 @@
-import Session from './model/session.js';
+import Session from './model/Session.js';
 import newsAction from './view/news.js';
 import rankAction from './view/rank.js';
 
-import './components/loader-menu.js'
-import './components/gc-header.js';
-import './components/gc-user-infos.js';
-import './components/gc-post.js';
+import './components/LoaderMenu.js'
+import './components/GCHeader.js';
+import './components/GCUserInfos.js';
+import './components/GCPost.js';
 import '../less/dashboard.less';
 
-import FormUtil from './helpers/form-util.js';
-import Users from './model/users.js';
+import FormUtil from './helpers/FormUtil.js';
+import Users from './model/Users.js';
 
 Session.validate();
 

@@ -31,8 +31,8 @@
     document.body.appendChild(post);
 */
 
-import DateFormatter from "../helpers/date-formatter.js";
-import HTMLParser from "../helpers/html-parser.js";
+import DateFormatter from "../helpers/DateFormatter.js";
+import HTMLParser from "../helpers/HTMLParser.js";
 
 import stylesRaw from '../../less/components/_post.less?raw';
 

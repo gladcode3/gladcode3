@@ -3,10 +3,9 @@
 // const entity = await new Api().get('route', { ...args });
 
 
-import GoogleLogin from "./google-login.js";
-import LocalData from "./local-data.js";
-import Request from "./request.js";
-import TemplateVar from "./template-var.js";
+import GoogleLogin from "./GoogleLogin.js";
+import Request from "./Request.js";
+import TemplateVar from "./TemplateVar.js";
 
 export default class Api {
     constructor({ auth, token }={}) {
