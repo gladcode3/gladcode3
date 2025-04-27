@@ -1,33 +1,35 @@
 import Rank from "../model/rank.js";
+import Users from "../model/users.js";
 
 // RANKING PROTOTYPE:
 
 // Melhorias:
-// - Adicionar highlight nos gladiadores do usuário
 // - Adicionar um algoritmo de debounce para evitar multiplas requisições para usuários que digitam rapido
 
-function renderRank(rank = []) {
+function renderRank(rank = [], userGladsIds=[]) {
     const rankingTable = document.querySelector('table#ranking > tbody');
     rankingTable.innerHTML = '';
 
-    rank.forEach(({ position, glad: gladName, master, mmr: renown }) => {
+    rank.forEach(({ cod: gladId, position, glad: gladName, master, mmr: renown }) => {
         const tableRow = document.createElement('tr');
-        tableRow.classList.add('my-glad');
+
+        if (userGladsIds.includes(gladId))
+            tableRow.classList.add('my-glad');
 
         tableRow.innerHTML = `
             <td class="glad-rank">${position}º</td>
-            <td>${gladName}</td>
-            <td>${master}</td>
-            <td class="renown">${parseInt(renown)}</td>
+            <td class="glad-name">${gladName}</td>
+            <td class="glad-master">${master}</td>
+            <td class="glad-mmr">${parseInt(renown)}</td>
         `;
         
         rankingTable.appendChild(tableRow);
     });
 }
 
-async function showRank({ limit, page, search }) {
+async function showRank({ limit, page, search }, userGladsIds=[]) {
     const { total, ranking: rankList } = await Rank.get({ limit, page, search });
-    renderRank(rankList);
+    renderRank(rankList, userGladsIds);
 
     const [start, end] = getRankPageInterval(limit, page);
 
@@ -68,6 +70,9 @@ function renderNewPage(newPage, { limit, total }) {
 }
 
 async function rankAction() {
+    // Cria uma lista com os IDs de todos os gladiadores do usuário
+    const USER_GLADS = (await Users.getGladiators()).map(glad => glad.cod);
+
     const LIMIT = 10;
     const START_PAGE = await getBestGladPage(LIMIT) || 1;
 
@@ -78,7 +83,7 @@ async function rankAction() {
     const nextButton = document.querySelector('button.next-button');
     const rankSearch = document.querySelector('input.ranking-search'); // input type="search"
 
-    let { total, rankList } = await showRank({ limit: LIMIT, page, search }); 
+    let { total, rankList } = await showRank({ limit: LIMIT, page, search }, USER_GLADS); 
 
     const changePageCallback = async increment => {
         const newPage = page + increment;
@@ -86,7 +91,7 @@ async function rankAction() {
 
         page = newPage;
 
-        rankList = (await showRank({ limit: LIMIT, page, search })).rankList;
+        rankList = (await showRank({ limit: LIMIT, page, search }, USER_GLADS)).rankList;
 
         renderNewPage(newPage, { limit: LIMIT, total });
     }
@@ -102,7 +107,7 @@ async function rankAction() {
         if (search) page = 1;
         if (search === '') page = START_PAGE; 
 
-        const rank = await showRank({ limit: LIMIT, page, search });
+        const rank = await showRank({ limit: LIMIT, page, search }, USER_GLADS);
 
         total = rank.total;
         rankList = rank.rankList;
