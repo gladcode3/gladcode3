@@ -12,9 +12,14 @@ class Rank {
         }
     }
 
-    static async get({ offset, search }) {
+    static async get({ limit = 10, page, search = '' }) {
         this._setApiInstance();
-        return await this._api.get('rank/rank', { offset, search });
+        return await this._api.get('rank/rank', { limit, page, search });
+    }
+
+    static async getBestGlad() {
+        this._setApiInstance();
+        return await this._api.get('rank/highest-mmr');
     }
 }
 
