@@ -1,159 +1,280 @@
-import Db from '../core/mysql.js';
-import CustomError from '../core/error.js';
+import Db from "../core/mysql.js";
+import CustomError from "../core/error.js";
+
+import Gladiator from "./gladiator.js";
+
+const gladiator = new Gladiator({});
 
 export default class Rank {
 
-    static async get(page, qnt, srch){
-        if(qnt > 30 || qnt === undefined || isNaN(qnt)) qnt = 30;
-        if(page === undefined || page < 0) page = 0;
+    static async get(page, search, limit ){
+        console.log(page, search, limit)
+        let filter = {};
 
-        let offset = (page*qnt)-qnt;
-        let search = "";
-        let searchQuery;
-
-        if(srch !== undefined || srch !== "") {
-            searchQuery = ` WHERE g.name LIKE '%${srch}%' OR u.nickname LIKE '%${srch}%'`;
-            search = srch;
+        if (search) {
+            const searchCondition = Db.raw(`(g.name LIKE '%${search}%' OR u.nickname LIKE '%${search}%'`);
+            filter = { _raw: searchCondition };
         }
 
-        const byGladiator = await Db.find('gladiators', {
-            filter: { name: { like: `${search}` } },
-            view: [ 'cod' ],
-        });
-        const total = byGladiator.length;
+        const countQuery = await Db.query(
+            `SELECT COUNT(*) as total FROM gladiators g
+            INNER JOIN users u ON g.master = u.id
+            ${search ? `WHERE g.name LIKE ? OR u.nickname LIKE ?` : ''}`,
+            search ? [`%${search}%`, `%${search}%`] : []
+        );
 
-        const sumreward = `
-        SELECT 
-            sum(r.reward) 
-        FROM 
-            reports r 
-        INNER JOIN 
-            logs l ON l.id = r.log 
-        WHERE 
-            g.cod = r.gladiator AND 
-            l.time > CURRENT_TIME() - INTERVAL 1 DAY`;
+        const total = countQuery[0].total;
 
-        const position = `
-        SELECT 
-            count(*) 
-        FROM 
-            gladiators g2
-        WHERE 
-            g2.mmr >= g.mmr
+        if(page === undefined || page < 1){
+            page = 1;
+        }
+        if(limit === undefined || limit > 30 || limit < 1) {
+            limit = 30;
+        }
+        const offset = (page*limit)-limit;
+
+        const rawRankingData = `
+            SELECT
+            g.name,
+            g.mmr,
+            u.nickname,
+            (
+                SELECT SUM(r.reward)
+                FROM reports r
+                INNER JOIN logs l ON l.id = r.log
+                WHERE g.cod = r.gladiator
+                AND l.time > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 DAY)
+            ) AS sumreward,
+            (
+                SELECT COUNT(*) 
+                FROM gladiators g2 
+                WHERE g2.mmr >= g.mmr
+            ) AS position
+            FROM gladiators g
+            INNER JOIN users u ON g.master = u.id
+            ${search ? `WHERE g.name LIKE ? OR u.nickname LIKE ?` : ''}
+            ORDER BY g.mmr DESC
+            LIMIT ${limit} OFFSET ${offset}
         `;
 
-        const sql = `
-        SELECT 
-            g.name, g.mmr, u.nickname, (${sumreward}) AS sumreward, (${position}) AS position 
-        FROM 
-            gladiators g 
-        INNER JOIN 
-            users u ON g.master = u.id
-        ${searchQuery}
-        ORDER BY g.mmr DESC 
-        LIMIT ${qnt} 
-        OFFSET ${offset}
-        `
+        const params = search ? [ `%${search}%`, `%${search}%` ] : [];
+        const rankingData = await Db.query(rawRankingData, params);
 
-        const result = await Db.query(sql, []);
-        const ranking = [];
+        const ranking = rankingData.map(row => ({
+            glad: row.name,
+            mmr: row.mmr,
+            master: row.nickname,
+            change24: row.sumreward || 0,
+            position: row.position
+        }));
 
-        result.forEach(row => {
-            ranking.push({
-                'glad': row.name,
-                'mmr': row.mmr,
-                'master': row.nickname,
-                'change24': row.sumreward,
-                'position': row.position
+        return { total, ranking };
+    }
+
+    static async toggleWatchTab(userId, name, watch) {
+        
+        const userData = await Db.find("users", {
+            filter: { id: userId },
+            view: ["premium", "credits"]
+        });
+
+        if(!userData.length) throw new CustomError(404, "User not found");
+
+        const user = userData[0];
+
+        //Possivelmente não implementado?
+        if(user.premium = null) return { status: "NOPREMIUM" };
+        if(user.credits < 0) return { status: "NOCREDITS" };
+
+        const existingTabs = await Db.find("user_tabs", {
+            filter: { name, owner: userId },
+            view: ["id"]
+        });
+
+        let result = {};
+        if (existingTabs.length > 0) {
+            const tabId = existingTabs[0].id;
+            await Db.update("user_tabs", { watch: watch ? 1 : 0 }, tabId);
+
+        } else {
+            const insertResult = await Db.insert("user_tabs", {
+                name,
+                owner: userId,
+                watch: watch ? 1 : 0
+            });
+
+            result.id = insertResult[0].insertId;
+        }
+        return result;
+    }
+
+    static async getTabs(userId) {
+        const tags = new Set();
+
+        const ownTrainings = await Db.query(
+            `SELECT DISTINCT t.description FROM training t WHERE t.manager = ?`,
+            [userId]
+        );
+
+        ownTrainings.forEach(row => {
+            const matches = row.description.match(/#(\w+)/g) || [];
+            matches.forEach(match => {
+                tags.add(match.substring(1).toLowerCase());
             });
         });
 
-        return {
-            "code": 200,
-            "total": total,
-            ranking
-        }
-
-    }
-
-    static async fetch(tab, srch){
-        
-        let search = "";
-        if(srch !== undefined) search = srch.toLowerCase();
-        
-        const prize = [ 10, 6, 4, 3, 2];
-        const ranking = []
-        let sql;
-
-        const training = await Db.find('training', {
-            filter: { description : { like: `#${tab}` } },
-            view: [ 'id', 'name', 'weight' ]
+        const participatingTrainings = await Db.query(
+            `SELECT DISTINCT t.description
+            FROM gladiator_training gt
+            INNER JOIN gladiators g ON gt.gladiator = g.cod
+            INNER JOIN training t ON t.id = gt.training
+            WHERE g.master = ?`,
+            [userId]
+        );
+        participatingTrainings.forEach(row => {
+            const matches = row.description.match(/#(\w+)/g) || [];
+            matches.forEach(match => {
+                tags.add(match.substring(1).toLowerCase());
+            });
         });
 
-        for (const train of training) {
+        const userTabs = await Db.find("user_tabs", {
+            filter: { owner: userId },
+            view: [ "name", "watch" ]
+        });
+
+        const tagsArray = Array.from(tags);
+        userTabs.forEach(tab => {
+            if (tab.watch === 0 && tagsArray.includes(tab.name)) {
+                const index = tagsArray.indexOf(tab.name);
+                if(index > -1) {
+                    tagsArray.splice(index, 1);
+                }
+            } else if (tab.watch === 1 && !tagsArray.includes(tab.name)) {
+                tagsArray.push(tab.name);
+            }
+        });
+
+        tagsArray.sort();
+
+        return { tags: tagsArray};
+    }
+
+    static async fetchTabRanking(tab, search) {
+
+        const trainings = await Db.query(
+            `SELECT t.id, t.name, t.weight FROM training t WHERE t.description LIKE ?`,
+            [`%${tab}%`]
+        );
+
+        const trainingData = trainings.map(row => ({
+            id: row.id,
+            weight: row.weight
+        }));
+
+        const prize = [10, 6, 4, 3, 2];
+        let ranking = {};
+
+        for(const train of trainingData) {
             const trainId = train.id;
             const weight = train.weight;
 
-            const manualtime = `
-                SELECT avg(IF(gt2.lasttime > 1000, gt2.lasttime - 1000, gt2.lasttime)) 
-                FROM gladiator_training gt2 
-                INNER JOIN gladiators g2 ON g2.cod = gt2.gladiator 
-                WHERE gt2.training = gt.training 
-                AND g2.master = g.master 
-                AND gt2.lasttime > 0
-            `;
-        
-            sql = `
-                SELECT sum(gt.score) AS score, 
-                        (${manualtime}) AS time, 
-                        g.master, u.nickname 
-                FROM gladiator_training gt 
-                INNER JOIN gladiators g ON g.cod = gt.gladiator 
-                INNER JOIN users u ON u.id = g.master 
-                WHERE gt.training = ? 
-                GROUP BY g.master 
-                ORDER BY score DESC, time DESC
-            `;
-        
-            const result = await Db.query(sql, [trainId]);
-            console.log(result)
-        
-            let i = 0;
-            for (const row of result) {
-                if (row.time !== null) {
-                    const id = row.master;
-                    if (!ranking[id]) {
-                        ranking[id] = {
-                            "score": 0,
-                            "time": 0,
-                            "fights": 0,
-                            "nickname": row.nickname
-                        };
-                    }
-                    ranking[id].score += ((prize[i] ?? 0) * weight);
-                    ranking[id].time += row.time > 1000 ? row.time - 1000 : row.time;
-                    ranking[id].fights++;
-                    ranking[id].nickname = row.nickname;
-                    i++;
-                };
-            };
-        };
-        for (const id in ranking) {
-            ranking[id].time /= ranking[id].fights;
-            ranking[id].fights = null;
-        };
+            const trainRanking = await Db.query(
+                `SELECT 
+                    SUM(gt.score) AS score,
+                    AVG(IF(gt2.lasttime > 1000, gtw.lasttime - 1000, gt2.lasttime)) AS time,
+                    g.master,
+                    u.nickname
+                FROM gladiator_training gt
+                INNER JOIN gladiators g ON g.cod = gt.gladiator
+                INNER JOIN users u ON u.id = g.master
+                LEFT JOIN gladiator_training gt2 ON gt2.training = gt.training AND gt2.gladiator IN (
+                    SELECT g2.cod FROM gladiators g2 WHERE g2.master = g.master
+                ) AND gt2.lasttime > 0
+                WHERE gt.training = ?
+                GROUP BY g.master
+                ORDER BY score DESC, time DESC`,
+                [trainId]
+            );
 
-        let i = 1;
-        const filtered = ranking.map((item) => {
-            item.position = i++;
-            return item;
-        }).filter(
-            (item) => search === "" || item.nickname.toLowerCase().includes(search)
+            for (let i = 0; i < trainRanking.length; i++) {
+                const row = trainRanking[i];
+
+                if(row.time != null) {
+                    const id = row.master;
+
+                if (!ranking[id]) {
+                    ranking[id] = {
+                        score: 0,
+                        time: 0,
+                        fights: 0
+                    };
+                }
+
+            ranking[id].score += (prize[i] !== undefined ? prize[i] : 0 ) * weight;
+            ranking[id].time += row.time > 1000 ? row.time - 1000 : row.time;
+            ranking[id].fights++;
+            ranking[id].nick = row.nickname;
+                }
+            }
+        }
+        const rankingArray = Object.entries(ranking).map(([id, data]) => {
+            return {
+                id: parseInt(id),
+                score: data.score,
+                time: data.time / data.fights,
+                nick: data.nick
+            };
+        });
+
+        rankingArray.sort((a, b) => {
+            if (a.score !== b.score) {
+                return b.score - a.score;
+            }
+            return b.time - a.time;
+        });
+
+        const filteredRanking = rankingArray.map((item, index) => {
+            item.position = index + 1;
+            return item
+        }).filter(item => !search || item.nick.toLowerCase().includes(search.toLowerCase()));
+
+        return { ranking: filteredRanking };
+    }
+
+    static async getMaxMineOffset(userId){
+        const result = await Db.query(
+            `SELECT COUNT(*) AS offset FROM gladiators WHERE mmr > (SELECT MAX(mmr) FROM gladiators WHERE master = ?)`, 
+            [userId]
+        );
+
+        return { offset: result[0].offset }
+    }
+
+
+    static async getHighestMMRGladiator(userId) {
+        const userGladiators = await gladiator.getByMaster(userId);
+        
+        if (!userGladiators || userGladiators.length === 0) {
+            throw new CustomError(404, "No gladiators found for this user");
+        }
+        
+        let highestMMRGladiator = userGladiators.reduce((highest, current) => {
+            return (current.mmr > highest.mmr) ? current : highest;
+        }, userGladiators[0]);
+        
+        const offsetResult = await Db.query(
+            `SELECT COUNT(*) AS offset FROM gladiators WHERE mmr > ?`, 
+            [highestMMRGladiator.mmr]
         );
         
-        return {
-            "ranking": filtered,
-            "code": 200
+        const offset = offsetResult[0].offset;
+        
+        return { 
+            gladiator: highestMMRGladiator,
+            offset: offset,
+            position: offset + 1
         };
-    };
+    }
+    
 }
