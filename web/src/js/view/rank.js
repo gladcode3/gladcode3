@@ -83,7 +83,11 @@ async function rankAction() {
     const nextButton = document.querySelector('button.next-button');
     const rankSearch = document.querySelector('input.ranking-search'); // input type="search"
 
-    let { total, rankList } = await showRank({ limit: LIMIT, page, search }, USER_GLADS); 
+    let { total } = await showRank({
+        limit: LIMIT,
+        page,
+        search
+    }, USER_GLADS);
 
     const changePageCallback = async increment => {
         const newPage = page + increment;
@@ -91,7 +95,11 @@ async function rankAction() {
 
         page = newPage;
 
-        rankList = (await showRank({ limit: LIMIT, page, search }, USER_GLADS)).rankList;
+        await showRank({
+            limit: LIMIT,
+            page,
+            search
+        }, USER_GLADS);
 
         renderNewPage(newPage, { limit: LIMIT, total });
     }
@@ -107,10 +115,11 @@ async function rankAction() {
         if (search) page = 1;
         if (search === '') page = START_PAGE; 
 
-        const rank = await showRank({ limit: LIMIT, page, search }, USER_GLADS);
-
-        total = rank.total;
-        rankList = rank.rankList;
+        total = (await showRank({
+            limit: LIMIT,
+            page,
+            search
+        }, USER_GLADS)).total;
 
         renderNewPage(page, { limit: LIMIT, total });
     });
