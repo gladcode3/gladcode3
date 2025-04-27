@@ -24,6 +24,11 @@ class Users {
         return await this[kApi].get('users/user');
     }
 
+    static async getGladiators() {
+        this[kSetApiInstance]();
+        return await this[kApi].get('gladiators/master');
+    }
+
     static async getUserByName(name) {
         this[kSetApiInstance]();
         return await this[kApi].get(`users/${name}`);

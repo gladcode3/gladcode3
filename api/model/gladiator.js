@@ -37,7 +37,7 @@ export default class Gladiator {
     try {
       const gladiators = await db.find("gladiators", {
         filter: { name },
-        view: ['id', 'master', 'name', 'vstr', 'vagi', 'vint', 'lvl', 'xp', 'skin', 'mmr', 'version'],
+        view: ['code', 'master', 'name', 'vstr', 'vagi', 'vint', 'lvl', 'xp', 'skin', 'mmr', 'version'],
       });
 
       return gladiators;
@@ -70,19 +70,15 @@ export default class Gladiator {
   async getByMaster(master) {
     if (!master) throw new CustomError(400, "Master id is required");
 
-    try {
-      const gladiators = await db.find("gladiators", {
-        filter: { master: master },
-        view: ['id', 'master', 'name', 'vstr', 'vagi', 'vint', 'lvl', 'xp', 'skin', 'code', 'mmr', 'version'],
-      });
+    const gladiators = await db.find("gladiators", {
+      filter: { master: master },
+      view: ['cod', 'master', 'name', 'vstr', 'vagi', 'vint', 'lvl', 'xp', 'skin', 'mmr', 'version'],
+    });
 
-      return gladiators;
-    } catch (error) {
-      throw new CustomError(
-        error.code ?? 500,
-        error.message ?? "internal server error"
-      );
+    if(gladiators.length === 0 || !gladiators){
+      throw new CustomError(404, "No gladiators were found.");
     }
+    return gladiators;
   }
 
   // checar se o usuário possui mais de 6 gladiadores para impedir de criar um novo gladiador

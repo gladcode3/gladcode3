@@ -25,9 +25,7 @@ class GCUserInfos extends HTMLElement {
 
     connectedCallback() {
         addEventListener('user-updated', () => {
-            console.warn(`Dados antigos:`, this._userInfos);
             Session.shareSessionData(this);
-            console.warn(`Dados novos:`, this._userInfos);
             this.setup(this._userInfos);
         });
 
@@ -83,10 +81,14 @@ class GCUserInfos extends HTMLElement {
     setup({ profile_picture = null, nickname='USER', lvl=0, silver=0, xp=0 } = {}) {
         this._findElements();
 
-        if (profile_picture) {
-            const pictureURL = `https://gladcode.dev/${profile_picture}`
-            this._pictureElement.src = pictureURL;
+        let pictureURL = profile_picture || '';
+
+        if (profile_picture && !profile_picture?.startsWith('https')) {
+            // Caso a URL não esteja completa, joga ela para o domínio da GladCode V2.
+            pictureURL = `https://gladcode.dev/${profile_picture}`;
         }
+
+        this._pictureElement.src = pictureURL;
         
         this._nicknameElement.textContent = nickname;
         this._lvlElement.textContent = lvl;

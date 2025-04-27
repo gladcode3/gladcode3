@@ -36,9 +36,52 @@
 */
 
 class HTMLParser {
-    static parseAll(HTMLString) {
+    static _dangerousTags = ['script', 'iframe', 'object', 'embed', 'link', 'meta'];
+    static _dangerousAttrs = [/^on/i];
+
+    static _verifyNodeSecurity(node, placeholders=[], templateValues=[]) {
+        if (node.nodeType === Node.TEXT_NODE) {
+            placeholders.forEach((ph, i) => {
+                if (!node.textContent.includes(ph)) return;
+
+                node.textContent = node.textContent.replace(ph, templateValues[i]);
+            });
+
+            return;
+        }
+
+        if (node.nodeType !== Node.ELEMENT_NODE) return;
+
+        for (const { name, value } of node.attributes) {
+            const attrName = name.toLowerCase();
+            const attrValue = value.trim().toLowerCase();
+
+            if (attrName.startsWith('on'))
+            throw new Error(`Unsafe attribute detected: ${name}`);
+
+            if (attrValue.startsWith('javascript:'))
+            throw new Error(`Unsafe attribute value detected in ${name}: ${value}`);
+        }
+
+        node.childNodes.forEach(e => {
+            this._verifyNodeSecurity(e, placeholders, templateValues);
+        });
+    }
+
+    static parseAll(HTMLString=``, templateValues = []) {
+        const placeholders = [];
+
+        let safeHTML = HTMLString;
+
+        templateValues.forEach((_, i) => {
+            const placeholderToken = `__PLACEHOLDER_${i}__`;
+            placeholders.push(placeholderToken);
+
+            safeHTML = safeHTML.replace('?', placeholderToken);
+        });
+
         const parser = new DOMParser();
-        const parsedDoc = parser.parseFromString(HTMLString, 'text/html');
+        const parsedDoc = parser.parseFromString(safeHTML, 'text/html');
         
         const parseError = parsedDoc.querySelector('parsererror');
         
@@ -46,6 +89,18 @@ class HTMLParser {
             console.error('HTMLString is invalid');
             throw new Error('HTMLString is invalid');
         }
+        
+        
+        this._dangerousTags.forEach(tag => {
+            if (!parsedDoc.querySelector(tag)) return;
+            throw new Error(`Unsafe HTML tag detected: <${tag}>`);
+        });
+
+        parsedDoc.body.childNodes.forEach(e => {
+            this._verifyNodeSecurity(e, placeholders, templateValues);
+        });
+
+        //
         
         const parseFragment = document.createDocumentFragment();
         const appendChildCallback = node => parseFragment.appendChild(node);
