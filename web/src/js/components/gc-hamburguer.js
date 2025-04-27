@@ -162,8 +162,8 @@ class GCHamburguer extends HTMLElement {
         const loginBtn = this._target?.querySelector?.('.login-button') ?? null;
         const logoutBtn = this._target?.querySelector?.('.logout-button') ?? null;
 
-        loginBtn.removeEventListener('click', Session.userLogin);
-        logoutBtn.removeEventListener('click', Session.userLogout);
+        loginBtn?.removeEventListener('click', Session.userLogin);
+        logoutBtn?.removeEventListener('click', Session.userLogout);
 
         if (!this._userLogged && loginBtn) {
             loginBtn.addEventListener('click', Session.userLogin);
