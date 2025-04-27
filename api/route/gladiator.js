@@ -1,5 +1,6 @@
 import express from "express";
 import Gladiator from "../model/gladiator.js";
+import Auth from '../middleware/auth.js';
 const router = express.Router();
 
 const gladiator = new Gladiator({});
@@ -29,19 +30,21 @@ router.get("/cod/:cod", async (request, reply) => {
   reply.json(result);
 });
 
-router.get("/master/:master", async (request, reply) => {
-  const { master } = request.params;
-  const result = await gladiator.getByMaster(master);
+router.get("/master", async (req, res, next) => {
+  try {
+    await Auth.check(req);
+    const check = req.check;
 
-  if (!result) {
-    reply.status(404).json({ error: "User not found" });
-    return;
+    if (!check.user) throw check;
+    const query = await gladiator.getByMaster(check.user.id);
+    
+    res.status(200).json(query);
+
+  } catch (error) {
+    next(error);
   }
-
-  reply.json(result);
 });
 
-// rota teste, depois vou deletar e só usar a função checkGladiatorsNumberByMaster
 router.get("/master/:master/count", async (request, reply) => {
   const { master } = request.params;
   const result = await gladiator.checkGladiatorsNumberByMaster(master);
@@ -53,5 +56,6 @@ router.get("/master/:master/count", async (request, reply) => {
 
   reply.json(result);
 });
+
 
 export default router;

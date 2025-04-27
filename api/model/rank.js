@@ -1,10 +1,14 @@
 import Db from "../core/mysql.js";
 import CustomError from "../core/error.js";
 
+import Gladiator from "./gladiator.js";
+
+const gladiator = new Gladiator({});
+
 export default class Rank {
 
-    static async get({ offset, search }){
-
+    static async get(page, search, limit ){
+        console.log(page, search, limit)
         let filter = {};
 
         if (search) {
@@ -21,14 +25,13 @@ export default class Rank {
 
         const total = countQuery[0].total;
 
-        let limit = 10;
-        if(offset === undefined) {
-            offset = 0;
+        if(page === undefined || page < 1){
+            page = 1;
+        }
+        if(limit === undefined || limit > 30 || limit < 1) {
             limit = 30;
         }
-        if(offset < 0){
-            offset = 0;
-        }
+        const offset = (page*limit)-limit;
 
         const rawRankingData = `
             SELECT
@@ -247,4 +250,31 @@ export default class Rank {
 
         return { offset: result[0].offset }
     }
+
+
+    static async getHighestMMRGladiator(userId) {
+        const userGladiators = await gladiator.getByMaster(userId);
+        
+        if (!userGladiators || userGladiators.length === 0) {
+            throw new CustomError(404, "No gladiators found for this user");
+        }
+        
+        let highestMMRGladiator = userGladiators.reduce((highest, current) => {
+            return (current.mmr > highest.mmr) ? current : highest;
+        }, userGladiators[0]);
+        
+        const offsetResult = await Db.query(
+            `SELECT COUNT(*) AS offset FROM gladiators WHERE mmr > ?`, 
+            [highestMMRGladiator.mmr]
+        );
+        
+        const offset = offsetResult[0].offset;
+        
+        return { 
+            gladiator: highestMMRGladiator,
+            offset: offset,
+            position: offset + 1
+        };
+    }
+    
 }
