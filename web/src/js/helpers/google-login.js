@@ -17,27 +17,19 @@ import Pledge from './pledge.js';
 import LocalData from './local-data.js';
 import JWTDecode from './jwt-decode.js';
 
-// Symbol é usado como uma "chave de acesso" a propriedades e métodos privados.
-const kLogged = Symbol('kLogged');
-const kLoaded = Symbol('kLoaded');
-const kStorageKey = Symbol('kStorageKey');
-const kOnFailCallback = Symbol('kOnFailCallback');
-const kOnSignInCallback = Symbol('kOnSignInCallback');
-const kGenerateInitConfig = Symbol('kGenerateInitConfig');
-
 export default class GoogleLogin {
-    static [kLogged] = false;
-    static [kLoaded] = false;
-    static [kStorageKey] = 'user-session';
-    static [kOnFailCallback] = null;
-    static [kOnSignInCallback] = null;
+    static _logged = false;
+    static _loaded = false;
+    static _storageKey = 'user-session';
+    static _onFailCallback = null;
+    static _onSignInCallback = null;
 
-    static [kGenerateInitConfig](auto, redirectUri, callback = _res => {}) {        
+    static _generateInitConfig(auto, redirectUri, callback = _res => {}) {        
         const initConfig = {
             client_id: TemplateVar.get('googleClientId'),
             callback,
             auto_select: auto,
-        }
+        };
 
         if (redirectUri) {
             initConfig.ux_mode = 'redirect';
@@ -47,25 +39,25 @@ export default class GoogleLogin {
         return initConfig;
     }
 
-    static async init({ redirectUri, auto=true } = {}) {
-        if (this[kLoaded]) return GoogleLogin;
+    static async init({ redirectUri, auto = true } = {}) {
+        if (this._loaded) return GoogleLogin;
 
         const pledge = new Pledge();
 
         new DynamicScript('https://accounts.google.com/gsi/client', () => {            
             const handleCredentialResponse = async response => {
-                this[kLogged] = true;
+                this._logged = true;
                 GoogleLogin.saveCredential(response.credential);
-            }
+            };
 
-            const initConfig = this[kGenerateInitConfig](
+            const initConfig = this._generateInitConfig(
                 auto,
                 redirectUri,
                 handleCredentialResponse
             );
             google.accounts.id.initialize(initConfig);
 
-            this[kLoaded] = true;
+            this._loaded = true;
             pledge.resolve(GoogleLogin);
         });
 
@@ -73,30 +65,29 @@ export default class GoogleLogin {
     }
 
     static isLoaded() {
-        return this[kLoaded];
+        return this._loaded;
     }
 
     static renderButton(element) {
-        if (!this[kLoaded]) {
+        if (!this._loaded) {
             throw new Error('GoogleLogin not loaded');
         }
-        // You can skip the next instruction if you don't want to show the "Sign-in" button
         google.accounts.id.renderButton(
-            element, // Ensure the element exist and it is a div to display correcctly
-            { theme: "outline", size: "large" }  // Customization attributes
+            element,
+            { theme: "outline", size: "large" }
         );
     }
 
     static async prompt() {
-        if (!this[kLoaded]) {
+        if (!this._loaded) {
             throw new Error('GoogleLogin not loaded');
         }
         
         google.accounts.id.prompt(notification => {
             if (!notification.isNotDisplayed()) return;
 
-            if (this[kOnFailCallback]) {
-                this[kOnFailCallback](notification);
+            if (this._onFailCallback) {
+                this._onFailCallback(notification);
             }
         });
 
@@ -106,7 +97,7 @@ export default class GoogleLogin {
     static async waitLogged() {
         const pledge = new Pledge();
         let interval = setInterval(() => {
-            if (this[kLogged]) {
+            if (this._logged) {
                 clearInterval(interval);
                 pledge.resolve();
             }
@@ -115,14 +106,13 @@ export default class GoogleLogin {
     }
 
     static onFail(callback) {
-        this[kOnFailCallback] = callback;
+        this._onFailCallback = callback;
         return this;
     }
 
     static tokenIsExpired() {
         const jwt = this.getCredential();
 
-        // Tokens não existentes ou com algum erro não são considerados expirados.
         if (!jwt) return false;
         if (!jwt.token) return false;
 
@@ -133,24 +123,24 @@ export default class GoogleLogin {
     }
 
     static saveCredential(credential) {
-        new LocalData({ id: this[kStorageKey] })
+        new LocalData({ id: this._storageKey })
             .set({ data: { token: credential } });
         
-        if (this[kOnSignInCallback]) {
-            this[kOnSignInCallback](credential);
+        if (this._onSignInCallback) {
+            this._onSignInCallback(credential);
         }
     }
 
     static getCredential() {
-        return new LocalData({ id: this[kStorageKey] }).get();
+        return new LocalData({ id: this._storageKey }).get();
     }
 
     static removeCredential() {
-        new LocalData({ id: this[kStorageKey] }).remove();
+        new LocalData({ id: this._storageKey }).remove();
     }
 
     static onSignIn(callback) {
-        this[kOnSignInCallback] = callback;
+        this._onSignInCallback = callback;
         return this;
     }
 }

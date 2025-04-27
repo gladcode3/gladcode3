@@ -1,4 +1,4 @@
-import wait from './timeout.js';
+import asyncTimeout from './async-timeout.js';
 
 class Debounce {
     constructor(callback = () => {}, delayMS) {
@@ -12,7 +12,7 @@ class Debounce {
         return async (...args) => {
             if (waiting) waiting.cancel();
         
-            waiting = wait(this._delay);
+            waiting = asyncTimeout(this._delay);
         
             try {
                 await waiting;

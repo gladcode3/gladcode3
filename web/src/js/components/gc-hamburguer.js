@@ -1,5 +1,5 @@
 import HTMLParser from "../helpers/html-parser.js";
-import timeout from "../helpers/timeout.js";
+import asyncTimeout from "../helpers/async-timeout.js";
 import Session from "../model/session.js";
 
 import stylesRaw from '../../less/components/_hamburguer.less?raw';
@@ -39,7 +39,7 @@ class GCHamburguer extends HTMLElement {
 
         // Sim, é acho meio gambiárrico usar uma promise de espera para dar tempo de renderizar todo o documento.
         // Essa foi uma solução rápida que encontrei e que deve ser corrigida no futuro.
-        await timeout(250);
+        await asyncTimeout(250);
 
         this._setAttributes();
         this.build();
