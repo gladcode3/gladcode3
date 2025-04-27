@@ -118,9 +118,12 @@ class GCHamburguer extends HTMLElement {
 
     get _targetHTML() {
         const nickname = this._userInfos && (this._userInfos?.nickname || 'User');
-        const picture = this._userInfos
-            ? this._userInfos?.profile_picture
-            : './img/profile-photo-support.jpg';
+        let picture = this._userInfos ? this._userInfos?.profile_picture : '';
+
+        if (picture && !picture.startsWith('https')) {
+            // Caso a URL não esteja completa, joga ela para o domínio da GladCode V2.
+            picture = `https://gladcode.dev/${picture}`;
+        }
 
         return HTMLParser.parseAll(`
             <section class='menu-ui-container__user-session'>
@@ -129,7 +132,7 @@ class GCHamburguer extends HTMLElement {
                         <div class='user-session__user'>
                             <a class="user__user-settings" href="#" role="button" aria-label="configurações do usuário">
                                 <div class='user-settings__picture'>
-                                    <img src="https://gladcode.dev/${picture}" alt="">
+                                    <img src="${picture}" alt="">
                                 </div>
 
                                 <span class='user-settings__username'>${nickname}</span>
