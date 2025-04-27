@@ -50,9 +50,12 @@ class GCHeader extends HTMLElement {
     }
 
     get _html() {
-        const picture = this._userInfos
-            ? this._userInfos?.profile_picture
-            : './img/profile-photo-support.jpg';
+        let picture = this._userInfos ? this._userInfos?.profile_picture : '';
+
+        if (picture && !picture.startsWith('https')) {
+            // Caso a URL não esteja completa, joga ela para o domínio da GladCode V2.
+            picture = `https://gladcode.dev/${picture}`;
+        }
 
         return HTMLParser.parseAll(`
             <div class="header-ui-container">
@@ -77,7 +80,7 @@ class GCHeader extends HTMLElement {
                     ${this._userLogged
                         ? `
                             <a class='main-container__user-settings' href="#" role="button" aria-label="configurações do usuário">
-                                <img src="https://gladcode.dev/${picture}" alt="">
+                                <img src="${picture}" alt="">
                             </a>
                         `
                         : ''

@@ -8,7 +8,6 @@ const gladiator = new Gladiator({});
 export default class Rank {
 
     static async get(page, search, limit ){
-        console.log(page, search, limit)
         let filter = {};
 
         if (search) {
@@ -36,6 +35,7 @@ export default class Rank {
         const rawRankingData = `
             SELECT
             g.name,
+            g.cod,
             g.mmr,
             u.nickname,
             (
@@ -62,6 +62,7 @@ export default class Rank {
 
         const ranking = rankingData.map(row => ({
             glad: row.name,
+            cod: row.cod,
             mmr: row.mmr,
             master: row.nickname,
             change24: row.sumreward || 0,
