@@ -1,3 +1,4 @@
+import wait from "../helpers/timeout.js";
 import Rank from "../model/rank.js";
 import Users from "../model/users.js";
 
@@ -6,7 +7,22 @@ import Users from "../model/users.js";
 // Melhorias:
 // - Adicionar um algoritmo de debounce para evitar multiplas requisições para usuários que digitam rapido
 
-function renderRank(rank = [], userGladsIds=[]) {
+function debounce(callback = () => {}, delay) {
+    let waiting = null;
+
+    return async (...args) => {
+        if (waiting) waiting.cancel();
+
+        waiting = wait(delay);
+
+        try {
+            await waiting;
+            callback(...args);
+        } catch (e) {}
+    };
+}
+
+function renderRank(rank = [], userGladsIds = []) {
     const rankingTable = document.querySelector('table#ranking > tbody');
     rankingTable.innerHTML = '';
 
@@ -22,12 +38,12 @@ function renderRank(rank = [], userGladsIds=[]) {
             <td class="glad-master">${master}</td>
             <td class="glad-mmr">${parseInt(renown)}</td>
         `;
-        
+
         rankingTable.appendChild(tableRow);
     });
 }
 
-async function showRank({ limit, page, search }, userGladsIds=[]) {
+async function showRank({ limit, page, search }, userGladsIds = []) {
     const { total, ranking: rankList } = await Rank.get({ limit, page, search });
     renderRank(rankList, userGladsIds);
 
@@ -107,13 +123,15 @@ async function rankAction() {
     prevButton.addEventListener('click', async () => await changePageCallback(-1));
     nextButton.addEventListener('click', async () => await changePageCallback(+1));
 
-    rankSearch.addEventListener('input', async e => {
+    rankSearch.addEventListener('input', debounce(async e => {
         e.preventDefault();
+
+        console.log('request...');
 
         search = rankSearch.value;
 
         if (search) page = 1;
-        if (search === '') page = START_PAGE; 
+        if (search === '') page = START_PAGE;
 
         total = (await showRank({
             limit: LIMIT,
@@ -122,7 +140,7 @@ async function rankAction() {
         }, USER_GLADS)).total;
 
         renderNewPage(page, { limit: LIMIT, total });
-    });
+    }, 500));
 }
 
 export default rankAction;
