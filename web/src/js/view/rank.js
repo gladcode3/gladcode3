@@ -1,35 +1,15 @@
-import wait from "../helpers/timeout.js";
+import Debounce from "../helpers/debounce.js";
 import Rank from "../model/rank.js";
-import Users from "../model/users.js";
 
-// RANKING PROTOTYPE:
 
-// Melhorias:
-// - Adicionar um algoritmo de debounce para evitar multiplas requisições para usuários que digitam rapido
-
-function debounce(callback = () => {}, delay) {
-    let waiting = null;
-
-    return async (...args) => {
-        if (waiting) waiting.cancel();
-
-        waiting = wait(delay);
-
-        try {
-            await waiting;
-            callback(...args);
-        } catch (e) {}
-    };
-}
-
-function renderRank(rank = [], userGladsIds = []) {
+function renderRank(rank = []) {
     const rankingTable = document.querySelector('table#ranking > tbody');
     rankingTable.innerHTML = '';
 
-    rank.forEach(({ cod: gladId, position, glad: gladName, master, mmr: renown }) => {
+    rank.forEach(async ({ cod: gladId, position, glad: gladName, master, mmr: renown }) => {
         const tableRow = document.createElement('tr');
 
-        if (userGladsIds.includes(gladId))
+        if ((await Rank.USER_GLADS_IDS).includes(gladId))
             tableRow.classList.add('my-glad');
 
         tableRow.innerHTML = `
@@ -43,33 +23,23 @@ function renderRank(rank = [], userGladsIds = []) {
     });
 }
 
-async function showRank({ limit, page, search }, userGladsIds = []) {
-    const { total, ranking: rankList } = await Rank.get({ limit, page, search });
-    renderRank(rankList, userGladsIds);
+async function showRank({ page, search }) {
+    const { total, ranking: rankList } = await Rank.get({ page, search });
+    renderRank(rankList);
 
-    const [start, end] = getRankPageInterval(limit, page);
+    const [start, end] = Rank.getPageInterval({ page });
 
     const pageLabel = document.querySelector('.page-label');
-    pageLabel.innerHTML = `<span>${start}</span> - <span>${end > total ? total : end}</span> de <span>${total}</span>`;
+    pageLabel.innerHTML = `
+        <span>${start}</span>
+         - <span>${end > total ? total : end}</span>
+         de <span>${total}</span>
+    `;
 
     return { total, rankList };
 }
 
-function getRankPageInterval(limit, page) {
-    const start = (limit * (page - 1)) + 1;
-    const end = limit * page;
-
-    return [start, end];
-}
-
-async function getBestGladPage(limit) {
-    const { position = 1 } = await Rank.getBestGlad() || {};
-    const page = Math.ceil(position / limit);
-
-    return page || 1;
-}
-
-function renderNewPage(newPage, { limit, total }) {
+function renderNewPage(newPage, { total }) {
     const prevButton = document.querySelector('button.back-button');
     const nextButton = document.querySelector('button.next-button');
 
@@ -80,19 +50,13 @@ function renderNewPage(newPage, { limit, total }) {
         prevButton.setAttribute('disabled', true);
     }
 
-    if ((newPage * limit) >= total) {
+    if ((newPage * Rank.LIMIT) >= total) {
         nextButton.setAttribute('disabled', true);
     }
 }
 
 async function rankAction() {
-    // Cria uma lista com os IDs de todos os gladiadores do usuário
-    const USER_GLADS = (await Users.getGladiators()).map(glad => glad.cod);
-
-    const LIMIT = 10;
-    const START_PAGE = await getBestGladPage(LIMIT) || 1;
-
-    let page = START_PAGE;
+    let page = await Rank.START_PAGE || 1;
     let search = '';
 
     const prevButton = document.querySelector('button.back-button');
@@ -100,47 +64,42 @@ async function rankAction() {
     const rankSearch = document.querySelector('input.ranking-search'); // input type="search"
 
     let { total } = await showRank({
-        limit: LIMIT,
         page,
         search
-    }, USER_GLADS);
+    });
 
-    const changePageCallback = async increment => {
+    const changePage = async increment => {
         const newPage = page + increment;
         if (newPage < 1) return;
 
         page = newPage;
 
         await showRank({
-            limit: LIMIT,
             page,
             search
-        }, USER_GLADS);
+        });
 
-        renderNewPage(newPage, { limit: LIMIT, total });
+        renderNewPage(newPage, { total });
     }
 
-    prevButton.addEventListener('click', async () => await changePageCallback(-1));
-    nextButton.addEventListener('click', async () => await changePageCallback(+1));
+    prevButton.addEventListener('click', async () => await changePage(-1));
+    nextButton.addEventListener('click', async () => await changePage(+1));
 
-    rankSearch.addEventListener('input', debounce(async e => {
+    rankSearch.addEventListener('input', new Debounce(async e => {
         e.preventDefault();
-
-        console.log('request...');
 
         search = rankSearch.value;
 
         if (search) page = 1;
-        if (search === '') page = START_PAGE;
+        if (search === '') page = await Rank.START_PAGE;
 
         total = (await showRank({
-            limit: LIMIT,
             page,
             search
-        }, USER_GLADS)).total;
+        })).total;
 
-        renderNewPage(page, { limit: LIMIT, total });
-    }, 500));
+        renderNewPage(page, { total });
+    }, 500).getCallback());
 }
 
 export default rankAction;
