@@ -4,7 +4,6 @@ import Rank from "../model/rank.js";
 
 // Melhorias:
 // - Adicionar highlight nos gladiadores do usuário
-// - Desabilitar botões ao atingir o limite de páginas
 // - Adicionar um algoritmo de debounce para evitar multiplas requisições para usuários que digitam rapido
 
 function renderRank(rank = []) {
@@ -52,6 +51,22 @@ async function getBestGladPage(limit) {
     return page || 1;
 }
 
+function renderNewPage(newPage, { limit, total }) {
+    const prevButton = document.querySelector('button.back-button');
+    const nextButton = document.querySelector('button.next-button');
+
+    prevButton.removeAttribute('disabled');
+    nextButton.removeAttribute('disabled');
+
+    if (newPage === 1) {
+        prevButton.setAttribute('disabled', true);
+    }
+
+    if ((newPage * limit) >= total) {
+        nextButton.setAttribute('disabled', true);
+    }
+}
+
 async function rankAction() {
     const LIMIT = 10;
     const START_PAGE = await getBestGladPage(LIMIT) || 1;
@@ -67,12 +82,13 @@ async function rankAction() {
 
     const changePageCallback = async increment => {
         const newPage = page + increment;
+        if (newPage < 1) return;
 
-        const [,newPageEnd] = getRankPageInterval(LIMIT, newPage);
-
-        if (newPage >= 1 && newPageEnd < total && rankList.length > 0) page = newPage;
+        page = newPage;
 
         rankList = (await showRank({ limit: LIMIT, page, search })).rankList;
+
+        renderNewPage(newPage, { limit: LIMIT, total });
     }
 
     prevButton.addEventListener('click', async () => await changePageCallback(-1));
@@ -90,6 +106,8 @@ async function rankAction() {
 
         total = rank.total;
         rankList = rank.rankList;
+
+        renderNewPage(page, { limit: LIMIT, total });
     });
 }
 
