@@ -1,0 +1,73 @@
+// Prototype:
+
+#glads-container {
+    section#glad-cards {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+        padding: 0 4rem;
+        gap: 4rem;
+    
+        .card {
+            width: 28%;
+            max-width: 16rem;
+            padding: 2rem;
+            border: 2px solid black;
+            border-radius: 5px;
+        
+            &.card--locked {
+                text-align: center;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                background-color: rgb(255, 59, 59);
+                color: white;
+                cursor: not-allowed;
+            }
+            
+            &.card--unlocked {
+                text-align: center;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                background-color: rgb(121, 255, 121);
+                color: black;
+                cursor: pointer;
+            }
+            
+            &.card--glad {
+                background-color: @primary-color;
+                display: flex;
+                flex-direction: column;
+
+                * {
+                    color: white;
+                }
+
+                .delete-button-container {
+                    display: flex;
+                    justify-content: end;
+                }
+
+                .glad-image {
+                    margin: 1rem 0;
+                    background: white;
+                }
+
+                .info {
+                    display: flex;
+                    flex-direction: column;
+                    
+                    .row.attr {
+                        display: flex;
+                        flex-direction: row;
+                        justify-content: space-between;
+                    }
+                }
+            }
+        }
+    }
+}    
