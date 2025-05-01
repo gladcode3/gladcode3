@@ -1,6 +1,7 @@
 import Session from './model/Session.js';
 import newsAction from './view/news.js';
 import rankAction from './view/rank.js';
+import gladsAction from './view/glads.js';
 
 import './components/LoaderMenu.js'
 import './components/GCHeader.js';
@@ -27,7 +28,7 @@ loaderMenu.setup({
             path: '../panels/news.html', action: newsAction },
         {
             id: 'glads', label: 'gladiadores', faIcon: 'fa-street-view',
-            path: '../panels/glads.html', action: () => console.log('glads')
+            path: '../panels/glads.html', action: gladsAction
         },
         {
             id: 'battle', label: 'batalha', faIcon: 'fa-shield-halved',
