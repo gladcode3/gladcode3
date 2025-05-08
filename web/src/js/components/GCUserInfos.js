@@ -24,7 +24,7 @@ class GCUserInfos extends HTMLElement {
     // Inherited
 
     connectedCallback() {
-        addEventListener('user-updated', () => {
+        addEventListener(Users.USER_UPDATED_EVENT, () => {
             Session.shareSessionData(this);
             this.setup(this._userInfos);
         });

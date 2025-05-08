@@ -3,6 +3,8 @@ import LocalData from "../helpers/LocalData.js";
 
 
 class Users {
+    static USER_UPDATED_EVENT = 'user-updated';
+
     static _storageKey = 'user-infos';
     static _api = null;
 
@@ -73,7 +75,7 @@ class Users {
 
         await this.saveLocalUserData();
         
-        dispatchEvent(new CustomEvent('user-updated'));
+        dispatchEvent(new CustomEvent(this.USER_UPDATED_EVENT));
     }
 
     // Local user data methods

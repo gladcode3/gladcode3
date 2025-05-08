@@ -5,6 +5,7 @@ import './GCNavBar.js';
 import './GCHamburguer.js'
 
 import stylesRaw from '../../less/components/_header.less?raw';
+import Users from '../model/Users.js';
 
 
 // <gc-header></gc-header>
@@ -25,7 +26,7 @@ class GCHeader extends HTMLElement {
 
     connectedCallback() {
         // Compartilha as informações da sessão com a instância e observa modificações
-        addEventListener('user-updated', () => {
+        addEventListener(Users.USER_UPDATED_EVENT, () => {
             Session.shareSessionData(this);
         });
 

@@ -3,6 +3,7 @@ import asyncTimeout from "../helpers/asyncTimeout.js";
 import Session from "../model/Session.js";
 
 import stylesRaw from '../../less/components/_hamburguer.less?raw';
+import Users from "../model/Users.js";
 
 
 // <gc-hamburguer target=''></gc-hamburguer>
@@ -35,7 +36,7 @@ class GCHamburguer extends HTMLElement {
 
     async connectedCallback() {
         Session.shareSessionData(this);
-        addEventListener('user-updated', GCHamburguer._onUserUpdated);
+        addEventListener(Users.USER_UPDATED_EVENT, GCHamburguer._onUserUpdated);
 
         // Sim, é acho meio gambiárrico usar uma promise de espera para dar tempo de renderizar todo o documento.
         // Essa foi uma solução rápida que encontrei e que deve ser corrigida no futuro.
@@ -46,7 +47,7 @@ class GCHamburguer extends HTMLElement {
     }
 
     async disconnectedCallback() {
-        removeEventListener('user-updated', GCHamburguer._onUserUpdated);
+        removeEventListener(Users.USER_UPDATED_EVENT, GCHamburguer._onUserUpdated);
     }
 
     attributeChangedCallback(name) {
