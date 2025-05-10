@@ -20,6 +20,22 @@ class HamburguerMenu extends HTMLElement {
     }
 
     async connectedCallback() {
+        await this.waitDOMToLoad();
+
+        try {
+            this.build();
+            this._setAttributes();
+
+            // Alvo fica escondido por padrão.
+            this._hideTarget();
+
+            this.addEventListener('click', this.toggle);
+        } catch (e) {
+            throw new Error('failed to create menu', e);
+        }
+    }
+
+    async waitDOMToLoad() {
         if (document.readyState === 'loading') {
             await new Promise(resolve => {
                 document.addEventListener('DOMContentLoaded', resolve, { once: true });
@@ -27,18 +43,6 @@ class HamburguerMenu extends HTMLElement {
         }
 
         await asyncTimeout(50);
-
-        try {
-            this.build();
-            this._setAttributes();
-
-            this._hideTarget();
-
-            this.addEventListener('click', this.toggle);
-        } catch (e) {
-            console.error('Falha ao criar menu:', e);
-            throw new Error('Falha ao criar menu', e);
-        }
     }
 
     build() {
@@ -51,24 +55,18 @@ class HamburguerMenu extends HTMLElement {
     }
 
     attributeChangedCallback(name) {
-        if (name !== 'target' && name !== 'ignoreContext') return;
+        if (!HamburguerMenu.observedAttributes.includes(name)) return;
 
         try {
             const targetElement = this.target;
-            if (targetElement) {
-                this.setAttribute('aria-controls', targetElement.id);
+            if (!targetElement) return;
 
-                if (this.isConnected) {
-                    if (this.open) {
-                        this._showTarget();
-                    } else {
-                        this._hideTarget();
-                    }
-                }
-            }
+            this.setAttribute('aria-controls', targetElement.id);
+
+            if (this.isConnected && this.open) this._showTarget();
+            if (this.isConnected && !this.open) this._hideTarget();
         } catch (e) {
-            console.error('Falha ao mudar target:', e);
-            throw new Error('Falha ao mudar target', e);
+            throw new Error('failed to change target', e);
         }
     }
 
@@ -104,7 +102,7 @@ class HamburguerMenu extends HTMLElement {
             targetElement.classList.remove('hidden');
             targetElement.style.display = '';
         } catch (e) {
-            console.error('Erro ao mostrar target:', e);
+            throw new Error('error to show target', e);
         }
     }
 
@@ -116,95 +114,73 @@ class HamburguerMenu extends HTMLElement {
             targetElement.classList.add('hidden');
             targetElement.style.display = 'none';
         } catch (e) {
-            console.error('Erro ao esconder target:', e);
+            throw new Error('error to hide target', e);
         }
     }
 
     toggle() {
         this.open = !this.open;
 
-        if (this.open) {
-            this._showTarget();
-        } else {
-            this._hideTarget();
-        }
+        if (this.open) this._showTarget();
+        if (!this.open) this._hideTarget();
 
         this._renderMenu();
     }
 
     get iconSpan() {
         const icon = this.shadowRoot.getElementById('hamburguer-icon');
-        if (!icon) throw new Error('#hamburguer-icon não encontrado');
+        if (!icon) throw new Error('"span#hamburguer-icon" not found');
 
         return icon;
     }
 
-    /**
-     * Encontra o elemento root adequado com base no contexto
-     * @returns {Element|ShadowRoot|Document} Elemento root para buscar o target
-     */
     _findRoot() {
-        // Se não deve ignorar o contexto, usar o elemento pai mais próximo
-        if (!this.hasAttribute('ignoreContext')) {
-            // Verificar se estamos dentro de um componente (ShadowDOM)
-            let parent = this.parentNode;
+        if (this.hasAttribute('ignoreContext')) return null;
+
+        let parent = this.parentNode;
+
+        if (parent instanceof ShadowRoot) return parent;
             
-            // Se estivermos dentro de um shadowRoot, use-o como contexto
-            if (parent instanceof ShadowRoot) {
-                return parent;
-            }
-            
-            // Buscar até encontrar um host de shadowRoot (se existir algum)
-            while (parent && !(parent instanceof ShadowRoot) && parent.parentNode) {
-                parent = parent.parentNode;
-            }
-            
-            // Se encontramos um shadowRoot, use-o como contexto
-            if (parent instanceof ShadowRoot) {
-                return parent;
-            }
-            
-            // Caso contrário, use o documento normal
-            return document;
-        } else {
-            // Se deve ignorar o contexto, retornamos null para fazer busca especial
-            return null;
+        // Repete ate não haver mais pais ou até encontrar um pai que seja ShadowRoot
+        while (true) {
+            if (!parent) break;
+            if (!parent.parentNode) break;
+            if (parent instanceof ShadowRoot) break;
+
+            parent = parent.parentNode;
         }
+            
+        if (parent instanceof ShadowRoot) return parent;
+
+        return document;
     }
 
-    /**
-     * Busca um elemento pelo ID atravessando ShadowDOMs quando ignoreContext é true
-     * @param {string} id - ID do elemento a ser encontrado
-     * @returns {Element|null} - Elemento encontrado ou null
-     */
+    // Busca um elemento por ID atravessando ShadowDOMs quando ignoreContext é true
     _findElementAcrossShadows(id) {
-        // Primeiro tenta no documento principal
+        if (!this.hasAttribute('ignoreContext')) return null;
+
         let element = document.getElementById(id);
         if (element) return element;
         
-        // Função recursiva para buscar em todos os shadow roots
-        const searchInShadows = (root) => {
+        const searchInShadows = root => {
             if (!root) return null;
             
-            // Verificar no shadow root atual
             const element = root.getElementById(id);
             if (element) return element;
             
-            // Buscar em todos os elementos com shadow root
-            const elementsWithShadow = Array.from(root.querySelectorAll('*'))
-                .filter(el => el.shadowRoot);
+            const childsWithShadow = Array.from(root.querySelectorAll('*'))
+                .filter(child => child.shadowRoot);
             
-            for (const el of elementsWithShadow) {
-                const found = searchInShadows(el.shadowRoot);
+            for (const child of childsWithShadow) {
+                const found = searchInShadows(child.shadowRoot);
                 if (found) return found;
             }
             
             return null;
         };
         
-        // Buscar em todos os shadow roots no documento
         const allShadowHosts = Array.from(document.querySelectorAll('*'))
-            .filter(el => el.shadowRoot);
+            .filter(element => element.shadowRoot);
         
         for (const host of allShadowHosts) {
             const found = searchInShadows(host.shadowRoot);
@@ -216,24 +192,24 @@ class HamburguerMenu extends HTMLElement {
 
     get target() {
         const targetId = this.getAttribute('target');
+
         if (!targetId) {
-            console.warn('HamburguerMenu: Atributo "target" não definido');
+            console.warn('"target" attribute is not defined');
             return null;
         }
 
         let targetElement = null;
         
-        if (this.hasAttribute('ignoreContext')) {
-            // Modo de busca que atravessa ShadowDOMs
-            targetElement = this._findElementAcrossShadows(targetId);
-        } else {
-            // Busca baseada no contexto apropriado
-            const root = this._findRoot();
-            targetElement = root.getElementById(targetId);
-        }
+        const findTargetMap = {
+            'true': () => this._findElementAcrossShadows(targetId),
+            'false': () => this._findRoot().getElementById(targetId)
+        };
+
+        const key = this.hasAttribute('ignoreContext') ? 'true' : 'false';
+        targetElement = findTargetMap[key]();
 
         if (!targetElement) {
-            console.warn(`Target com ID "${targetId}" não encontrado no contexto`);
+            console.warn(`no target with id ${targetId} was found`);
             return null;
         }
 
