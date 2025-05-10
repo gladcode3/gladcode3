@@ -1,12 +1,11 @@
 import HTMLParser from '../helpers/HTMLParser.js';
 import Session from '../model/Session.js';
-
-import './GCNavBar.js';
-import './GCHamburguer.js'
-
-import stylesRaw from '../../less/components/_header.less?raw';
 import Users from '../model/Users.js';
 
+import './GCNavBar.js';
+import './HamburguerMenu.js';
+
+import stylesRaw from '../../less/components/_header.less?raw';
 
 // <gc-header></gc-header>
 
@@ -88,13 +87,42 @@ class GCHeader extends HTMLElement {
                     }
                 </div>
 
-                <gc-hamburguer
+                <hamburguer-menu
                     target='hamburguer-menu'
                     class="header-ui-container__hamburguer-menu"
-                ></gc-hamburguer>
+                ></hamburguer-menu>
             </div>
 
-            <article id='hamburguer-menu' class='menu-ui-container'></article>
+            <article id='hamburguer-menu' class='menu-ui-container'>
+                <section class='menu-ui-container__user-session'>
+                    ${this._userLogged
+                        ? `
+                            <div class='user-session__user'>
+                                <a class="user__user-settings" href="#" role="button" aria-label="configurações do usuário">
+                                    <div class='user-settings__picture'>
+                                        <img src="${picture}" alt="">
+                                    </div>
+
+                                    <span class='user-settings__username'>NICKNAME</span>
+                                </a>
+                            </div>
+
+                            <button class="user-session__logout-btn logout-button" title="Encerrar sessão">
+                                <i class="fa-solid fa-right-from-bracket"></i>
+                                <span class='logout-btn__label'>Logout</span>
+                            </button>
+                        `
+                        : `
+                            <button class="user-session__login-btn login-button" title="Entrar">
+                                <i class="fa-solid fa-right-to-bracket"></i>
+                                <span class='login-btn__label'>Login</span>
+                            </button>
+                        `
+                    }
+                </section>
+
+                <gc-nav class='menu-ui-container__nav' direction="column"></gc-nav>
+            </article>
         `);
     }
 
