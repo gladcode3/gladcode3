@@ -1,3 +1,5 @@
+import FormUtil from './helpers/FormUtil.js';
+import Users from './model/Users.js';
 import Session from './model/Session.js';
 import newsAction from './view/news.js';
 import rankAction from './view/rank.js';
@@ -5,12 +7,11 @@ import gladsAction from './view/glads.js';
 
 import './components/LoaderMenu.js'
 import './components/GCHeader.js';
+import './components/HamburguerMenu.js';
 import './components/GCUserInfos.js';
 import './components/GCPost.js';
-import '../less/dashboard.less';
 
-import FormUtil from './helpers/FormUtil.js';
-import Users from './model/Users.js';
+import '../less/dashboard.less';
 
 Session.validate();
 

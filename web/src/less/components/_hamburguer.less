@@ -4,9 +4,16 @@
 :host {
     user-select: none;
     font-size: @hamburguer-menu-font-size;
+
     .square(7rem);
-    .flexbox-hidden(row, center, center);
+    .flexbox(row, center, center);
     .clickable(@transition: all 0.3s);
 
     &:hover { background-color: @black-opacity-2 }
+
+    #hamburguer-icon {
+        .flexbox(row, center, center);
+        .fill-container();
+        font-size: @hamburguer-menu-font-size;
+    }
 }
