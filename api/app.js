@@ -1,11 +1,13 @@
 import express from "express";
 import cors from "cors";
 import errors from "./middleware/errors.js";
+
 import newsRouter from './route/news.js';
 import rankRouter from './route/rank.js';
 import usersRouter from "./route/users.js";
 import gladiatorRouter from "./route/gladiator.js";
 import reportRouter from "./route/report.js";
+import friendsRouter from "./route/friends.js";
 
 const port = 3000;
 const host = "0.0.0.0";
@@ -35,6 +37,7 @@ app.use("/users", usersRouter);
 app.use("/gladiators", gladiatorRouter);
 app.use('/rank', rankRouter);
 app.use('/report', reportRouter);
+app.use('/friends', friendsRouter);
 
 // error handling
 app.use((err, req, res, next) => {
