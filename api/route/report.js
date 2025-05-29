@@ -9,11 +9,12 @@ router.get('/get', async (req, res, next) => {
         await Auth.check(req);
         const check  = req.check;
 
-        if(check.user){
-            const query = await Report.get(req.query.page, req.query.favorites, req.query.unread_only, check.user, req.query.read, req.query.limit);
-            res.json(query);
+        if(!check.user){
+            throw new CustomError(401, check.message);
         }
-        throw new CustomError(401, "User has not logged in.");
+            
+        const query = await Report.get(req.query.page, req.query.favorites, req.query.unread_only, check.user, req.query.read, req.query.limit);
+        res.json(query);
 
     } catch (error) {
         next(error);
@@ -26,7 +27,7 @@ router.put('/favorite', async (req, res, next) => {
         const check = req.check;
 
         if(check.user){
-            const query = await Report.favorite(req.query.id, req.query.comment);
+            const query = await Report.favorite(req.body.id, req.body.comment, check.user);
             res.status(200).json(query);
 
         }else {

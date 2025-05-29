@@ -36,41 +36,39 @@ export default class Report {
     static async get(page, favorites, unread_only, user, read, limit) {
         let qnt = 10;
         if (limit && !isNaN(limit) && limit <= 30) qnt = limit;
+        if (!page || page < 1) page = 1;
         const offset = (page * qnt) - qnt;
     
-        const conditions = ["g.master = ?"];
-        const params = [String(user.id)];
+        let whereClause = `WHERE g.master = ?`;
+        const params = [user.id];
     
         if (favorites) {
-            conditions.push("r.favorite = 1");
+            whereClause += ` AND r.favorite = 1`;
         }
         if (unread_only) {
-            conditions.push("r.isread = 0");
+            whereClause += ` AND r.isread = 0`;
         }
-    
-        const gladiator = await Db.find('gladiator', {
-            filter: { master: user.id },
-            view: [ 'cod' ]
-        });
 
-        let total;
-        gladiator.forEach(async cod => {
-            const reports = await Db.find('reports', {
-                filter: { gladiator: cod },
-                view: [ 'id' ]
-            });
-            total+=reports.length
-        });
-    
-        sql = `SELECT r.id, l.time, g.name AS gladiator, r.isread, l.hash, r.reward, 
-                      r.favorite, r.comment, l.expired 
-               FROM reports r 
-               INNER JOIN gladiators g ON g.cod = r.gladiator
-               INNER JOIN logs l ON l.id = r.log
-               WHERE ${conditions.join(" AND ")}
-               ORDER BY time DESC 
-               LIMIT ? OFFSET ?`;
-        const reportinfo = await Db.query(sql, [...params, String(qnt), String(offset)]);
+        const countSql = `
+            SELECT COUNT(*) as total 
+            FROM reports r 
+            INNER JOIN gladiators g ON g.cod = r.gladiator
+            ${whereClause}
+        `;
+        const totalResult = await Db.query(countSql, params);
+        const total = totalResult[0].total;
+
+        const reportSql = `
+            SELECT r.id, l.time, g.name AS gladiator, r.isread, l.hash, r.reward, 
+                   r.favorite, r.comment, l.expired 
+            FROM reports r 
+            INNER JOIN gladiators g ON g.cod = r.gladiator
+            INNER JOIN logs l ON l.id = r.log
+            ${whereClause}
+            ORDER BY l.time DESC 
+            LIMIT ${qnt} OFFSET ${offset}
+        `;
+        const reportinfo = await Db.query(reportSql, params);
     
         const infos = reportinfo.map(row => ({
             id: row.id,
@@ -85,48 +83,62 @@ export default class Report {
         }));
     
         if (read && infos.length > 0) {
-            const ids = infos.map(row => row.id);
-            sql = `UPDATE reports SET isread = 1 WHERE id IN (${ids.join(", ")})`;
-            await Db.query(sql, []);
+            const ids = infos.map(row => row.id).join(", ");
+            const updateSql = `UPDATE reports SET isread = 1 WHERE id IN (${ids})`;
+            await Db.query(updateSql, []);
         }
-        return { total, reports: infos, profile_notification: user, code: 200 };
+        return { 
+            total, 
+            reports: infos, 
+            profile_notification: user, 
+            code: 200 
+        };
     }
     
-    static async delete(id, user){
-        if(!id || isNaN(id)) throw new CustomError(400, "Invalid ID value.");
+    static async delete(id, user) {
+        if (!id || isNaN(id)) throw new CustomError(400, "Invalid ID value.");
 
         const query = await Db.find('reports', {
             filter: { id: id },
             view: ['gladiator']
         });
-        if(query.length <= 0) throw new CustomError(404, `Report #${id} not found.`);
-        
+        if (query.length <= 0) throw new CustomError(404, `Report #${id} not found.`);
         
         const checkGladiator = await Db.find('gladiators', {
             filter: { cod: query[0].gladiator },
-            view: [ 'master' ]
+            view: ['master']
         });
-
-        if(checkGladiator[0].master !== user.id) throw new CustomError(401, "Report does not belong to the user.");
-        await Db.delete('users', id);
-        return;
+        if (checkGladiator[0].master !== user.id) {
+            throw new CustomError(403, "Report does not belong to the user.");
+        }
+        
+        await Db.delete('reports', id);
+        return { "code": 200, "message": `User ${id} has been deleted.` };
     }
 
-    static async favorite(id, comment){
+    static async favorite(id, comment, user) {
         const query = await Db.find('reports', {
             filter: { id: id },
-            view: [ 'id', 'log', 'gladiator', 'isread', 'reward', 'favorite', 'started' ]
+            view: ['id', 'log', 'gladiator', 'isread', 'reward', 'favorite', 'started']
         });
-        if(query.length <= 0) throw new CustomError(404, `Report #${id} does not exist.`);
+
+        const checkOwnership = await Db.find('gladiators', {
+            filter: { cod: query[0].gladiator },
+            view: [ 'master' ]
+        });
+        console.log(checkOwnership)
+
+        if(user.id !== checkOwnership[0].master) throw new CustomError(403, `Report ${id} does not belong to user.`);
+        if (query.length <= 0) throw new CustomError(404, `Report #${id} does not exist.`);
         const report = query[0];
         
-        const comm = comment ? comment : '';
-        const fav = query[0].favorite === 1 ? 0 : 1;
+        const comm = comment !== undefined ? comment : '';
+        const fav = report.favorite === 1 ? 0 : 1;
         
-
         await Db.update('reports', { favorite: fav, comment: comm }, id);
-        return { report:
-            {
+        
+        return { 
+            report: {
                 id,
                 log: report.log,
                 glad: report.gladiator,
@@ -136,6 +148,6 @@ export default class Report {
                 comment: comm,
                 started: report.started
             }
-         };
+        };
     }
 }
