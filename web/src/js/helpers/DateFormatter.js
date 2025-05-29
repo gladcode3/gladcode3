@@ -1,5 +1,5 @@
 class DateFormatter {
-    static formatAs(format, date) {
+    static formatAs(format = null, date) {
         if (!date instanceof Date) {
             console.error('date is not an instance of Date');
             throw new TypeError('date is not an instance of Date');
