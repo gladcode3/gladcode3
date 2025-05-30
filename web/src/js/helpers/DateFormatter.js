@@ -1,4 +1,4 @@
-import Validator from "./Validator";
+import Validator from "./Validator.js";
 
 class DateFormatter {
     static formatAs(format = null, date) {
@@ -17,28 +17,52 @@ class DateFormatter {
     static getTimeAgo(date) {
         Validator.instanceof(date, Date, { varName: 'date' });
 
-        const SEPARATOR = ' ';
-        const FORMAT = `%D${SEPARATOR}%M${SEPARATOR}%Y${SEPARATOR}%H${SEPARATOR}%m`;
+        const currentDate = new Date();
 
-        const formattedCurrentDate = DateFormatter.formatAs(FORMAT, new Date()).split(SEPARATOR).toReversed();
-        const formattedParamDate = DateFormatter.formatAs(FORMAT, date).split(SEPARATOR).toReversed();
+        // Calcula diferenças absolutas para cada unidade de tempo
+        const yearDiff   = currentDate.getFullYear() - date.getFullYear();
+        const monthDiff  = currentDate.getMonth() - date.getMonth();
+        const dayDiff    = currentDate.getDate() - date.getDate();
+        const hourDiff   = currentDate.getHours() - date.getHours();
+        const minuteDiff = currentDate.getMinutes() - date.getMinutes();
 
-        const TIMESTAMP_PARTS = ['ano', 'mês', 'dia', 'hora', 'minuto'];
+        const MONTHS_PER_YEAR = 12;
+        const MINS_PER_HOUR = 60;
+        const HOURS_PER_DAY = 24;
 
-        for (const i in TIMESTAMP_PARTS) {
-            const currentPart = formattedCurrentDate[i];
-            const paramPart = formattedParamDate[i];
+        let totalMonths = yearDiff * MONTHS_PER_YEAR + monthDiff;
+        let totalDays = dayDiff;
 
-            const timeAgoCalc = currentPart - paramPart;
-
-            if (timeAgoCalc === 0) continue;
-            if (timeAgoCalc === 1) return `Há 1 ${TIMESTAMP_PARTS[i]} atrás`;
-
-            if (timeAgoCalc > 1) {
-                const toPlural = TIMESTAMP_PARTS[i] === "mês" ? 'meses' : `${TIMESTAMP_PARTS[i]}s`;
-                return `Há ${timeAgoCalc} ${toPlural} atrás`;
-            }
+        let adjustedMinutes = minuteDiff;
+        let adjustedHours = hourDiff;
+        
+        if (adjustedMinutes < 0) {
+            adjustedMinutes += MINS_PER_HOUR;
+            adjustedHours -= 1;
         }
+
+        if (adjustedHours < 0) {
+            adjustedHours += HOURS_PER_DAY;
+            totalDays -= 1;
+        }
+
+        if (totalDays < 0) {
+            const daysInLastMonth = new Date(
+                currentDate.getFullYear(),
+                currentDate.getMonth(),
+                0
+            ).getDate();
+            
+            totalDays += daysInLastMonth;
+            totalMonths -= 1;
+        }
+
+        // Verifica qual unidade de tempo usar
+        if (yearDiff > 0) return `Há ${yearDiff} ano${yearDiff !== 1 ? 's' : ''} atrás`;
+        if (totalMonths > 0) return `Há ${totalMonths} mês${totalMonths !== 1 ? 'es' : ''} atrás`;
+        if (totalDays > 0) return `Há ${totalDays} dia${totalDays !== 1 ? 's' : ''} atrás`;
+        if (adjustedHours > 0) return `Há ${adjustedHours} hora${adjustedHours !== 1 ? 's' : ''} atrás`;
+        if (adjustedMinutes > 0) return `Há ${adjustedMinutes} minuto${adjustedMinutes !== 1 ? 's' : ''} atrás`;
 
         return 'Agora mesmo';
     }

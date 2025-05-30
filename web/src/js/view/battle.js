@@ -8,13 +8,15 @@ function renderReportsBattles(reportsBattles = []) {
     reportsBattles.forEach(async ({ hash, gladiator: gladName, reward, time }) => {
         const tableRow = document.createElement('tr');
 
-        if (reward < 0) tableRow.classList.add('battle-lost');
-        if (reward > 0) tableRow.classList.add('battle-won');
+        if (parseInt(reward) < 0) tableRow.classList.add('battle-lost');
+        if (parseInt(reward) > 0) tableRow.classList.add('battle-won');
+
+        const timeAgo = DateFormatter.getTimeAgo(new Date(time));
 
         tableRow.innerHTML = `
             <td><a href="https://gladcode.dev/play/${hash}">${gladName}</a></td>
             <td class="renown">${parseInt(reward)}</td>
-            <td class="date">${DateFormatter.formatAs('%D/%M/%Y', new Date(time))}</td>
+            <td class="date">${timeAgo}</td>
         `;
 
         rankingTable.appendChild(tableRow);
