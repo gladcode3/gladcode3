@@ -4,6 +4,7 @@ import Session from './model/Session.js';
 import newsAction from './view/news.js';
 import rankAction from './view/rank.js';
 import gladsAction from './view/glads.js';
+import battleAction from './view/battle.js';
 
 import './components/LoaderMenu.js'
 import './components/GCHeader.js';
@@ -33,7 +34,7 @@ loaderMenu.setup({
         },
         {
             id: 'battle', label: 'batalha', faIcon: 'fa-shield-halved',
-            path: '../panels/battle.html', action: () => console.log('battle')
+            path: '../panels/battle.html', action: battleAction
         },
         {
             id: 'potions', label: 'poções', faIcon: 'fa-flask',
