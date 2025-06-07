@@ -1,6 +1,21 @@
 import DateFormatter from "../helpers/DateFormatter.js";
 import Reports from "../model/Reports.js";
 
+/*
+<tr class="battle">
+    <td class="glad">
+        <label>
+            <i class="fa-regular fa-star"></i>
+            <input type="checkbox" class="favorite-glad-checkbox">
+        </label>
+
+        Glad1
+    </td>
+    <td class="renown">3000</td>
+    <td class="date">Há 2 anos atrás</td>
+</tr>
+*/
+
 function renderReportsBattles(reportsBattles = []) {
     const rankingTable = document.querySelector('table#reports > tbody');
     rankingTable.innerHTML = '';
@@ -14,7 +29,14 @@ function renderReportsBattles(reportsBattles = []) {
         const timeAgo = DateFormatter.getTimeAgo(new Date(time));
 
         tableRow.innerHTML = `
-            <td><a href="https://gladcode.dev/play/${hash}">${gladName}</a></td>
+            <td class="glad">
+                <label>
+                    <i class="fa-solid fa-star"></i>
+                    <input type="checkbox" class="favorite-glad-checkbox">
+                </label>
+
+                <a href="https://gladcode.dev/play/${hash}">${gladName}</a>
+            </td>
             <td class="renown">${parseInt(reward)}</td>
             <td class="date">${timeAgo}</td>
         `;
@@ -56,7 +78,17 @@ function renderNewPage(newPage, { total }) {
     }
 }
 
+
 async function battleAction() {
+    const btnFilter = document.querySelector('button#btn-filter');
+    const filterModal = document.querySelector('dialog.filter-modal');
+
+    btnFilter.addEventListener('click', () => {
+        filterModal.showModal();
+    });
+
+    // ------------
+
     let page = 1;
 
     const prevButton = document.querySelector('button.back-button');

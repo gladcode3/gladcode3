@@ -41,15 +41,63 @@
         </thead>
 
         <tbody>
-            
             <tr class="battle">
-                <td>Glad1</td>
+                <td class="glad">
+                    <label>
+                        <i class="fa-solid fa-star"></i>
+                        <input type="checkbox" class="favorite-glad-checkbox">
+                    </label>
+
+                    Glad1
+                </td>
                 <td class="renown">3000</td>
                 <td class="date">Há 2 anos atrás</td>
             </tr>
-           
         </tbody>
     </table>
+
+    <button id="btn-filter">
+        <i class="fa-solid fa-filter"></i>
+    </button>
+
+    <dialog class="filter-modal">
+        <h3>Filtrar</h3>
+        
+        <form>
+            <fieldset>
+                <label for="radio-group">Tipo de batalha</label>
+
+                <div id="radio-group">
+                    <label for="radio-all">Todas</label>
+                    <input type="radio" id="radio-all" name="battle-type" value="all" checked>
+                    
+                    <br>
+
+                    <label for="radio-ranked">Rankeadas</label>
+                    <input type="radio" id="radio-ranked" name="battle-type" value="ranked">
+                    
+                    <br>
+
+                    <label for="radio-duel">Duelos</label>
+                    <input type="radio" id="radio-duel" name="battle-type" value="duel">
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <label for="">Intervalo de datas</label>
+
+                <div id="date-interval">
+                    <label for="start-date">De: </label>
+                    <input type="date" id="start-date">
+
+                    <label for="end-date">Até: </label>
+                    <input type="date" id="end-date">
+                </div>
+            </fieldset>
+
+            <button type="submit">Filtrar</button>
+        </form>
+    </dialog>
 
     <div id="page-nav">
         <button class='back-button'>

@@ -21,6 +21,20 @@ th {
     background-color: gray;
 }
 
+td.glad label {
+    input { display: none }
+    i {
+        cursor: pointer;
+        color: gray;
+
+        &:hover { color: gold; }
+    }
+
+    &:has(input:checked) i {
+        color: gold;
+    }
+}
+
 td.renown {
     text-align: center;
 }
@@ -31,6 +45,25 @@ td.renown {
 
 .battle-lost > td.renown {
     color: red;
+}
+
+#btn-filter {
+    margin: auto;
+    background-color: blue;
+    color: white;
+    border-radius: 2px;
+    padding: 5px 1rem;
+    transition: all 0.3s;
+    cursor: pointer;
+
+    &:hover {
+        background-color: rgb(0, 0, 163);
+    }
+
+    &:disabled {
+        background-color: rgb(94, 94, 94);
+        cursor: not-allowed;
+    }
 }
 
 #page-nav {
