@@ -5,7 +5,6 @@ const router = express.Router();
 
 const gladiator = new Gladiator({});
 
-// Separei cod e nome pra usar name para pesquisa e cod para edição (pois é único)
 router.get("/name/:name", async (request, reply) => {
   const { name } = request.params;
   const result = await gladiator.getByName(name);
@@ -36,6 +35,7 @@ router.get("/master", async (req, res, next) => {
     const check = req.check;
 
     if (!check.user) throw check;
+
     const query = await gladiator.getByMaster(check.user.id);
     
     res.status(200).json(query);
@@ -56,6 +56,22 @@ router.get("/master/:master/count", async (request, reply) => {
 
   reply.json(result);
 });
+
+router.get("/code/:id", async (req, res, next) => {
+  try {
+    await Auth.check(req);
+    const check = req.check;
+
+    if (!check.user) throw check;
+    if (!req.params.id || isNaN(req.params.id)) { throw { code: 400, message: "Invalid ID parameter" }; }
+
+    const query = await gladiator.getCodeById(req.params.id, check.user.id);
+    res.status(200).json(query);
+
+  } catch (error) {
+    next(error);
+  }
+})
 
 
 export default router;
