@@ -6,11 +6,94 @@ import Gladiator from '../model/Gladiator.js';
 // ~ Conseguir gerar a imagem dos gladiadores nos cards
 // ~ Criar um componente pros cards
 
+{/* <dialog id="glad-code-modal">
+    <button class="btnClose">X</button>
+
+    <div class="code-header">
+        <span class="filename"></span>
+        <button class="edit-code">
+            <i class="fa-solid fa-pen"></i>
+        </button>
+    </div>
+
+    <pre class="glad-code">
+        <code>
+
+        </code>
+    </pre>
+</dialog> */}
+
+
+function initModal() {
+    const codeModal = document.querySelector('#glad-code-modal');
+    const btnClose = codeModal.querySelector('button.btnClose');
+
+    const filenameSpan = codeModal.querySelector('.filename');
+    const codeElement = codeModal.querySelector('pre.glad-code code');
+    const btnEditCode = codeModal.querySelector('button.edit-code');
+
+    btnClose.addEventListener('click', () => {
+        filenameSpan.textContent = '';
+        codeElement.textContent = '';
+        removeAllEventListeners(btnEditCode);
+
+        codeModal.close();
+    });
+}
+
+function generateFilename(name, language) {
+    const extensions = {
+        python: 'py',
+        c: 'c',
+        blocks: 'blocks'
+    };
+
+    const filename = name.toLowerCase()
+        .replace(/\./g, '')        // Remove pontos
+        .replace(/[^\w\s-]/g, '')  // Remove caracteres não alfanuméricos (exceto hífens e espaços)
+        .replace(/\s+/g, '-')      // Substitui espaços por hífens
+        .replace(/-+/g, '-')       // Remove múltiplos hífens consecutivos
+        .replace(/^-+|-+$/g, '');  // Remove hífens do início e fim
+    
+    const extension = extensions[language.toLowerCase()] || language.toLowerCase();
+    
+    return filename ? `${filename}.${extension}` : `untitled.${extension}`;
+}
+
+function removeAllEventListeners(element) {
+    const clone = element.cloneNode(true);
+    element.replaceWith(clone);
+    return clone;
+}
+
+async function showCode({ id }) {
+    const codeModal = document.querySelector('#glad-code-modal');
+
+    const filenameSpan = codeModal.querySelector('.filename');
+    const codeElement = codeModal.querySelector('pre.glad-code code');
+    const btnEditCode = codeModal.querySelector('button.edit-code');
+    
+    const { name, language, code } = await Gladiator.getGladiatorCode(id);
+
+    // Setar as informações do modal
+    filenameSpan.textContent = generateFilename(name, language);
+    codeElement.textContent = code || Gladiator.GENERIC_PYTHON_CODE;
+    
+    const redirectEvent = () => location.href = `https://gladcode.dev/glad-${id}`;
+    btnEditCode.addEventListener('click', redirectEvent);
+    
+    // Mostrar o modal
+    codeModal.showModal();
+}
+
 function generateGladCard({
+    cod: id,
     name,
     vstr: attrSTR,
     vagi: attrAGI,
-    vint: attrINT
+    vint: attrINT,
+    language,
+    code
 }) {
     const card = document.createElement('div');
     card.classList.add('card');
@@ -55,6 +138,9 @@ function generateGladCard({
         </section>
     `;
 
+    const btnShowCode = card.querySelector('.row.code > button');
+    btnShowCode.addEventListener('click', async () => showCode({ id }));
+
     return card;
 }
 
@@ -94,6 +180,9 @@ function renderCards(cards) {
 }
 
 async function gladsAction() {
+    console.log('setupping modal...');
+    initModal();
+
     const cards = await Gladiator.getUserGladCards();
     renderCards(cards);
 }

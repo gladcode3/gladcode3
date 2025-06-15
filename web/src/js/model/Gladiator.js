@@ -1,8 +1,42 @@
+import Api from "../helpers/Api.js";
 import Users from "./Users.js";
 
 class Gladiator {
     static MAX_GLADS_SLOTS = 6;
     static LEVELS_TO_UNLOCK_1_GLAD = 10;
+
+    static _api = null;
+
+    static _setApiInstance() {
+        try {
+            if (!this._api) this._api = new Api();
+        } catch(err) {
+            console.log(err);
+            throw err;
+        }
+    }
+
+    static get GENERIC_PYTHON_CODE() {
+        return `
+            in_center = False
+
+            def loop():
+            \tif not in_center:
+            \t\twhile not moveTo(12.5, 12.5):
+            \t\t\tpass
+            \tspeak('Cheguei no centro!')
+        `
+    }
+
+    static async getUserGladiators() {
+        this._setApiInstance();
+        return await this._api.get('gladiators/master');
+    }
+
+    static async getGladiatorCode(id) {
+        this._setApiInstance();
+        return await this._api.get(`gladiators/code/${id}`);
+    }
 
     static _getUsersGladiatorLimit({ level }) {
         return (Math.floor(level / this.LEVELS_TO_UNLOCK_1_GLAD) + 1);
