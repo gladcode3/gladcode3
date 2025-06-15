@@ -1,14 +1,17 @@
 import Db from '../core/mysql.js';
 import CustomError from '../core/error.js';
+import crypto from 'crypto';
+
 export default class News {
 
-    constructor({ id, title, time, post}){
+    constructor({ id, title, time, post, hash}){
         this.id = id;
         this.title = title;
         this.time = time;
         this.post = post;
+        this.hash = hash;
     }
-
+    
     static async get(page, qnt){
 
         if(!page) throw new CustomError(400, "Page was not sent.");
@@ -30,30 +33,26 @@ export default class News {
         return { "code": 200, "news": news };
     };
 
-    static async getByHash(id){
-        const posts = { 
-            "prevPost": null,
-            "currentPost": null,
-            "nextPost": null
+    static async getByHash(hash) {
+        const posts = {
+            prevPost: null,
+            currentPost: null,
+            nextPost: null
         };
-        const news = await Db.find('news', 
-            {
-                filter: { id: id },
-                view: ['id', 'title', 'time', 'post'],
-                opt: { limit: 1, }
-            });
-        
-        if(news.length === 0) throw new CustomError(404,  `No posts were found: Id: ${id} `);
-        if(news.length === 1) posts.currentPost = news[0];
-        
-        const prevNews = await News.fetchPrevPost(news[0].time);
-        if(prevNews.length === 1) posts.prevPost = prevNews[0];
 
-        const nextNews = await News.fetchNextPost(news[0].time);
-        if(nextNews.length === 1) posts.nextPost = nextNews[0];
+        const allPosts = await Db.find('news', {
+            view: ['id', 'title', 'time', 'post'],
+            opt: { sort: [{ time: 'ASC' }] }
+        });
 
-        const resPosts = cleanPostObj(posts);
-        return resPosts;
+        const index = allPosts.findIndex(p => genHash(p.id) === hash);
+        if (index === -1) throw new CustomError(404, `No posts were found with hash: ${hash}`);
+
+        posts.currentPost = allPosts[index];
+        if (index > 0) posts.prevPost = allPosts[index - 1];
+        if (index < allPosts.length - 1) posts.nextPost = allPosts[index + 1];
+
+        return cleanPostObj(posts);
     }
 
     static async fetchPrevPost(basetime){
@@ -89,4 +88,9 @@ function cleanPostObj(obj){
     newObj.code = 200;
 
     return newObj;
+}
+
+function genHash(id) {
+    const hash = crypto.createHash('md5').update(`${id}news-post-86`).digest('hex');
+    return hash.substring(0, 4);
 }
