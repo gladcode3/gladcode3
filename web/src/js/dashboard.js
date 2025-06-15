@@ -12,6 +12,8 @@ import './components/HamburguerMenu.js';
 import './components/GCUserInfos.js';
 import './components/GCPost.js';
 
+import panelsBarStylesRaw from '../less/components/_loader-menu.less?raw';
+
 import '../less/dashboard.less';
 
 Session.validate();
@@ -20,14 +22,16 @@ const lateralBar = document.querySelector('#page-container > aside');
 const footer = lateralBar.querySelector('footer');
 
 const loaderMenu = document.createElement('loader-menu');
+console.log('Nova config');
 loaderMenu.setup({
     target: 'section#selected-panel',
     default: 'news',
-    
+
     items: [
         {
             id: 'news', label: 'notícias', faIcon: 'fa-bell',
-            path: '../panels/news.html', action: newsAction },
+            path: '../panels/news.html', action: newsAction 
+        },
         {
             id: 'glads', label: 'gladiadores', faIcon: 'fa-street-view',
             path: '../panels/glads.html', action: gladsAction
@@ -42,12 +46,29 @@ loaderMenu.setup({
         },
         {
             id: 'rank', label: 'ranking', faIcon: 'fa-ranking-star', notify: false,
-            path: '../panels/rank.html', action: rankAction},
+            path: '../panels/rank.html', action: rankAction
+        },
         {
             id: 'messages', label: 'mensagens', faIcon: 'fa-message',
             path: '../panels/messages.html', action: () => console.log('messages')
         },
-    ]
+    ],
+
+    config: {
+        // CSS
+        styles: panelsBarStylesRaw,
+        // Classes
+        menuClass: 'items-list',
+        itemClass: 'items-list__item',
+        selectedClass: 'items-list__item--selected',
+        iconClass: 'fa-solid',
+        notifyClass: 'item__notify',
+        notifyActiveClass: 'item__notify--active',
+        frameClass: 'item__frame',
+        
+        // Storage Key
+        storageKey: 'last-panel-selected',       
+    }
 });
 
 lateralBar.insertBefore(loaderMenu, footer);
