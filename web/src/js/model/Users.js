@@ -1,5 +1,6 @@
 import Api from "../helpers/Api.js";
 import LocalData from "../helpers/LocalData.js";
+import Gladiator from "./Gladiator.js";
 
 
 class Users {
@@ -23,8 +24,9 @@ class Users {
     }
 
     static async getGladiators() {
-        this._setApiInstance();
-        return await this._api.get('gladiators/master');
+        const data = await Gladiator.getUserGladiators()
+        console.log(data);
+        return data;
     }
 
     static async getUserByName(name) {
