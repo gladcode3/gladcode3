@@ -22,7 +22,6 @@ const lateralBar = document.querySelector('#page-container > aside');
 const footer = lateralBar.querySelector('footer');
 
 const loaderMenu = document.createElement('loader-menu');
-console.log('Nova config');
 loaderMenu.setup({
     target: 'section#selected-panel',
     default: 'news',

@@ -4,6 +4,13 @@ class Reports {
     static LIMIT = 10;
     static _api = null;
 
+    static getPageInterval({ page }) {
+        const start = (this.LIMIT * (page - 1)) + 1;
+        const end = this.LIMIT * page;
+    
+        return [start, end];
+    }
+
     static _setApiInstance() {
         try {
             if (!this._api) this._api = new Api();
@@ -12,6 +19,8 @@ class Reports {
             throw err;
         }
     }
+
+    // GET
 
     static async getReports({ page, favorites_only = false, unready_only = false, read_only = false }) {
         this._setApiInstance();
@@ -28,22 +37,26 @@ class Reports {
     }
 
     static async getAllReports({ page }) {
-        return await this.getReports({ page });
+        return await Reports.getReports({ page });
     }
 
     static async getAllUnreadedReports({ page }) {
-        return await this.getReports({ page, unready_only: true });
+        return await Reports.getReports({ page, unready_only: true });
     }
 
     static async getAllFavoriteReports({ page }) {
-        return await this.getReports({ page, favorites_only: true });
+        return await Reports.getReports({ page, favorites_only: true });
     }
 
-    static getPageInterval({ page }) {
-        const start = (this.LIMIT * (page - 1)) + 1;
-        const end = this.LIMIT * page;
-    
-        return [start, end];
+    // PUT
+    static async toggleReportFavorite(id, { comment = null } = {}) {
+        this._setApiInstance();
+
+        const body = { id };
+        if (comment) body.comment = comment;
+
+        const updateData = await this._api.put('report/favorite', body);
+        return updateData;
     }
 }
 

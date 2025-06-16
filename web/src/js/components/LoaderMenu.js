@@ -1,4 +1,4 @@
-import HTMLParser from '../utils/HTMLParser.js';
+import HTMLParser from '../helpers/HTMLParser.js';
 
 const DEFAULT_STYLES = `
 :host { display: block; }
@@ -93,13 +93,17 @@ class LoaderMenu extends HTMLElement {
         await Promise.all([
             this._addItemsEvents(),
             this._loadHTML(),
-            this._executeAction()
         ]);
+
+        await this._executeAction();
     }
 
     setup({ target, default: defaultItem, items, config = {} }) {
         this._setuped = true;
         this.displayTarget = document.querySelector(target);
+
+        if (!this.displayTarget) throw new Error('target not found');
+
         this.items = items;
         this._verifyRepeatedItems();
         this.defaultItem = defaultItem || this.items[0];
@@ -172,7 +176,7 @@ class LoaderMenu extends HTMLElement {
         return HTMLParser.parse(`<style>${this._config.styles}</style>`);
     }
 
-    async _addItemsEvents() {
+    _addItemsEvents() {
         const { itemClass } = this._config;
         const items = this.shadowRoot.querySelectorAll(`.${itemClass}`);
 
@@ -213,6 +217,7 @@ class LoaderMenu extends HTMLElement {
 
         if (!this._itemsPaths?.[key]) return;
 
+        console.log(this.displayTarget);
         try {
             const res = await fetch(this._itemsPaths[key]);
             this._loadedRaws[key] = await res.text();
