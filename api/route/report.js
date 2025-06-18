@@ -13,7 +13,14 @@ router.get('/get', async (req, res, next) => {
             throw new CustomError(401, check.message);
         }
             
-        const query = await Report.get(req.query.page, req.query.favorites, req.query.unread_only, check.user, req.query.read, req.query.limit);
+        const query = await Report.get(
+            req.query.page, 
+            req.query.favorites, 
+            req.query.is_read, 
+            check.user,
+            req.query.limit, 
+            req.query.type
+        );
         res.json(query);
 
     } catch (error) {
