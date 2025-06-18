@@ -9,9 +9,7 @@ router.get('/get', async (req, res, next) => {
         await Auth.check(req);
         const check  = req.check;
 
-        if(!check.user){
-            throw new CustomError(401, check.message);
-        }
+        if(!check.user){ throw new CustomError(401, check.message); }
             
         const query = await Report.get(
             req.query.page, 
@@ -28,6 +26,22 @@ router.get('/get', async (req, res, next) => {
     }
 });
 
+router.put('/readall', async (req, res, next) => {
+    try {
+        await Auth.check(req);
+        const check = req.check;
+
+        if(!check.user){  throw new CustomError(401, check.message); }
+        const user = check.user;
+            
+        const query = await Report.readAll(user);
+        res.status(200).json(query);
+
+    } catch (error) {
+        next(error);
+    }
+});
+
 router.put('/favorite', async (req, res, next) => {
     try {
         await Auth.check(req);
@@ -37,8 +51,8 @@ router.put('/favorite', async (req, res, next) => {
             const query = await Report.favorite(req.body.id, req.body.comment, check.user);
             res.status(200).json(query);
 
-        }else {
-            throw new CustomError(401, "User has not logged in.");
+        } else { 
+            throw new CustomError(401, "User has not logged in."); 
         }
 
     } catch (error) {

@@ -156,4 +156,21 @@ export default class Report {
             }
         };
     }
+
+    static async readAll(user) {
+        const userId = user.id;
+        const reports = await Db.query(
+            `SELECT r.id FROM reports r
+             INNER JOIN gladiators g ON g.cod = r.gladiator
+             WHERE g.master = ? AND r.isread = 0`,
+            [userId]
+        );
+
+        if (reports.length === 0) { return { code: 200, message: "All reports are read." }; }
+
+        const ids = reports.map(r => r.id).join(", ");
+        await Db.query(`UPDATE reports SET isread = 1 WHERE id IN (${ids})`);
+
+        return { code: 200, message: `${reports.length} reports marked as read.` };
+    }
 }
