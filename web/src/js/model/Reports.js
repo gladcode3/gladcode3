@@ -30,7 +30,7 @@ class Reports {
         const paramsObj = { limit: this.LIMIT, page };
 
         if (favorites_only) paramsObj.favorites = 1;
-        if (unready_only) paramsObj.unready_only = 1;
+        if (unready_only) paramsObj.unread_only = 1;
         if (read_only) paramsObj.read_only = 1;
 
         return await this._api.get('report/get', paramsObj);

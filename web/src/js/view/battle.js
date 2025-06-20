@@ -19,6 +19,7 @@ import "../components/LoaderMenu.js";
 */
 
 const RANKED_TAB = 'ranked';
+const UNREAD_TAB = 'unread';
 const DUELS_TAB = 'duels';
 const FAVORITES_TAB = 'favorites';
 
@@ -92,6 +93,7 @@ function renderReportsBattles(mode, reportsBattles = []) {
 
         const modesMap = {
             [RANKED_TAB]: _getRankedRaw,
+            [UNREAD_TAB]: _getRankedRaw,
             [DUELS_TAB]: _getDuelRaw,
             [FAVORITES_TAB]: _getFavoriteRaw
         };
@@ -186,17 +188,22 @@ async function battleAction() {
         items: [
             {
                 id: 'ranked', label: 'batalhas',
-                path: '../../panels/reports-tabs/ranked.html',
+                path: '../../panels/report-tabs/ranked.html',
                 action: async () => await reportsAction(RANKED_TAB, Reports.getAllReports)
             },
             {
+                id: 'unread', label: 'não lidas',
+                path: '../../panels/report-tabs/unread.html',
+                action: async () => await reportsAction(UNREAD_TAB, Reports.getAllUnreadedReports)
+            },
+            {
                 id: 'duels', label: 'duelos',
-                path: '../../panels/reports-tabs/ranked.html',
+                path: '../../panels/report-tabs/duels.html',
                 action: () => console.log('duels...')
             },
             {
                 id: 'favorites', label: 'favoritos', notify: false,
-                path: '../../panels/reports-tabs/ranked.html',
+                path: '../../panels/report-tabs/ranked.html',
                 action: async () => await reportsAction(FAVORITES_TAB, Reports.getAllFavoriteReports)
             }
         ]
