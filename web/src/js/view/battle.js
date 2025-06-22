@@ -23,6 +23,76 @@ const UNREAD_TAB = 'unread';
 const DUELS_TAB = 'duels';
 const FAVORITES_TAB = 'favorites';
 
+// Promise que funciona como um prompt convencional, porem, usando um Pop-up customizado.
+function customInput({ type = 'string', message = '' } = {}) {
+    return new Promise((resolve) => {
+        const popup = document.querySelector('#custom-prompt');
+        
+        const label = popup.querySelector('label');
+        const input = popup.querySelector('input#custom-prompt__input');
+
+        if (type === 'string') {
+            input.style.display = 'inline-block';
+            input.value = ''; // Limpa o input
+        }
+        if (type === 'boolean') input.style.display = 'none';
+        
+        label.textContent = message;
+        popup.showModal();
+
+        if (type === 'string') input.focus();
+
+        const btnCancel = popup.querySelector('button#btn-cancel');
+        const btnConfirm = popup.querySelector('button#btn-confirm');
+
+        const closeAndCleanup = () => {
+            popup.close();
+            btnCancel.removeEventListener('click', onCancel);
+            btnConfirm.removeEventListener('click', onConfirm);
+            popup.removeEventListener('keydown', onKeyDown);
+        };
+
+        function onCancel(e) {
+            e.preventDefault();
+
+            let value = null;
+            if (type === 'boolean') value = false;
+
+            closeAndCleanup();
+            resolve(value);
+        };
+
+        function onConfirm(e) {
+            e.preventDefault();
+
+            let value = input.value.trim() || '';
+            if (type === 'boolean') value = true;
+
+            closeAndCleanup();
+            resolve(value);
+        };
+
+        function onKeyDown(e) {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                onCancel(e);
+            }
+
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                onConfirm(e);
+            }
+        }
+
+        btnCancel.addEventListener('click', onCancel);
+        btnConfirm.addEventListener('click', onConfirm);
+        popup.addEventListener('keydown', onKeyDown);
+    });
+}
+
+const customPrompt = async message => await customInput({ type: 'string' , message });
+const customConfirm = async message => await customInput({ type: 'boolean', message });
+
 function _getRankedRaw(rankedBattle) {
     const { hash, gladiator: gladName, reward, time, favorite } = rankedBattle;
     const timeAgo = DateFormatter.getTimeAgo(new Date(time));
@@ -68,13 +138,16 @@ function _getFavoriteRaw(favoriteBattle) {
 // retorna true se a batalha passou a ser favorita e false se passou a não ser
 async function favoriteBattle(battle) {
     if (battle.favorite) {
-        if (!confirm('Remover batalha dos favoritos?')) return true;
+        // Lança um confirm personalizado
+        const confirm = await customConfirm('Remover batalha dos favoritos?');
+        if (!confirm) return true;
 
         await Reports.toggleReportFavorite(battle.id);
         return false;
     }
 
-    const comment = prompt('Informe um comentário sobre a batalha...');
+    // Lança um prompt personalizado
+    const comment = await customPrompt('Informe um comentário sobre a batalha...');
     if (!comment) return false;
 
     await Reports.toggleReportFavorite(battle.id, { comment });
