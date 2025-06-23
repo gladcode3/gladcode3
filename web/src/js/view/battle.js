@@ -19,8 +19,79 @@ import "../components/LoaderMenu.js";
 */
 
 const RANKED_TAB = 'ranked';
+const UNREAD_TAB = 'unread';
 const DUELS_TAB = 'duels';
 const FAVORITES_TAB = 'favorites';
+
+// Promise que funciona como um prompt convencional, porem, usando um Pop-up customizado.
+function customInput({ type = 'string', message = '' } = {}) {
+    return new Promise((resolve) => {
+        const popup = document.querySelector('#custom-prompt');
+        
+        const label = popup.querySelector('label');
+        const input = popup.querySelector('input#custom-prompt__input');
+
+        if (type === 'string') {
+            input.style.display = 'inline-block';
+            input.value = ''; // Limpa o input
+        }
+        if (type === 'boolean') input.style.display = 'none';
+        
+        label.textContent = message;
+        popup.showModal();
+
+        if (type === 'string') input.focus();
+
+        const btnCancel = popup.querySelector('button#btn-cancel');
+        const btnConfirm = popup.querySelector('button#btn-confirm');
+
+        const closeAndCleanup = () => {
+            popup.close();
+            btnCancel.removeEventListener('click', onCancel);
+            btnConfirm.removeEventListener('click', onConfirm);
+            popup.removeEventListener('keydown', onKeyDown);
+        };
+
+        function onCancel(e) {
+            e.preventDefault();
+
+            let value = null;
+            if (type === 'boolean') value = false;
+
+            closeAndCleanup();
+            resolve(value);
+        };
+
+        function onConfirm(e) {
+            e.preventDefault();
+
+            let value = input.value.trim() || '';
+            if (type === 'boolean') value = true;
+
+            closeAndCleanup();
+            resolve(value);
+        };
+
+        function onKeyDown(e) {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                onCancel(e);
+            }
+
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                onConfirm(e);
+            }
+        }
+
+        btnCancel.addEventListener('click', onCancel);
+        btnConfirm.addEventListener('click', onConfirm);
+        popup.addEventListener('keydown', onKeyDown);
+    });
+}
+
+const customPrompt = async message => await customInput({ type: 'string' , message });
+const customConfirm = async message => await customInput({ type: 'boolean', message });
 
 function _getRankedRaw(rankedBattle) {
     const { hash, gladiator: gladName, reward, time, favorite } = rankedBattle;
@@ -42,9 +113,7 @@ function _getRankedRaw(rankedBattle) {
     `;
 }
 
-function _getDuelRaw(glad) {
-    // ...
-}
+function _getDuelRaw(glad) { /* ... */ }
 
 function _getFavoriteRaw(favoriteBattle) {
     const { hash, gladiator: gladName, comment, time } = favoriteBattle;
@@ -67,13 +136,16 @@ function _getFavoriteRaw(favoriteBattle) {
 // retorna true se a batalha passou a ser favorita e false se passou a não ser
 async function favoriteBattle(battle) {
     if (battle.favorite) {
-        if (!confirm('Remover batalha dos favoritos?')) return true;
+        // Lança um confirm personalizado
+        const confirm = await customConfirm('Remover batalha dos favoritos?');
+        if (!confirm) return true;
 
         await Reports.toggleReportFavorite(battle.id);
         return false;
     }
 
-    const comment = prompt('Informe um comentário sobre a batalha...');
+    // Lança um prompt personalizado
+    const comment = await customPrompt('Informe um comentário sobre a batalha...');
     if (!comment) return false;
 
     await Reports.toggleReportFavorite(battle.id, { comment });
@@ -92,6 +164,7 @@ function renderReportsBattles(mode, reportsBattles = []) {
 
         const modesMap = {
             [RANKED_TAB]: _getRankedRaw,
+            [UNREAD_TAB]: _getRankedRaw,
             [DUELS_TAB]: _getDuelRaw,
             [FAVORITES_TAB]: _getFavoriteRaw
         };
@@ -115,61 +188,76 @@ function renderReportsBattles(mode, reportsBattles = []) {
     });
 }
 
-async function showReports({ page }, tab, getReportsCallback) {
-    // const { total, reports: reportsBattles } = await Reports.getAllReports({ page });
-    const { total, reports: reportsBattles } = await getReportsCallback({ page });
-    renderReportsBattles(tab, reportsBattles);
+async function showReports(tab, getReportsCallback) {
+    if (!Reports.cachedCurrentPage)
+    await Reports.initPagination({ getPage: getReportsCallback });
 
-    const [start, end] = Reports.getPageInterval({ page });
+    renderReportsBattles(tab, Reports.cachedCurrentPage.reports);
+
+    const [start, end] = Reports.getPageInterval({ page: Reports.page });
+    const total = Reports.cachedCurrentPage.total;
 
     const pageLabel = document.querySelector('.page-label');
-
     pageLabel.innerHTML = `
         <span>${start}</span>
          - <span>${end > total ? total : end}</span>
          de <span>${total}</span>
     `;
 
-    return { total, rankList: reportsBattles };
+    return { total, reports: Reports.cachedCurrentPage.reports };
 }
 
 function renderNewPage(newPage, { total }) {
+    const [start, end] = Reports.getPageInterval({ page: newPage });
+
+    const pageLabel = document.querySelector('.page-label');
+    pageLabel.innerHTML = `
+        <span>${start}</span>
+         - <span>${end > total ? total : end}</span>
+         de <span>${total}</span>
+    `;
+
     const prevButton = document.querySelector('button.back-button');
     const nextButton = document.querySelector('button.next-button');
 
     prevButton.removeAttribute('disabled');
     nextButton.removeAttribute('disabled');
 
-    if (newPage === 1) {
-        prevButton.setAttribute('disabled', true);
-    }
-
-    if ((newPage * Reports.LIMIT) >= total) {
-        nextButton.setAttribute('disabled', true);
-    }
+    if (newPage === 1) prevButton.setAttribute('disabled', true);
+    if ((newPage * Reports.LIMIT) >= total) nextButton.setAttribute('disabled', true);
 }
 
 async function reportsAction(tab, getReportsCallback) {
-    let page = 1;
+    Reports.clearCache();
+
+    const { total } = await showReports(tab, getReportsCallback);
+    renderNewPage(Reports.page, { total });
 
     const prevButton = document.querySelector('button.back-button');
     const nextButton = document.querySelector('button.next-button');
 
-    const { total } = await showReports({ page }, tab, getReportsCallback);
-    renderNewPage(page, { total });
+    const getIncrementCallback = (increment, limit) => {
+        return async () => {
+            if (Reports.page === limit) return;
 
-    const changePage = async increment => {
-        const newPage = page + increment;
-        if (newPage < 1) return;
+            await Reports.adjustAdjacentPages({
+                increment: increment,
+                getPage: getReportsCallback
+            });
+    
+            renderReportsBattles(tab, Reports.cachedCurrentPage.reports);
+            renderNewPage(Reports.page, { total });
+        };
+    };
 
-        page = newPage;
+    const MIN = 1;
+    const MAX = Reports.totalPages;
 
-        await showReports({ page }, tab, getReportsCallback);
-        renderNewPage(newPage, { total });
-    }
+    const prevCallback = getIncrementCallback(-1, MIN);
+    const nextCallback = getIncrementCallback(+1, MAX);
 
-    prevButton.addEventListener('click', async () => await changePage(-1));
-    nextButton.addEventListener('click', async () => await changePage(+1));
+    prevButton.addEventListener('click', prevCallback);
+    nextButton.addEventListener('click', nextCallback);
 }
 
 async function battleAction() {
@@ -186,17 +274,22 @@ async function battleAction() {
         items: [
             {
                 id: 'ranked', label: 'batalhas',
-                path: '../../panels/reports-tabs/ranked.html',
+                path: '../../panels/report-tabs/ranked.html',
                 action: async () => await reportsAction(RANKED_TAB, Reports.getAllReports)
             },
             {
+                id: 'unread', label: 'não lidas',
+                path: '../../panels/report-tabs/unread.html',
+                action: async () => await reportsAction(UNREAD_TAB, Reports.getAllUnreadedReports)
+            },
+            {
                 id: 'duels', label: 'duelos',
-                path: '../../panels/reports-tabs/ranked.html',
+                path: '../../panels/report-tabs/duels.html',
                 action: () => console.log('duels...')
             },
             {
                 id: 'favorites', label: 'favoritos', notify: false,
-                path: '../../panels/reports-tabs/ranked.html',
+                path: '../../panels/report-tabs/ranked.html',
                 action: async () => await reportsAction(FAVORITES_TAB, Reports.getAllFavoriteReports)
             }
         ]
