@@ -113,9 +113,7 @@ function _getRankedRaw(rankedBattle) {
     `;
 }
 
-function _getDuelRaw(glad) {
-    // ...
-}
+function _getDuelRaw(glad) { /* ... */ }
 
 function _getFavoriteRaw(favoriteBattle) {
     const { hash, gladiator: gladName, comment, time } = favoriteBattle;
@@ -190,61 +188,76 @@ function renderReportsBattles(mode, reportsBattles = []) {
     });
 }
 
-async function showReports({ page }, tab, getReportsCallback) {
-    // const { total, reports: reportsBattles } = await Reports.getAllReports({ page });
-    const { total, reports: reportsBattles } = await getReportsCallback({ page });
-    renderReportsBattles(tab, reportsBattles);
+async function showReports(tab, getReportsCallback) {
+    if (!Reports.cachedCurrentPage)
+    await Reports.initPagination({ getPage: getReportsCallback });
 
-    const [start, end] = Reports.getPageInterval({ page });
+    renderReportsBattles(tab, Reports.cachedCurrentPage.reports);
+
+    const [start, end] = Reports.getPageInterval({ page: Reports.page });
+    const total = Reports.cachedCurrentPage.total;
 
     const pageLabel = document.querySelector('.page-label');
-
     pageLabel.innerHTML = `
         <span>${start}</span>
          - <span>${end > total ? total : end}</span>
          de <span>${total}</span>
     `;
 
-    return { total, rankList: reportsBattles };
+    return { total, reports: Reports.cachedCurrentPage.reports };
 }
 
 function renderNewPage(newPage, { total }) {
+    const [start, end] = Reports.getPageInterval({ page: newPage });
+
+    const pageLabel = document.querySelector('.page-label');
+    pageLabel.innerHTML = `
+        <span>${start}</span>
+         - <span>${end > total ? total : end}</span>
+         de <span>${total}</span>
+    `;
+
     const prevButton = document.querySelector('button.back-button');
     const nextButton = document.querySelector('button.next-button');
 
     prevButton.removeAttribute('disabled');
     nextButton.removeAttribute('disabled');
 
-    if (newPage === 1) {
-        prevButton.setAttribute('disabled', true);
-    }
-
-    if ((newPage * Reports.LIMIT) >= total) {
-        nextButton.setAttribute('disabled', true);
-    }
+    if (newPage === 1) prevButton.setAttribute('disabled', true);
+    if ((newPage * Reports.LIMIT) >= total) nextButton.setAttribute('disabled', true);
 }
 
 async function reportsAction(tab, getReportsCallback) {
-    let page = 1;
+    Reports.clearCache();
+
+    const { total } = await showReports(tab, getReportsCallback);
+    renderNewPage(Reports.page, { total });
 
     const prevButton = document.querySelector('button.back-button');
     const nextButton = document.querySelector('button.next-button');
 
-    const { total } = await showReports({ page }, tab, getReportsCallback);
-    renderNewPage(page, { total });
+    const getIncrementCallback = (increment, limit) => {
+        return async () => {
+            if (Reports.page === limit) return;
 
-    const changePage = async increment => {
-        const newPage = page + increment;
-        if (newPage < 1) return;
+            await Reports.adjustAdjacentPages({
+                increment: increment,
+                getPage: getReportsCallback
+            });
+    
+            renderReportsBattles(tab, Reports.cachedCurrentPage.reports);
+            renderNewPage(Reports.page, { total });
+        };
+    };
 
-        page = newPage;
+    const MIN = 1;
+    const MAX = Reports.totalPages;
 
-        await showReports({ page }, tab, getReportsCallback);
-        renderNewPage(newPage, { total });
-    }
+    const prevCallback = getIncrementCallback(-1, MIN);
+    const nextCallback = getIncrementCallback(+1, MAX);
 
-    prevButton.addEventListener('click', async () => await changePage(-1));
-    nextButton.addEventListener('click', async () => await changePage(+1));
+    prevButton.addEventListener('click', prevCallback);
+    nextButton.addEventListener('click', nextCallback);
 }
 
 async function battleAction() {
