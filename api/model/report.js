@@ -33,7 +33,8 @@ export default class Report {
         this.started = started ? 1 : 0;
     }
 
-    static async get(page, favorites, unread_only, user, read, limit) {
+    static async get(page, favorites, is_read, user, limit, type) {
+
         let qnt = 10;
         if (limit && !isNaN(limit) && limit <= 30) qnt = limit;
         if (!page || page < 1) page = 1;
@@ -42,17 +43,20 @@ export default class Report {
         let whereClause = `WHERE g.master = ?`;
         const params = [user.id];
     
-        if (favorites) {
-            whereClause += ` AND r.favorite = 1`;
-        }
-        if (unread_only) {
-            whereClause += ` AND r.isread = 0`;
-        }
+        if (favorites === "true") { whereClause += ` AND r.favorite = 1`; }
+        else if (favorites === "false") { whereClause += ` AND r.favorite = 0` }
+
+        if (is_read === "true") { whereClause += ` AND r.isread = 0`; }
+        else if (is_read === "false") { whereClause += ` AND r.isread =1`; }
+
+        if (type === 'duel') { whereClause += ` AND l.origin = 'duel'`; }
+        else if (type === 'ranked') { whereClause += ` AND l.origin = 'ranked'`; }
 
         const countSql = `
             SELECT COUNT(*) as total 
             FROM reports r 
             INNER JOIN gladiators g ON g.cod = r.gladiator
+            INNER JOIN logs l on l.id = r.log
             ${whereClause}
         `;
         const totalResult = await Db.query(countSql, params);
@@ -60,7 +64,7 @@ export default class Report {
 
         const reportSql = `
             SELECT r.id, l.time, g.name AS gladiator, r.isread, l.hash, r.reward, 
-                   r.favorite, r.comment, l.expired 
+                   r.favorite, r.comment, l.expired, l.origin
             FROM reports r 
             INNER JOIN gladiators g ON g.cod = r.gladiator
             INNER JOIN logs l ON l.id = r.log
@@ -80,13 +84,15 @@ export default class Report {
             comment: row.comment,
             expired: row.expired === 1 ? true : undefined,
             hash: row.expired !== 1 ? row.hash : undefined,
+            type: row.origin
         }));
     
-        if (read && infos.length > 0) {
+        if (infos.length > 0) {
             const ids = infos.map(row => row.id).join(", ");
             const updateSql = `UPDATE reports SET isread = 1 WHERE id IN (${ids})`;
             await Db.query(updateSql, []);
         }
+
         return { 
             total, 
             reports: infos, 
