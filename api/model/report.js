@@ -46,8 +46,8 @@ export default class Report {
         if (favorites === "true") { whereClause += ` AND r.favorite = 1`; }
         else if (favorites === "false") { whereClause += ` AND r.favorite = 0` }
 
-        if (is_read === "true") { whereClause += ` AND r.isread = 0`; }
-        else if (is_read === "false") { whereClause += ` AND r.isread =1`; }
+        if (is_read === "true") { whereClause += ` AND r.isread = 1`; }
+        else if (is_read === "false") { whereClause += ` AND r.isread = 0`; }
 
         if (type === 'duel') { whereClause += ` AND l.origin = 'duel'`; }
         else if (type === 'ranked') { whereClause += ` AND l.origin = 'ranked'`; }
