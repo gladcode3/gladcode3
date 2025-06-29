@@ -34,141 +34,199 @@ export default class Gladiator {
 
   async getByName(name) {
     if (!name) throw new CustomError(400, "Name is required");
-    try {
-      const gladiators = await db.find("gladiators", {
-        filter: { name },
-        view: ['cod', 'master', 'name', 'vstr', 'vagi', 'vint', 'lvl', 'xp', 'skin', 'mmr', 'version'],
-      });
 
-      return gladiators;
-    } catch (error) {
-      throw new CustomError(
-        error.code ?? 500,
-        error.message ?? "internal server error"
-      );
+    const gladiators = await db.find("gladiators", {
+      filter: { name },
+      view: [
+        'cod', 'master', 'name', 'vstr', 'vagi', 'vint',
+        'lvl', 'xp', 'skin', 'mmr', 'version'
+      ],
+    });
+
+    if (!gladiators || gladiators.length === 0) {
+      throw new CustomError(404, "No gladiators found with that name.");
     }
+
+    return gladiators;
   }
 
   async getByCod(cod) {
     if (!cod) throw new CustomError(400, "Cod is required");
-    try {
 
-      const gladiators = await db.find("gladiators", {
-        filter: { cod },
-        view: ['cod', 'master', 'name', 'vstr', 'vagi', 'vint', 'lvl', 'xp', 'skin', 'code', 'mmr', 'version'],
-      });
-      
-      return gladiators;
-    } catch (error) {
-      throw new CustomError(
-        error.code ?? 500,
-        error.message ?? "internal server error"
-      );
+    const gladiators = await db.find("gladiators", {
+      filter: { cod },
+      view: [
+        'cod', 'master', 'name', 'vstr', 'vagi', 'vint',
+        'lvl', 'xp', 'skin', 'code', 'mmr', 'version'
+      ],
+    });
+
+    if (!gladiators || gladiators.length === 0) {
+      throw new CustomError(404, "Gladiator not found.");
     }
+
+    return gladiators;
   }
 
   async getByMaster(master) {
     if (!master) throw new CustomError(400, "Master id is required");
 
     const gladiators = await db.find("gladiators", {
-      filter: { master: master },
-      view: ['cod', 'master', 'name', 'vstr', 'vagi', 'vint', 'lvl', 'xp', 'skin', 'mmr', 'version'],
+      filter: { master },
+      view: [
+        'cod', 'master', 'name', 'vstr', 'vagi', 'vint',
+        'lvl', 'xp', 'skin', 'mmr', 'version'
+      ],
     });
 
-    if(gladiators.length === 0 || !gladiators){
+    if (!gladiators || gladiators.length === 0) {
       throw new CustomError(404, "No gladiators were found.");
     }
+
     return gladiators;
   }
 
-  // checar se o usuário possui mais de 6 gladiadores para impedir de criar um novo gladiador
   async checkGladiatorsNumberByMaster(master) {
-    try {
-      const gladiators = await db.find("gladiators", {
-        filter: { master },
-      });
-
-      return { count: gladiators.length };
-    } catch (error) {
-      throw new CustomError(
-        error.code ?? 500,
-        error.message ?? "internal server error"
-      );
-    }
+    const gladiators = await db.find("gladiators", { filter: { master } });
+    return { count: gladiators.length };
   }
 
   async getCodeById(cod, master) {
+    if (!cod || !master) {
+      throw new CustomError(400, "Cod and master are required.");
+    }
 
-    const gladiator = await db.find("gladiators", {
+    const gladiators = await db.find("gladiators", {
       filter: { cod },
-      view: ['cod', 'master', 'name', 'vstr', 'vagi', 'vint', 'lvl', 'xp', 'skin', 'code', 'blocks', 'mmr', 'version'],
-    })
+      view: [
+        'cod', 'master', 'name', 'vstr', 'vagi', 'vint',
+        'lvl', 'xp', 'skin', 'code', 'blocks', 'mmr', 'version'
+      ],
+    });
 
-    if (gladiator.length === 0) { throw new CustomError(404, "Gladiator not found"); }
-    if (gladiator[0].master !== master) { throw new CustomError(403, `Gladiator does not belong to ${master}.`); }
+    if (!gladiators || gladiators.length === 0) {
+      throw new CustomError(404, "Gladiator not found.");
+    }
 
-  const language = gladiator[0].blocks ? 'blocks' : codeLanguage(gladiator[0].code);
+    const gladiator = gladiators[0];
 
-  return {
-      cod: gladiator[0].cod,
-      master: gladiator[0].master,
-      name: gladiator[0].name,
-      vstr: gladiator[0].vstr,
-      vagi: gladiator[0].vagi,
-      vint: gladiator[0].vint,
-      lvl: gladiator[0].lvl,
-      xp: gladiator[0].xp,
-      skin: gladiator[0].skin,
-      code: gladiator[0].code,
-      blocks: gladiator[0].blocks,
-      mmr: gladiator[0].mmr,
-      version: gladiator[0].version,
+    if (gladiator.master !== master) {
+      throw new CustomError(403, `Gladiator does not belong to ${master}.`);
+    }
+
+    const language = gladiator.blocks
+      ? 'blocks'
+      : codeLanguage(gladiator.code);
+
+    return {
+      cod: gladiator.cod,
+      master: gladiator.master,
+      name: gladiator.name,
+      vstr: gladiator.vstr,
+      vagi: gladiator.vagi,
+      vint: gladiator.vint,
+      lvl: gladiator.lvl,
+      xp: gladiator.xp,
+      skin: gladiator.skin,
+      code: gladiator.code,
+      blocks: gladiator.blocks,
+      mmr: gladiator.mmr,
+      version: gladiator.version,
       language
     };
   }
+
+  async deleteGladiator(cod, master) {
+    if (!cod || !master) throw new CustomError(400, "Cod and master are required.");
+
+    const checkMaster = await db.find('gladiators', {
+      filter: { cod },
+      view: ['cod', 'master']
+    });
+
+    if (!checkMaster || checkMaster.length === 0) throw new CustomError(404, "Gladiator not found.");
+    if (checkMaster[0].master !== master) throw new CustomError(403, "Gladiator does not belong to user.");
+
+    await db.delete('gladiators', { cod });
+
+    const occupiedSlots = (await this.checkGladiatorsNumberByMaster(master)).count;
+    const totalSlots = await this.getUserSlots(master);
+
+    return {
+      code: 200,
+      message: `Gladiator ${cod} has been deleted successfully.`,
+      data: {
+        occupiedSlots,
+        totalSlots
+      }
+    };
+  }
+
+  async getUserSlots(master) {
+    if (!master) throw new CustomError(400, "Master id is required.");
+
+    const [user] = await db.find('users', {
+      filter: { id: master },
+      view: ['lvl']
+    });
+
+    if (!user) {
+      throw new CustomError(404, "User not found.");
+    }
+
+    const lvl = user.lvl || 0;
+    return Math.min(Math.floor(lvl / 10) + 1, 6);
+  }
 }
 
-// Não escrevi esse código mas ele passou em todos os testes. Ele é bem leve também.
+// Helper
 function codeLanguage(code) {
-    let cScore = 0;
-    let pyScore = 0;
+  let cScore = 0;
+  let pyScore = 0;
 
-    const cPatterns = [
-        /#\s*include\s*<[^>]+>/,                      // #include <...>
-        /\b(int|char|float|double|void)\b\s+\**\w+\s*\([^)]*\)\s*{/, // C functions
-        /;\s*(\/\/.*)?$/m,                            // Lines ending with ;
-        /\bprintf\s*\(/,                              // printf(
-        /\bscanf\s*\(/,                               // scanf(
-        /\bsizeof\s*\(/,                              // sizeof(
-        /\bstruct\s+\w+/,                             // struct
-    ];
+  const cPatterns = [
+    /#\s*include\s*<[^>]+>/,
+    /\b(int|char|float|double|void)\b\s+\**\w+\s*\([^)]*\)\s*{/,
+    /;\s*(\/\/.*)?$/m,
+    /\bprintf\s*\(/,
+    /\bscanf\s*\(/,
+    /\bsizeof\s*\(/,
+    /\bstruct\s+\w+/,
+  ];
 
-    const pythonPatterns = [
-        /\bdef\s+\w+\s*\([^)]*\)\s*:/,                // def func(...):
-        /\bclass\s+\w+\s*:/m,                         // Python classes
-        /\bimport\s+\w+/,                             // Module imports
-        /print\s*\(/,                                 // print(
-        /#[^\n]*$/,                                   // Python comments
-        /\bself\b/,                                   // Python methods
-        /:\s*$/m,                                     // Indent blocks ( : )
-        /\bNone\b|\bTrue\b|\bFalse\b/,                // Python literals
-    ];
+  const pythonPatterns = [
+    /\bdef\s+\w+\s*\([^)]*\)\s*:/,
+    /\bclass\s+\w+\s*:/m,
+    /\bimport\s+\w+/,
+    /print\s*\(/,
+    /#[^\n]*$/,
+    /\bself\b/,
+    /:\s*$/m,
+    /\bNone\b|\bTrue\b|\bFalse\b/,
+  ];
 
-    for (const pat of cPatterns) { if (pat.test(code)) cScore++; }
-    for (const pat of pythonPatterns) { if (pat.test(code)) pyScore++; }
+  for (const pat of cPatterns) {
+    if (pat.test(code)) cScore++;
+  }
+  for (const pat of pythonPatterns) {
+    if (pat.test(code)) pyScore++;
+  }
 
-    const lines = code.split('\n');
-    let indentCount = 0;
-    for (const line of lines) { if (/^\s{4,}\S/.test(line)) indentCount++; }
-    if (indentCount >= 2) { pyScore += 1; }
+  const lines = code.split('\n');
+  let indentCount = 0;
+  for (const line of lines) {
+    if (/^\s{4,}\S/.test(line)) indentCount++;
+  }
+  if (indentCount >= 2) pyScore += 1;
 
-    let braceCount = 0;
-    for (const line of lines) { if (/{\s*$/.test(line) || /^\s*}\s*$/.test(line)) braceCount++; }
-    if (braceCount >= 2) { cScore += 1; }
+  let braceCount = 0;
+  for (const line of lines) {
+    if (/{\s*$/.test(line) || /^\s*}\s*$/.test(line)) braceCount++;
+  }
+  if (braceCount >= 2) cScore += 1;
 
-    if (cScore > pyScore) return 'c';
-    if (pyScore > cScore) return 'python';
+  if (cScore > pyScore) return 'c';
+  if (pyScore > cScore) return 'python';
 
-    return 'python';
+  return 'python';
 }
-

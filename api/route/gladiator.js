@@ -63,9 +63,25 @@ router.get("/code/:id", async (req, res, next) => {
     const check = req.check;
 
     if (!check.user) throw check;
-    if (!req.params.id || isNaN(req.params.id)) { throw { code: 400, message: "Invalid ID parameter" }; }
+    if (!req.params.id || isNaN(req.params.id)) throw { code: 400, message: "Invalid ID parameter" };
 
     const query = await gladiator.getCodeById(req.params.id, check.user.id);
+    res.status(200).json(query);
+
+  } catch (error) {
+    next(error);
+  }
+})
+
+router.delete("/delete/:id", async (req, res, next) => {
+  try {
+    await Auth.check(req);
+    const check = req.check;
+
+    if(!check.user) throw check;
+    if (!req.params.id || isNaN(req.params.id)) throw { code: 400, message: "Invalid ID parameter"};
+
+    const query = await gladiator.deleteGladiator(req.params.id, check.user.id);
     res.status(200).json(query);
 
   } catch (error) {
