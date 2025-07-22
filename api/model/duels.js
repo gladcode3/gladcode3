@@ -15,20 +15,60 @@ export default class Duels {
 
     static async get(user) {
         user.id = 277;
-        const sql = `
-            SELECT d.id, d.time, u.nickname, u.profile_picture, u.lvl
-            FROM duels d
-            INNER JOIN users u ON u.id = d.user1
-            WHERE d.user2 = ? AND d.log IS NULL
-        `;
-        const query = await Db.query(sql, [user.id]);
-        return query.map(row => ({
-            id: row.id,
-            time: row.time,
-            nickname: row.nickname,
-            lvl: row.lvl,
-            profile_picture: row.profile_picture
-        }));
+
+        const initiated = await Db.find('duels', {
+        filter: { user1: user.id },
+        view: ['id', 'time', 'user2', 'log']
+        });
+        console.log(initiated)
+
+        const received = await Db.find('duels', {
+        filter: { user2: user.id },
+        view: ['id', 'time', 'user1', 'log']
+        });
+
+        const initiatedDuels = initiated
+            .filter(d => d.log !== null)
+            .map(d => ({
+                id: d.id,
+                time: d.time,
+                opponentId: d.user2 
+            }));
+
+        const receivedDuels = received
+            .filter(d => d.log !== null)
+            .map(d => ({
+                id: d.id,
+                time: d.time,
+                opponentId: d.user1
+            }));
+
+        const rawDuels = [...initiatedDuels, ...receivedDuels];
+        console.log("RAW DUELS: ", rawDuels)
+
+        if (rawDuels.length === 0) throw new CustomError(404, "No finished duels found for the user.");
+
+        const opponentIds = [...new Set(rawDuels.map(d => d.opponentId))];
+
+        const opponents = await Db.find('users', {
+        filter: { id: opponentIds },
+        view: ['id', 'nickname', 'lvl', 'profile_picture']
+        });
+        const oppMap = new Map(opponents.map(u => [u.id, u]));
+
+        const duels = rawDuels.map(d => {
+            const opp = oppMap.get(d.opponentId);
+            return {
+                id: d.id,
+                time: d.time,
+                opponentId: d.opponentId,
+                opponentNickname: opp?.nickname,
+                opponentLvl: opp?.lvl,
+                opponentProfile: opp?.profile_picture
+            };
+        });
+
+        return { duels };
     }
 
     static async challenge(user, friend, glad) {

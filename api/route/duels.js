@@ -18,35 +18,7 @@ router.get('/get', async (req, res, next) => {
     } catch (error) {
         next(error);
     }
-})
-
-router.post('/challenge', async (req, res, next) => {
-    try {
-        await Auth.check(req);
-        const check = req.check;
-        if(!check.user) throw new CustomError(401, "User has not logged in.");
-
-        const challenge = await Duels.challenge(check.user, req.body.friend, req.body.glad);
-        res.status(200).json(challenge);
-
-    } catch (error) {
-        next(error);
-    }
-})
-
-router.delete('/delete', async (req, res, next) => {
-    try {
-        await Auth.check(req);
-        const check = req.check;
-        if(!check.user) throw new CustomError(401, "User has not logged in.");
-
-        const query = await Duels.delete(check.user, req.body.id);
-        res.status(200).json(query);
-
-    } catch (error) {
-        next(error);
-    }
-})
+});
 
 router.get('/report', async (req, res, next) => {
     try {
@@ -60,4 +32,34 @@ router.get('/report', async (req, res, next) => {
     } catch (error) {
         next(error);
     }
-})
+});
+
+router.post('/challenge', async (req, res, next) => {
+    try {
+        await Auth.check(req);
+        const check = req.check;
+        if(!check.user) throw new CustomError(401, "User has not logged in.");
+
+        const challenge = await Duels.challenge(check.user, req.body.friend, req.body.glad);
+        res.status(200).json(challenge);
+
+    } catch (error) {
+        next(error);
+    }
+});
+
+router.delete('/delete', async (req, res, next) => {
+    try {
+        await Auth.check(req);
+        const check = req.check;
+        if(!check.user) throw new CustomError(401, "User has not logged in.");
+
+        const query = await Duels.delete(check.user, req.body.id);
+        res.status(200).json(query);
+
+    } catch (error) {
+        next(error);
+    }
+});
+
+export default router;
