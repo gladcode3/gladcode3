@@ -46,8 +46,8 @@ export default class Report {
         if (favorites === "true") { whereClause += ` AND r.favorite = 1`; }
         else if (favorites === "false") { whereClause += ` AND r.favorite = 0` }
 
-        if (is_read === "true") { whereClause += ` AND r.isread = 0`; }
-        else if (is_read === "false") { whereClause += ` AND r.isread =1`; }
+        if (is_read === "true") { whereClause += ` AND r.isread = 1`; }
+        else if (is_read === "false") { whereClause += ` AND r.isread = 0`; }
 
         if (type === 'duel') { whereClause += ` AND l.origin = 'duel'`; }
         else if (type === 'ranked') { whereClause += ` AND l.origin = 'ranked'`; }
@@ -155,5 +155,22 @@ export default class Report {
                 started: report.started
             }
         };
+    }
+
+    static async readAll(user) {
+        const userId = user.id;
+        const reports = await Db.query(
+            `SELECT r.id FROM reports r
+             INNER JOIN gladiators g ON g.cod = r.gladiator
+             WHERE g.master = ? AND r.isread = 0`,
+            [userId]
+        );
+
+        if (reports.length === 0) { return { code: 200, message: "All reports are read." }; }
+
+        const ids = reports.map(r => r.id).join(", ");
+        await Db.query(`UPDATE reports SET isread = 1 WHERE id IN (${ids})`);
+
+        return { code: 200, message: `${reports.length} reports marked as read.` };
     }
 }
