@@ -10,7 +10,8 @@ router.get('/get', async (req, res, next) => {
     try {
         await Auth.check(req);
         const check = req.check;
-        if(!check.user) throw new CustomError(401, "User has not logged in.");
+
+        if(!check.user) throw check;
 
         const duels = await Duels.get(check.user);
         res.status(200).json(duels);
@@ -26,7 +27,7 @@ router.get('/report', async (req, res, next) => {
         const check = req.check;
         if(!check.user) throw new CustomError(401, "User has not logged in.");
 
-        const report = await Duels.report(check.user, req.params.offset);
+        const report = await Duels.report(check.user, req.query.page, req.query.qnt);
         res.status(200).json(report);
 
     } catch (error) {

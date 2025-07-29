@@ -14,7 +14,6 @@ export default class Duels {
     }
 
     static async get(user) {
-        user.id = 277;
 
         const initiated = await Db.find('duels', {
         filter: { user1: user.id },
@@ -43,10 +42,10 @@ export default class Duels {
                 opponentId: d.user1
             }));
 
+        //Pra filtrar os duelos não terminados (log null)
         const rawDuels = [...initiatedDuels, ...receivedDuels];
-        console.log("RAW DUELS: ", rawDuels)
 
-        if (rawDuels.length === 0) throw new CustomError(404, "No finished duels found for the user.");
+        if (rawDuels.length === 0) throw new CustomError(404, "No duels found.");
 
         const opponentIds = [...new Set(rawDuels.map(d => d.opponentId))];
 
@@ -61,10 +60,10 @@ export default class Duels {
             return {
                 id: d.id,
                 time: d.time,
-                opponentId: d.opponentId,
-                opponentNickname: opp?.nickname,
-                opponentLvl: opp?.lvl,
-                opponentProfile: opp?.profile_picture
+                user: d.opponentId,
+                nick: opp?.nickname,
+                lvl: opp?.lvl,
+                profile_picture: opp?.profile_picture
             };
         });
 
@@ -74,14 +73,14 @@ export default class Duels {
     static async challenge(user, friend, glad) {
         if (!user.id || !friend || !glad) throw new CustomError(400, "Missing required parameters");
 
-        const friendship = await Db.find('friendship', {
-            filter: { 
-                $or: [
-                    { user1: user.id, user2: friend },
-                    { user1: friend, user2: user.id },
-                ]
-            }
-        });
+        const friendship = await Db.query(
+            `SELECT 
+                *
+            FROM 
+                friendship
+            WHERE 
+                (user1 = ? AND user2 = ?) OR
+                (user1 = ? AND user2 = ?)`, [user.id, friend, friend, user.id]);
         if (friendship.length === 0) throw new CustomError(404, "Friendship not found.");
 
         const gladiator = await Db.find('gladiators', {
@@ -92,13 +91,15 @@ export default class Duels {
         });
         if (gladiator.length === 0) throw new CustomError(404, "Gladiator not found or not owned by user.");
 
-        const existingDuel = await Db.find('duels', {
-            filter: {
-                user2: friend,
-                gladiator1: glad,
-                log: null
-            }
-        });
+        const existingDuel = Db.query(
+            `SELECT
+                *
+            FROM 
+                duels
+            WHERE
+                user2 = ? AND
+                gladiator1 = ? AND
+                log IS NULL`, [friend, glad]);
         if (existingDuel.length > 0) throw new CustomError(409, "Unresolved duel exists.");
 
         await Db.insert('duels', {
@@ -125,56 +126,82 @@ export default class Duels {
 
     }
 
-    static async report(user, offset = 0) {
-        const limit = 10;
-        
-        const countResult = await Db.query(`
-            SELECT COUNT(*) AS total
-            FROM duels
-            WHERE ((user1 = ? OR user2 = ?) AND log IS NOT NULL)
-                OR (user1 = ? AND log is NULL)
-            `, [user.id, user.id, user.id]
-        );
-        const total = countResult[0].total;
+    static async report(user, page, limit) {
+        if(!page) throw new CustomError(400, "Page was not sent.");
+        if(!limit || limit > 30) limit = 10;
+        if(isNaN(page) || isNaN(limit)) throw new CustomError(400, "Query must be a number.");
 
-        const sql = `
-            SELECT d.id, d.time, d.log, d.isread,
-                g1.name AS glad1, g2.name AS glad2,
-                u1.nickname AS nick1, u2.nickname AS nick2,
-                u1.id AS user1, u2.id AS user2
-            FROM duels d
-            LEFT JOIN gladiators g1 ON g1.cod = d.gladiator1
-            LEFT JOIN gladiators g2 ON g2.cod = d.gladiator2
-            INNER JOIN users u1 ON u1.id = d.user1
-            INNER JOIN users u2 ON u2.id = d.user2
-            WHERE ((d.user1 = ? OR d.user2 = ?) AND d.log IS NOT NULL)
-                OR (d.user1 = ? AND d.log IS NULL)
-            ORDER BY d.time DESC
-            LIMIT ? OFFSET ?
-        `;
+        const offset = (page*limit)-limit;
 
-        const results = await Db.query(sql, [
-            user.id, user.id, user.id,
-            limit, offset
-        ]);
-
-        const duels = results.map(row => {
-            const isChallenger = row.user1 === user.id;
-            return {
-                id: row.id,
-                time: row.time,
-                log: row.log,
-                isread: row.isread,
-                glad: isChallenger ? row.glad1 : row.glad2,
-                user: isChallenger ? row.nick2 : row.nick1,
-                enemy: isChallenger ? row.glad2 : row.glad1
-            };
+        const duels1 = await Db.find('duels', {
+            filter: {
+                user1: user.id
+            },
+            opt: {
+                order: { time: -1 }
+            }
         });
 
-        await Db.query(`
-            UPDATE duels SET isread = 1
-            WHERE user1 = ? AND log IS NOT NULL
-            `, [user.id]);
+        const duels2 = await Db.find('duels', {
+            filter: {
+                user2: user.id
+            },
+            opt: {
+                order: { time: -1 }
+            }
+        });
+
+        const finishedDuels1 = duels1.filter(duel => duel.log !== null);
+        const finishedDuels2 = duels2.filter(duel => duel.log !== null);
+        const pendingDuels = duels1.filter(duel => duel.log === null);
+
+        const allDuels = [...finishedDuels1, ...finishedDuels2, ...pendingDuels];
+
+        const sortedDuels = allDuels.sort((a,b) => new Date(b.time) - new Date(a.time));
+
+        const total = sortedDuels.length;
+        const duelsByPage = sortedDuels.slice(offset, offset + limit);
+
+        const duels = [];
+
+        for (const duel of duelsByPage) {
+
+            const glad1 = duel.gladiator1 ? await Db.find('gladiators', {
+                filter: { cod: duel.gladiator1 },
+                view: ['name']
+            }) : [];
+
+            const glad2 = duel.gladiator2 ? await Db.find('gladiators', {
+                filter: { cod: duel.gladiator2 },
+                view: ['name']
+            }) : [];
+
+            const user1 = await Db.find('users', {
+                filter: { id: duel.user1 },
+                view: ['nickname']
+            });
+
+            const user2 = await Db.find('users', {
+                filter: { id: duel.user2 },
+                view: ['nickname']
+            });
+
+            const isChallenger = duel.user1 == user.id;
+
+            duels.push({
+                id: duel.id,
+                time: duel.time,
+                log: duel.log,
+                isread: duel.isread,
+                glad: isChallenger ? (glad1[0]?.name || null ) : (glad2[0]?.name || null),
+                user: isChallenger ? (user2[0].nickname || null) : (user1[0]?.nickname || null),
+                enemy_glad: isChallenger ? (glad2[0]?.name || null) : (glad1[0]?.name || null)
+            });
+        }
+
+        for (const duel of finishedDuels1) {
+            await Db.update('duels', { isread: 1 }, duel.id);
+        }
 
         return {
             'code': 200,
@@ -183,5 +210,5 @@ export default class Duels {
                 'duels': duels
             }
         };
-    };
-}  
+    }
+}
