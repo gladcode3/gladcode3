@@ -177,6 +177,100 @@ export default class Gladiator {
     const lvl = user.lvl || 0;
     return Math.min(Math.floor(lvl / 10) + 1, 6);
   }
+
+  static async createGladiator(master, gladData, version) {
+    // passando dessa forma pra diminuir os parametros.
+    const { skin, name, vstr, vagi, vint, blocks = ''} = gladData
+
+    if (!master) throw new CustomError(400, "Master is required.");
+
+    const nameRegex = /^[\w À-ú]+?$/;
+    if(!nameRegex.test(name)) throw new CustomError(400, "Invalid name format.");
+
+    if (!this.validateAttributes(vstr, vagi, vint)) throw new CustomError(400, "Invalid attribute values.");
+
+    const isExistingName = await db.find('gladiators', {
+      filter: { name },
+      view: [ 'cod' ]
+    });
+    if (isExistingName.length > 0) throw new CustomError(400, "Name already exists.");
+
+    const totalSlots = await this.getUserSlots(master);
+    const usedSlots = await this.checkGladiatorsNumberByMaster(master);
+    
+    if(totalSlots <= usedSlots) throw new CustomError(400, `Gladiator limit reached: ${totalSlots}/${usedSlots}`);
+
+    const insertResult = await db.insert('gladiators', {
+      master: master,
+      skin: skin,
+      name: name,
+      vstr: parseInt(vstr),
+      vagi: parseInt(vagi),
+      vint: parseInt(vint),
+      lvl: 1,
+      xp: 0,
+      blocks: blocks,
+      version: version
+    });
+
+    return { ID: insertResult[0].insertId};
+  }
+
+  // Helpers convertidos da api em php
+  static getSpriteHash(subject) {
+    const pattern = /setSpritesheet\("([\d\w]*)"\);/;
+    return this.codeMatch(subject, pattern);
+  }
+
+  static getSpriteName(subject) {
+    const pattern = /setName\("([\d\w ]*)"\);/;
+    return this.codeMatch(subject, pattern);
+  }
+
+  static getSpriteSTR(subject) {
+    const pattern = /setSTR\(([\d]{1,2})\);/;
+    return this.codeMatch(subject, pattern);
+  }
+
+  static getSpriteAGI(subject) {
+    const pattern = /setAGI\(([\d]{1,2})\);/;
+    return this.codeMatch(subject, pattern);
+  }
+
+  static getSpriteINT(subject) {
+    const pattern = /setINT\(([\d]{1,2})\);/;
+    return this.codeMatch(subject, pattern);
+  }
+
+  static codeMatch(subject, pattern) {
+    const matches = subject.match(pattern);
+    if (!matches || matches.length < 2) {
+      return false;
+    }
+    return matches[1];
+  }
+
+  static validateAttributes(vstr, vagi, vint) {
+    const total = this.calcAttrValue(parseInt(vstr)) + 
+                  this.calcAttrValue(parseInt(vagi)) + 
+                  this.calcAttrValue(parseInt(vint));
+    return total === 50;
+  }
+
+  static calcAttrValue(attr) {
+    if (attr === 0) return 0;
+    return this.calcAttrValue(attr - 1) + Math.ceil(attr / 6);
+  }
+
+  static escapeHtml(unsafe) {
+    if (typeof unsafe !== 'string') return unsafe;
+    return unsafe
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
 }
 
 // Helper

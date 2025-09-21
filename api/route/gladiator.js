@@ -1,6 +1,7 @@
 import express from "express";
 import Gladiator from "../model/gladiator.js";
 import Auth from '../middleware/auth.js';
+import CustomError from "../core/error.js";
 const router = express.Router();
 
 const gladiator = new Gladiator({});
@@ -82,6 +83,35 @@ router.delete("/delete/:id", async (req, res, next) => {
     if (!req.params.id || isNaN(req.params.id)) throw { code: 400, message: "Invalid ID parameter"};
 
     const query = await gladiator.deleteGladiator(req.params.id, check.user.id);
+    res.status(200).json(query);
+
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/create", async (req, res, next) => {
+  try {
+    await Auth.check(req);
+    const check = req.check;
+    if (!check.user) throw check;
+
+    const master = check.user.id;
+
+    const { skin, name, vstr, vagi, vint, blocks } = req.body;
+
+    if (!name || !vstr || !vagi || !vint) throw new CustomError(400, "Missing reqired fields: name, vstr, vagi, vint");
+
+    const gladData = {
+      skin: skin || '',
+      name: name.trim(),
+      vstr,
+      vagi,
+      vint,
+      blocks: blocks || ''
+    };
+
+    const query = await Gladiator.createGladiator(master, gladData, version);
     res.status(200).json(query);
 
   } catch (error) {
