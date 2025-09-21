@@ -132,7 +132,6 @@ export default class Report {
             filter: { cod: query[0].gladiator },
             view: [ 'master' ]
         });
-        console.log(checkOwnership)
 
         if(user.id !== checkOwnership[0].master) throw new CustomError(403, `Report ${id} does not belong to user.`);
         if (query.length <= 0) throw new CustomError(404, `Report #${id} does not exist.`);

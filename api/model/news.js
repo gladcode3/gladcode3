@@ -23,7 +23,7 @@ export default class News {
         const news = await Db.find('news', 
             {
                 filter: {id: Db.like("%")}, 
-                view: ['id', 'title', 'time', 'post'],
+                view: ['id', 'title', 'time', 'post', 'hash'],
                 opt: { limit: qnt, order: { id: -1}, skip: offset },
                 skip: offset
             }
