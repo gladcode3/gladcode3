@@ -3,3 +3,19 @@
 @import "components/_content.less";
 @import "components/_header.less";
 @import "panels/all.less";
+
+// Prototype
+dialog {
+    margin: auto;
+    padding: 2rem;
+
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    &::backdrop {
+        background: rgba(0, 0, 0, .5);
+    }
+}

@@ -18,7 +18,7 @@ export default class TemplateVar {
             vars.forEach((value, key) => {
                 TemplateVar.vars[key] = TemplateVar.format(value);
             });
-        }   
+        }
         catch (error) {
             console.error('Error parsing template variable:', error);
         }

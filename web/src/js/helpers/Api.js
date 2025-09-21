@@ -3,12 +3,11 @@
 // const entity = await new Api().get('route', { ...args });
 
 
-import GoogleLogin from "./google-login.js";
-import Request from "./request.js";
-import TemplateVar from "./template-var.js";
+import GoogleLogin from "./GoogleLogin.js";
+import Request from "./Request.js";
+import TemplateVar from "./TemplateVar.js";
 
 export default class Api {
-
     constructor({ auth, token }={}) {
         this.auth = auth || true;
         this.token = token;
@@ -23,7 +22,8 @@ export default class Api {
             return requestInstance;
         }
 
-        const token = this.token || GoogleLogin.getCredential();
+        const token = this.token || GoogleLogin.getCredential()?.token;
+
         if (!token) {
             throw new Error('Credential not found');
         }
@@ -32,9 +32,9 @@ export default class Api {
             url: `https://${TemplateVar.get('apiurl')}`,
             headers: { 'Authorization': `Bearer ${token}` }
         });
+
         return requestInstance;
     }
-
 
     async get(endpoint, data) {
         return this.requestInstance.get(endpoint, data);
