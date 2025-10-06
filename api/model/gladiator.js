@@ -179,8 +179,29 @@ export default class Gladiator {
   }
 
   static async createGladiator(master, gladData, version) {
-    // passando dessa forma pra diminuir os parametros.
     const { skin, name, vstr, vagi, vint, blocks = ''} = gladData
+
+    let skinString;
+
+    if (typeof skin === 'string') {
+      try {
+        const parsed = JSON.parse(skin);
+
+        if (!Array.isArray(parsed)) {
+          throw new CustomError("Skin must be a valid JSON array.");
+        }
+        skinString = skin;
+
+      } catch (error) {
+        throw new CustomError(400, "Invalid skin JSON format.");
+      }
+
+    } else if (Array.isArray(skin)) {
+      skinString = JSON.stringify(skin);
+
+    } else {
+      throw new CustomError(400, "Skin must be either a JSON string or array.");
+    }
 
     if (!master) throw new CustomError(400, "Master is required.");
 
@@ -202,7 +223,7 @@ export default class Gladiator {
 
     const insertResult = await db.insert('gladiators', {
       master: master,
-      skin: skin,
+      skin: skinString,
       name: name,
       vstr: parseInt(vstr),
       vagi: parseInt(vagi),
